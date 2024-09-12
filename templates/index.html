@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Audio/Video Waveform Analyzer</title>
+    <link rel="stylesheet" href="/static/css/styles.css">
+    <script src="https://unpkg.com/wavesurfer.js@6.6.3/dist/wavesurfer.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Audio/Video Waveform Analyzer</h1>
+        <div id="upload-section">
+            <div id="drop-zone">
+                <i class="fas fa-cloud-upload-alt"></i>
+                <p>Click here or drag and drop audio or video files (max 200MB)</p>
+                <input type="file" id="file-input" accept="audio/*,video/*" style="display: none;" multiple>
+            </div>
+
+            <!-- Preview Section -->
+            <div id="preview-section" style="display: none;">
+                <div id="file-preview">
+                    <p>Selected File: <span id="selected-file-name"></span></p>
+                    <p>Size: <span id="file-size"></span></p>
+                    <p>Duration: <span id="file-duration"></span></p>
+                </div>
+            </div>
+            
+            <!-- Progress Section -->
+            <div id="progress-container" style="display: none;">
+                <div class="progress-bar">
+                    <div id="upload-progress"></div>
+                </div>
+                <span id="progress-text">0%</span>
+                <span id="status-text">Uploading</span>
+                <button id="cancel-upload" style="display: inline-block;">Cancel</button>
+            </div>
+        </div>
+        
+        <div id="file-dashboard"></div>
+        <div id="current-file-display" style="display: none;">
+            <p>Current File: <span id="current-file-name"></span></p>
+        </div>
+        <div id="player-container" style="display: none;">
+            <div id="media-wrapper">
+                <video id="video-player" style="display: none;"></video>
+                <audio id="audio-player" style="display: none;"></audio>
+            </div>
+            <div id="waveform-container"></div>
+            <div class="media-controls">
+                <button id="prev-file"><i class="fas fa-step-backward"></i></button>
+                <button id="play-pause"><i class="fas fa-play"></i></button>
+                <button id="next-file"><i class="fas fa-step-forward"></i></button>
+                <input type="range" id="volume" min="0" max="1" step="0.1" value="1">
+                <select id="playback-speed">
+                    <option value="0.5">0.5x</option>
+                    <option value="1" selected>1x</option>
+                    <option value="1.5">1.5x</option>
+                    <option value="2">2x</option>
+                </select>
+                <button id="loop-toggle">Loop</button>
+            </div>
+        </div>
+    </div>
+    <script src="/static/js/app.js"></script>
+</body>
+</html>
