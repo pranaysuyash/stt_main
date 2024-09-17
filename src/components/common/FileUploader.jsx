@@ -168,7 +168,7 @@ function FileUploader({ setUploadedFiles, setNotification }) {
     handleUpload(selectedFiles);
   };
 
-  const handleUpload = async(files) => {
+  const handleUpload = async (files) => {
     setIsUploading(true);
     setUploadProgress(0);
     setErrorMessages([]);
@@ -178,92 +178,92 @@ function FileUploader({ setUploadedFiles, setNotification }) {
       formData.append('file', file);
     });
 
-  //   const xhr = new XMLHttpRequest();
+    //   const xhr = new XMLHttpRequest();
 
-  //   xhr.upload.addEventListener('progress', (event) => {
-  //     if (event.lengthComputable) {
-  //       const percentComplete = Math.round((event.loaded / event.total) * 100);
-  //       setUploadProgress(percentComplete);
-  //     }
-  //   });
+    //   xhr.upload.addEventListener('progress', (event) => {
+    //     if (event.lengthComputable) {
+    //       const percentComplete = Math.round((event.loaded / event.total) * 100);
+    //       setUploadProgress(percentComplete);
+    //     }
+    //   });
 
-  //   xhr.onreadystatechange = () => {
-  //     if (xhr.readyState === 4) {
-  //       setIsUploading(false);
-  //       setUploadProgress(0);
+    //   xhr.onreadystatechange = () => {
+    //     if (xhr.readyState === 4) {
+    //       setIsUploading(false);
+    //       setUploadProgress(0);
 
-  //       if (xhr.status === 200 || xhr.status === 207) {
-  //         const response = JSON.parse(xhr.responseText);
-  //         if (response.uploaded_files) {
-  //           setNotification({ message: 'Files uploaded successfully!', type: 'success' });
-  //         }
-  //         if (response.errors) {
-  //           const newErrors = response.errors.map(err => `${err.filename}: ${err.error}`);
-  //           setErrorMessages(newErrors);
-  //         }
-  //         setSelectedFiles([]);
-  //         fetch('/api/file_history')
-  //           .then((res) => res.json())
-  //           .then((data) => {
-  //             if (data.files) {
-  //               setUploadedFiles(data.files);
-  //             }
-  //           })
-  //           .catch((error) => console.error('Error fetching files:', error));
-  //       } else if (xhr.status === 413) {
-  //         const response = JSON.parse(xhr.responseText);
-  //         setErrorMessages([`${response.error}: ${response.message}`]);
-  //       } else {
-  //         setNotification({ message: 'Error uploading files. Please try again.', type: 'error' });
-  //         console.error('Error uploading files:', xhr.responseText);
-  //       }
-  //     }
-  //   };
+    //       if (xhr.status === 200 || xhr.status === 207) {
+    //         const response = JSON.parse(xhr.responseText);
+    //         if (response.uploaded_files) {
+    //           setNotification({ message: 'Files uploaded successfully!', type: 'success' });
+    //         }
+    //         if (response.errors) {
+    //           const newErrors = response.errors.map(err => `${err.filename}: ${err.error}`);
+    //           setErrorMessages(newErrors);
+    //         }
+    //         setSelectedFiles([]);
+    //         fetch('/api/file_history')
+    //           .then((res) => res.json())
+    //           .then((data) => {
+    //             if (data.files) {
+    //               setUploadedFiles(data.files);
+    //             }
+    //           })
+    //           .catch((error) => console.error('Error fetching files:', error));
+    //       } else if (xhr.status === 413) {
+    //         const response = JSON.parse(xhr.responseText);
+    //         setErrorMessages([`${response.error}: ${response.message}`]);
+    //       } else {
+    //         setNotification({ message: 'Error uploading files. Please try again.', type: 'error' });
+    //         console.error('Error uploading files:', xhr.responseText);
+    //       }
+    //     }
+    //   };
 
-  //   xhr.open('POST', '/upload');
-  //   xhr.send(formData);
-  // };
+    //   xhr.open('POST', '/upload');
+    //   xhr.send(formData);
+    // };
 
-  try {
-    const response = await fetch('/upload', {
-      method: 'POST',
-      body: formData,
-    });
+    try {
+      const response = await fetch('/upload', {
+        method: 'POST',
+        body: formData,
+      });
 
-    // Calculate upload progress manually since fetch doesn't provide progress updates
-    // For more advanced progress tracking, consider using Axios
+      // Calculate upload progress manually since fetch doesn't provide progress updates
+      // For more advanced progress tracking, consider using Axios
 
-    const data = await response.json();
+      const data = await response.json();
 
-    if (response.ok || response.status === 207) {
-      if (data.uploaded_files) {
-        setNotification({ message: 'Files uploaded successfully!', type: 'success' });
+      if (response.ok || response.status === 207) {
+        if (data.uploaded_files) {
+          setNotification({ message: 'Files uploaded successfully!', type: 'success' });
+        }
+        if (data.errors) {
+          const newErrors = data.errors.map(err => `${err.filename}: ${err.error}`);
+          setErrorMessages(newErrors);
+        }
+        setSelectedFiles([]);
+        const historyResponse = await fetch('/api/file_history');
+        const historyData = await historyResponse.json();
+        if (historyData.files) {
+          setUploadedFiles(historyData.files);
+        }
+      } else if (response.status === 413) {
+        const errorData = await response.json();
+        setErrorMessages([`${errorData.error}: ${errorData.message}`]);
+      } else {
+        setNotification({ message: 'Error uploading files. Please try again.', type: 'error' });
+        console.error('Error uploading files:', data);
       }
-      if (data.errors) {
-        const newErrors = data.errors.map(err => `${err.filename}: ${err.error}`);
-        setErrorMessages(newErrors);
-      }
-      setSelectedFiles([]);
-      const historyResponse = await fetch('/api/file_history');
-      const historyData = await historyResponse.json();
-      if (historyData.files) {
-        setUploadedFiles(historyData.files);
-      }
-    } else if (response.status === 413) {
-      const errorData = await response.json();
-      setErrorMessages([`${errorData.error}: ${errorData.message}`]);
-    } else {
-      setNotification({ message: 'Error uploading files. Please try again.', type: 'error' });
-      console.error('Error uploading files:', data);
+    } catch (error) {
+      setNotification({ message: 'Network error during file upload.', type: 'error' });
+      console.error('Network error:', error);
+    } finally {
+      setIsUploading(false);
+      setUploadProgress(0);
     }
-  } catch (error) {
-    setNotification({ message: 'Network error during file upload.', type: 'error' });
-    console.error('Network error:', error);
-  } finally {
-    setIsUploading(false);
-    setUploadProgress(0);
-  }
-};
+  };
 
   // Remove selected files
   const removeFile = (index) => {
@@ -332,7 +332,7 @@ function FileUploader({ setUploadedFiles, setNotification }) {
           <OverwriteButtons>
             <Button
               variant="secondary"
-              customColor="#2ecc71" /* Complimentary green for "Yes" button */
+              customColor="#2ecc71" /* Transient props are handled inside the Button component */
               onClick={() => {
                 handleUpload(selectedFiles);
                 setOverwritePrompt(false);
@@ -342,13 +342,14 @@ function FileUploader({ setUploadedFiles, setNotification }) {
               Yes
             </Button>
             <Button
-              variant="secondary" /* Changed from 'tertiary' to 'secondary' for consistent styling */
-              customColor="#e74c3c" /* Custom red color for "No" button */
+              variant="secondary"
+              customColor="#e74c3c"
               onClick={() => setOverwritePrompt(false)}
               aria-label="No, cancel the upload"
             >
               No
             </Button>
+
           </OverwriteButtons>
         </OverwritePrompt>
       )}

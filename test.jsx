@@ -1,83 +1,79 @@
-// src/components/common/AudioPlayer.jsx
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useReducer, useCallback } from 'react';
 import WaveSurfer from 'wavesurfer.js';
 import styled from 'styled-components';
 import PropTypes from 'prop-types';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPlay, faPause, faStop, faRedo, faVolumeUp, faVolumeMute } from '@fortawesome/free-solid-svg-icons';
+import debounce from 'lodash.debounce';
 
-// Styled Components
-const AudioPlayerContainer = styled.div`
-  margin-top: 20px;
-  text-align: center;
-  background-color: ${({ theme }) => theme.colors.background};
-  padding: 20px;
-  border-radius: 10px;
-`;
+// Styled Components remain the same...
 
-const Controls = styled.div`
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  margin-top: 15px;
+// Define initial state
+const initialState = {
+  isPlaying: false,
+  volume: 1,
+  playbackRate: 1,
+  loop: false,
+  duration: '',
+};
 
-  button {
-    margin: 0 10px;
-    padding: 10px;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    background-color: ${({ theme }) => theme.colors.primary};
-    color: white;
-    transition: background-color 0.2s ease;
-
-    &:hover {
-      background-color: ${({ theme }) => theme.colors.secondary};
-    }
+// Define reducer
+function reducer(state, action) {
+  switch (action.type) {
+    case 'PLAY_PAUSE':
+      return { ...state, isPlaying: !state.isPlaying };
+    case 'STOP':
+      return { ...state, isPlaying: false };
+    case 'SET_VOLUME':
+      return { ...state, volume: action.payload };
+    case 'SET_PLAYBACK_RATE':
+      return { ...state, playbackRate: action.payload };
+    case 'TOGGLE_LOOP':
+      return { ...state, loop: !state.loop };
+    case 'SET_DURATION':
+      return { ...state, duration: action.payload };
+    default:
+      return state;
   }
+}
 
-  input[type="range"] {
-    width: 100px;
-    margin: 0 10px;
-  }
-`;
-
-const CloseButton = styled.button`
-  margin-top: 15px;
-  background-color: ${({ theme }) => theme.colors.error};
-  border: none;
-  color: white;
-  padding: 8px 15px;
-  border-radius: 4px;
-  cursor: pointer;
-  transition: background-color 0.2s ease;
-
-  &:hover {
-    background-color: #c0392b;
-  }
-`;
-
-// AudioPlayer Component
 function AudioPlayer({
   fileUrl,
   fileName,
   fileType,
   fileSize,
-  duration = '', // Default value
   onClose,
+  triggerRef,
 }) {
   const waveformRef = useRef(null);
   const wavesurferRef = useRef(null);
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [volume, setVolume] = useState(1);
-  const [playbackRate, setPlaybackRate] = useState(1);
-  const [loop, setLoop] = useState(false);
-  const loopRef = useRef(loop); // Ref to keep track of loop state
+  const [state, dispatch] = useReducer(reducer, initialState);
+  const { isPlaying, volume, playbackRate, loop, duration } = state;
+  const stateRef = useRef(state);
 
-  // Update loopRef whenever loop state changes
+  // Update stateRef whenever state changes
   useEffect(() => {
-    loopRef.current = loop;
-  }, [loop]);
+    stateRef.current = state;
+  }, [state]);
+
+  // Debounced handlers
+  const debouncedSetVolume = useCallback(
+    debounce((newVolume) => {
+      if (wavesurferRef.current) {
+        wavesurferRef.current.setVolume(newVolume);
+      }
+    }, 300),
+    []
+  );
+
+  const debouncedSetPlaybackRate = useCallback(
+    debounce((newRate) => {
+      if (wavesurferRef.current) {
+        wavesurferRef.current.setPlaybackRate(newRate);
+      }
+    }, 300),
+    []
+  );
 
   useEffect(() => {
     wavesurferRef.current = WaveSurfer.create({
@@ -95,51 +91,100 @@ function AudioPlayer({
     wavesurferRef.current.setVolume(volume);
     wavesurferRef.current.setPlaybackRate(playbackRate);
 
-    wavesurferRef.current.on('play', () => setIsPlaying(true));
-    wavesurferRef.current.on('pause', () => setIsPlaying(false));
+    wavesurferRef.current.on('ready', () => {
+      const totalDuration = wavesurferRef.current.getDuration();
+      const formattedDuration = new Date(totalDuration * 1000).toISOString().substr(14, 5);
+      dispatch({ type: 'SET_DURATION', payload: formattedDuration });
+    });
+
+    wavesurferRef.current.on('play', () => dispatch({ type: 'PLAY_PAUSE' }));
+    wavesurferRef.current.on('pause', () => dispatch({ type: 'PLAY_PAUSE' }));
     wavesurferRef.current.on('finish', () => {
-      setIsPlaying(false);
-      if (loopRef.current) {
+      dispatch({ type: 'STOP' });
+      if (stateRef.current.loop) {
         wavesurferRef.current.play();
       }
     });
 
     return () => {
-      wavesurferRef.current.destroy();
+      if (wavesurferRef.current) {
+        wavesurferRef.current.destroy();
+      }
     };
   }, [fileUrl]);
 
+  useEffect(() => {
+    if (wavesurferRef.current) {
+      wavesurferRef.current.setVolume(volume);
+      wavesurferRef.current.setPlaybackRate(playbackRate);
+    }
+  }, [volume, playbackRate]);
+
   const playPause = () => {
-    wavesurferRef.current.playPause();
+    dispatch({ type: 'PLAY_PAUSE' });
+    wavesurferRef.current?.playPause();
   };
 
   const stop = () => {
-    wavesurferRef.current.stop();
+    dispatch({ type: 'STOP' });
+    wavesurferRef.current?.stop();
   };
 
   const handleVolumeChange = (e) => {
     const newVolume = parseFloat(e.target.value);
-    setVolume(newVolume);
-    wavesurferRef.current.setVolume(newVolume);
+    dispatch({ type: 'SET_VOLUME', payload: newVolume });
+    debouncedSetVolume(newVolume);
   };
 
   const handlePlaybackRateChange = (e) => {
     const newRate = parseFloat(e.target.value);
-    setPlaybackRate(newRate);
-    wavesurferRef.current.setPlaybackRate(newRate);
+    dispatch({ type: 'SET_PLAYBACK_RATE', payload: newRate });
+    debouncedSetPlaybackRate(newRate);
   };
 
   const toggleLoop = () => {
-    setLoop(!loop);
+    dispatch({ type: 'TOGGLE_LOOP' });
+  };
+
+  const closePlayer = () => {
+    onClose();
+    if (triggerRef && triggerRef.current) {
+      triggerRef.current.focus();
+    }
   };
 
   return (
-    <AudioPlayerContainer>
+    <AudioPlayerContainer tabIndex="-1" aria-label="Audio Player">
       <h3>Now Playing: {fileName}</h3>
-      {fileSize && <p>File Size: {(fileSize / (1024 * 1024)).toFixed(2)} MB</p>}
+      {fileSize && (
+        <p>File Size: {(fileSize / (1024 * 1024)).toFixed(2)} MB</p>
+      )}
       {duration && <p>Duration: {duration}</p>}
-
-      <div id="waveform" ref={waveformRef}></div>
+      <div 
+        id="waveform" 
+        ref={waveformRef} 
+        role="region"
+        aria-label={`Waveform for ${fileName}`}
+        tabIndex="0"
+        onKeyDown={(e) => {
+          if (e.key === ' ' || e.key === 'Enter') {
+            e.preventDefault();
+            playPause();
+          }
+        }}
+        style={{ position: 'relative' }}
+      >
+        <div
+          tabIndex="-1"
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+          }}
+        ></div>
+      </div>
       <Controls>
         <button onClick={playPause} aria-label={isPlaying ? 'Pause' : 'Play'}>
           <FontAwesomeIcon icon={isPlaying ? faPause : faPlay} />
@@ -175,7 +220,9 @@ function AudioPlayer({
           />
         </label>
       </Controls>
-      <CloseButton onClick={onClose} aria-label="Close Audio Player">Close</CloseButton>
+      <CloseButton onClick={closePlayer} aria-label="Close Audio Player">
+        Close
+      </CloseButton>
     </AudioPlayerContainer>
   );
 }
@@ -185,8 +232,8 @@ AudioPlayer.propTypes = {
   fileName: PropTypes.string.isRequired,
   fileType: PropTypes.string.isRequired,
   fileSize: PropTypes.number.isRequired,
-  duration: PropTypes.string,
   onClose: PropTypes.func.isRequired,
+  triggerRef: PropTypes.object,
 };
 
 export default AudioPlayer;

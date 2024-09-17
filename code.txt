@@ -1,24 +1,30 @@
 Directory Structure:
 ```
-├── AudioPlayer.jsx
-├── Button.jsx
-├── ErrorBoundary.jsx
-├── FileDashboard.jsx
-├── FileUploader.jsx
-├── MediaPlayer.jsx
-├── Messages.jsx
-├── Notification.jsx
-├── PreviewSection.jsx
-├── ProgressBar.jsx
-├── VideoPlayer.jsx
-└── WaveformViewer.jsx
+├── common/
+│   ├── AudioPlayer.jsx
+│   ├── Button.jsx
+│   ├── ErrorBoundary.jsx
+│   ├── FileDashboard.jsx
+│   ├── FileUploader.jsx
+│   ├── MediaPlayer.jsx
+│   ├── Messages.jsx
+│   ├── Notification.jsx
+│   ├── PreviewSection.jsx
+│   ├── ProgressBar.jsx
+│   ├── Tooltip.jsx
+│   ├── VideoPlayer.jsx
+│   └── WaveformViewer.jsx
+└── pages/
+    ├── Dashboard.jsx
+    ├── Settings.jsx
+    └── Upload.jsx
 ```
 
-## File: VideoPlayer.jsx
+## File: common/VideoPlayer.jsx
 
 ```jsx
 // src/components/common/VideoPlayer.jsx
-import React, { useRef } from 'react';
+import React, { useRef, useState } from 'react';
 import styled from 'styled-components';
 import PropTypes from 'prop-types';
 
@@ -29,6 +35,7 @@ const VideoPlayerContainer = styled.div`
   background-color: ${({ theme }) => theme.colors.background};
   border-radius: 10px;
   text-align: center;
+  position: relative;
 `;
 
 const Video = styled.video`
@@ -57,6 +64,10 @@ const Controls = styled.div`
       background-color: ${({ theme }) => theme.colors.secondary};
     }
   }
+
+  button.loop-active {
+    background-color: #e74c3c; /* Red color to indicate active loop */
+  }
 `;
 
 const CloseButton = styled.button`
@@ -84,6 +95,7 @@ function VideoPlayer({
   onClose 
 }) {
   const videoRef = useRef(null);
+  const [isLooping, setIsLooping] = useState(false);
 
   const handleError = (e) => {
     console.error('Video playback error:', e);
@@ -99,6 +111,13 @@ function VideoPlayer({
       } else if (videoRef.current.msRequestFullscreen) { /* IE11 */
         videoRef.current.msRequestFullscreen();
       }
+    }
+  };
+
+  const toggleLoop = () => {
+    setIsLooping(!isLooping);
+    if (videoRef.current) {
+      videoRef.current.loop = !isLooping;
     }
   };
 
@@ -121,10 +140,22 @@ function VideoPlayer({
       </Video>
 
       <Controls>
-        <button onClick={handleFullscreen}>Fullscreen</button>
+        <button 
+          onClick={handleFullscreen} 
+          aria-label="Enter Fullscreen Mode"
+        >
+          Fullscreen
+        </button>
+        <button 
+          onClick={toggleLoop} 
+          aria-label={isLooping ? 'Disable Loop' : 'Enable Loop'}
+          className={isLooping ? 'loop-active' : ''}
+        >
+          {isLooping ? 'Looping' : 'Loop'}
+        </button>
       </Controls>
 
-      <CloseButton onClick={onClose}>Close</CloseButton>
+      <CloseButton onClick={onClose} aria-label="Close Video Player">Close</CloseButton>
     </VideoPlayerContainer>
   );
 }
@@ -142,7 +173,7 @@ export default VideoPlayer;
 
 ```
 
-## File: PreviewSection.jsx
+## File: common/PreviewSection.jsx
 
 ```jsx
 // frontend/src/components/common/PreviewSection.jsx
@@ -209,7 +240,7 @@ export default PreviewSection;
 
 ```
 
-## File: FileUploader.jsx
+## File: common/FileUploader.jsx
 
 ```jsx
 // src/components/common/FileUploader.jsx
@@ -579,7 +610,7 @@ export default FileUploader;
 
 ```
 
-## File: ErrorBoundary.jsx
+## File: common/ErrorBoundary.jsx
 
 ```jsx
 // src/components/common/ErrorBoundary.jsx
@@ -626,16 +657,115 @@ export default ErrorBoundary;
 
 ```
 
-## File: MediaPlayer.jsx
+## File: common/MediaPlayer.jsx
 
 ```jsx
 // src/components/common/MediaPlayer.jsx
-import React from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import AudioPlayer from './AudioPlayer';
 import VideoPlayer from './VideoPlayer';
+import styled, { keyframes } from 'styled-components';
 import PropTypes from 'prop-types';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faForward, faBackward, faTimes } from '@fortawesome/free-solid-svg-icons';
+import { faPlay, faPause, faStop, faRedo, faVolumeUp, faVolumeMute } from '@fortawesome/free-solid-svg-icons';
+import FocusTrap from 'focus-trap-react';
 
-// MediaPlayer Component
+// Keyframes for fade-in animation
+const fadeIn = keyframes`
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+`;
+
+// Styled Components for Modal
+const ModalOverlay = styled.div`
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5); /* Semi-transparent background */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 2000; /* Above other elements */
+  animation: ${fadeIn} 0.3s ease-out;
+`;
+
+const ModalContent = styled.div`
+  background-color: ${({ theme }) => theme.colors.background};
+  padding: 20px;
+  border-radius: 10px;
+  width: 90%;
+  max-width: 800px;
+  position: relative;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  max-height: 90vh;
+  overflow-y: auto;
+
+  @media (max-width: 767px) {
+    padding: 15px;
+    width: 95%;
+    max-width: 100%;
+    border-radius: 0;
+    height: 100vh;
+    max-height: 100vh;
+  }
+`;
+
+const CloseIcon = styled(FontAwesomeIcon)`
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  cursor: pointer;
+  color: ${({ theme }) => theme.colors.error};
+  font-size: 1.5rem;
+
+  &:hover {
+    color: #c0392b;
+  }
+
+  @media (max-width: 767px) {
+    top: 10px;
+    right: 10px;
+    font-size: 1.2rem;
+  }
+`;
+
+const NavigationControls = styled.div`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 20px;
+
+  button {
+    margin: 0 15px;
+    padding: 8px 12px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    background-color: ${({ theme }) => theme.colors.primary};
+    color: white;
+    transition: background-color 0.2s ease;
+
+    &:hover {
+      background-color: ${({ theme }) => theme.colors.secondary};
+    }
+  }
+
+  @media (max-width: 767px) {
+    button {
+      padding: 6px 10px;
+      margin: 0 10px;
+    }
+  }
+`;
+
+// MediaPlayer Component as Modal
 function MediaPlayer({ 
   fileUrl, 
   fileName, 
@@ -646,30 +776,50 @@ function MediaPlayer({
   onNextTrack, 
   onPrevTrack 
 }) {
+  const closeButtonRef = useRef(null);
+
+  useEffect(() => {
+    if (closeButtonRef.current) {
+      closeButtonRef.current.focus();
+    }
+  }, []);
   return (
-    <>
-      {fileType && fileType.startsWith('audio/') ? (
-        <AudioPlayer
-          fileUrl={fileUrl}
-          fileName={fileName}
-          fileType={fileType}
-          fileSize={fileSize}
-          duration={duration}
-          onClose={onClose}
-          onNextTrack={onNextTrack}
-          onPrevTrack={onPrevTrack}
-        />
-      ) : (
-        <VideoPlayer
-          fileUrl={fileUrl}
-          fileName={fileName}
-          fileType={fileType}
-          fileSize={fileSize}
-          duration={duration}
-          onClose={onClose}
-        />
-      )}
-    </>
+    <ModalOverlay onClick={onClose} aria-modal="true" role="dialog">
+      <FocusTrap>
+        <ModalContent onClick={(e) => e.stopPropagation()}>
+          <CloseIcon icon={faTimes} onClick={onClose} aria-label="Close Media Player" ref={closeButtonRef} />
+          {fileType && fileType.startsWith('audio/') ? (
+            <AudioPlayer
+              fileUrl={fileUrl}
+              fileName={fileName}
+              fileType={fileType}
+              fileSize={fileSize}
+              duration={duration}
+              onClose={onClose}
+            />
+          ) : (
+            <VideoPlayer
+              fileUrl={fileUrl}
+              fileName={fileName}
+              fileType={fileType}
+              fileSize={fileSize}
+              duration={duration}
+              onClose={onClose}
+            />
+          )}
+
+          {/* Navigation Controls */}
+          <NavigationControls>
+            <button onClick={onPrevTrack} aria-label="Previous Track">
+              <FontAwesomeIcon icon={faBackward} /> Previous
+            </button>
+            <button onClick={onNextTrack} aria-label="Next Track">
+              Next <FontAwesomeIcon icon={faForward} />
+            </button>
+          </NavigationControls>
+        </ModalContent>
+      </FocusTrap>
+    </ModalOverlay>
   );
 }
 
@@ -688,7 +838,7 @@ export default MediaPlayer;
 
 ```
 
-## File: Button.jsx
+## File: common/Button.jsx
 
 ```jsx
 // frontend/src/components/common/Button.jsx
@@ -761,7 +911,7 @@ export default Button;
 
 ```
 
-## File: Notification.jsx
+## File: common/Notification.jsx
 
 ```jsx
 // frontend/src/components/common/Notification.jsx
@@ -814,7 +964,7 @@ export default Notification;
 
 ```
 
-## File: WaveformViewer.jsx
+## File: common/WaveformViewer.jsx
 
 ```jsx
 // src/components/common/WaveformViewer.jsx
@@ -899,7 +1049,7 @@ export default WaveformViewer;
 
 ```
 
-## File: Messages.jsx
+## File: common/Messages.jsx
 
 ```jsx
 // frontend/src/components/common/Messages.jsx
@@ -925,15 +1075,16 @@ ErrorMessage.propTypes = {
 
 ```
 
-## File: AudioPlayer.jsx
+## File: common/AudioPlayer.jsx
 
 ```jsx
+// src/components/common/AudioPlayer.jsx
 import React, { useEffect, useRef, useState } from 'react';
 import WaveSurfer from 'wavesurfer.js';
 import styled from 'styled-components';
 import PropTypes from 'prop-types';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faPlay, faPause, faStop, faForward, faBackward, faVolumeUp, faVolumeMute, faRedo } from '@fortawesome/free-solid-svg-icons';
+import { faPlay, faPause, faStop, faRedo, faVolumeUp, faVolumeMute } from '@fortawesome/free-solid-svg-icons';
 
 // Styled Components
 const AudioPlayerContainer = styled.div`
@@ -965,9 +1116,17 @@ const Controls = styled.div`
     }
   }
 
+  label {
+    display: flex;
+    align-items: center;
+    margin: 0 10px;
+    color: ${({ theme }) => theme.colors.text};
+    font-size: 14px;
+  }
+
   input[type="range"] {
     width: 100px;
-    margin: 0 10px;
+    margin-left: 5px;
   }
 `;
 
@@ -990,13 +1149,10 @@ const CloseButton = styled.button`
 function AudioPlayer({
   fileUrl,
   fileName,
+  fileType,
   fileSize,
-  duration = '',
+  duration = '', // Default value
   onClose,
-  onNextTrack,
-  onPrevTrack,
-  currentTrack,
-  setCurrentTrack
 }) {
   const waveformRef = useRef(null);
   const wavesurferRef = useRef(null);
@@ -1004,6 +1160,12 @@ function AudioPlayer({
   const [volume, setVolume] = useState(1);
   const [playbackRate, setPlaybackRate] = useState(1);
   const [loop, setLoop] = useState(false);
+  const loopRef = useRef(loop); // Ref to keep track of loop state
+
+  // Update loopRef whenever loop state changes
+  useEffect(() => {
+    loopRef.current = loop;
+  }, [loop]);
 
   useEffect(() => {
     wavesurferRef.current = WaveSurfer.create({
@@ -1025,7 +1187,7 @@ function AudioPlayer({
     wavesurferRef.current.on('pause', () => setIsPlaying(false));
     wavesurferRef.current.on('finish', () => {
       setIsPlaying(false);
-      if (loop) {
+      if (loopRef.current) {
         wavesurferRef.current.play();
       }
     });
@@ -1033,7 +1195,7 @@ function AudioPlayer({
     return () => {
       wavesurferRef.current.destroy();
     };
-  }, [fileUrl]); // Only re-run on fileUrl change
+  }, [fileUrl, volume, playbackRate]);
 
   const playPause = () => {
     wavesurferRef.current.playPause();
@@ -1067,19 +1229,13 @@ function AudioPlayer({
 
       <div id="waveform" ref={waveformRef}></div>
       <Controls>
-        <button onClick={onPrevTrack}>
-          <FontAwesomeIcon icon={faBackward} />
-        </button>
-        <button onClick={playPause}>
+        <button onClick={playPause} aria-label={isPlaying ? 'Pause' : 'Play'}>
           <FontAwesomeIcon icon={isPlaying ? faPause : faPlay} />
         </button>
-        <button onClick={onNextTrack}>
-          <FontAwesomeIcon icon={faForward} />
-        </button>
-        <button onClick={stop}>
+        <button onClick={stop} aria-label="Stop">
           <FontAwesomeIcon icon={faStop} />
         </button>
-        <button onClick={toggleLoop} style={{ backgroundColor: loop ? '#e74c3c' : '' }}>
+        <button onClick={toggleLoop} aria-label={loop ? 'Disable Loop' : 'Enable Loop'} style={{ backgroundColor: loop ? '#e74c3c' : '' }}>
           <FontAwesomeIcon icon={faRedo} />
         </button>
         <label>
@@ -1106,8 +1262,8 @@ function AudioPlayer({
             aria-label="Playback Speed Control"
           />
         </label>
-        <CloseButton onClick={onClose}>Close</CloseButton>
       </Controls>
+      <CloseButton onClick={onClose} aria-label="Close Audio Player">Close</CloseButton>
     </AudioPlayerContainer>
   );
 }
@@ -1115,18 +1271,75 @@ function AudioPlayer({
 AudioPlayer.propTypes = {
   fileUrl: PropTypes.string.isRequired,
   fileName: PropTypes.string.isRequired,
+  fileType: PropTypes.string.isRequired,
   fileSize: PropTypes.number.isRequired,
   duration: PropTypes.string,
   onClose: PropTypes.func.isRequired,
-  onNextTrack: PropTypes.func.isRequired,
-  onPrevTrack: PropTypes.func.isRequired,
 };
 
 export default AudioPlayer;
 
 ```
 
-## File: ProgressBar.jsx
+## File: common/Tooltip.jsx
+
+```jsx
+// src/components/common/Tooltip.jsx
+import React from 'react';
+import styled from 'styled-components';
+import PropTypes from 'prop-types';
+
+// Transient Prop: $text
+const TooltipWrapper = styled.div`
+  position: relative;
+  display: inline-block;
+
+  &:hover::after {
+    content: "${(props) => props.$text}";
+    position: absolute;
+    bottom: 125%; /* Position above the text */
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: ${({ theme }) => theme.colors.background};
+    color: ${({ theme }) => theme.colors.text};
+    padding: 5px 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    white-space: nowrap;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    z-index: 1001;
+    opacity: 0.9;
+    pointer-events: none; /* Prevent tooltip from interfering with hover */
+  }
+
+  &:hover::before {
+    content: "";
+    position: absolute;
+    bottom: 115%;
+    left: 50%;
+    transform: translateX(-50%);
+    border-width: 5px;
+    border-style: solid;
+    border-color: ${({ theme }) => theme.colors.background} transparent transparent transparent;
+    opacity: 0.9;
+    pointer-events: none;
+  }
+`;
+
+function Tooltip({ $text, children }) {
+  return <TooltipWrapper $text={$text}>{children}</TooltipWrapper>;
+}
+
+Tooltip.propTypes = {
+  $text: PropTypes.string.isRequired, // Updated to $text
+  children: PropTypes.node.isRequired,
+};
+
+export default Tooltip;
+
+```
+
+## File: common/ProgressBar.jsx
 
 ```jsx
 // frontend/src/components/common/ProgressBar.jsx
@@ -1187,15 +1400,17 @@ export default ProgressBar;
 
 ```
 
-## File: FileDashboard.jsx
+## File: common/FileDashboard.jsx
 
 ```jsx
 // src/components/common/FileDashboard.jsx
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import MediaPlayer from './MediaPlayer';
 import styled from 'styled-components';
 import PropTypes from 'prop-types';
+import Tooltip from './Tooltip'; // Import Tooltip component
 
+// Styled Components
 const DashboardContainer = styled.div`
   margin-top: 30px;
 `;
@@ -1211,6 +1426,7 @@ const FileGrid = styled.div`
 
   @media (max-width: 767px) {
     grid-template-columns: 1fr;
+    gap: 15px;
   }
 `;
 
@@ -1223,6 +1439,10 @@ const FileCard = styled.div`
   text-align: center;
   transition: transform 0.2s ease, box-shadow 0.3s ease;
   cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  height: 150px; /* Fixed height for consistency */
 
   &:hover {
     transform: translateY(-5px);
@@ -1234,27 +1454,49 @@ const FileCard = styled.div`
     color: ${({ theme }) => theme.colors.text};
     font-size: 16px;
     font-weight: 500;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  @media (max-width: 767px) {
+    padding: 15px;
+    height: auto;
+
+    p {
+      font-size: 14px;
+    }
   }
 `;
 
 function FileDashboard({ uploadedFiles }) {
-  const [currentFile, setCurrentFile] = useState(null);
+  const [currentIndex, setCurrentIndex] = useState(null);
+  const triggerRef = useRef(null);
 
-  const selectFile = (file) => {
-    const fullPath = file.path.startsWith('/static/uploads')
-      ? `${window.location.origin}${file.path}`
-      : file.path;
-    setCurrentFile({ 
-      fileUrl: fullPath, 
-      fileName: file.filename, 
-      fileSize: file.size, 
-      duration: file.duration, 
-      fileType: file.type // Ensure this is the correct MIME type
-    });
+  const selectFile = (index, event) => {
+    triggerRef.current = event.currentTarget;
+    setCurrentIndex(index);
   };
 
   const closeMediaPlayer = () => {
-    setCurrentFile(null);
+    setCurrentIndex(null);
+    if (triggerRef.current) {
+      triggerRef.current.focus();
+    }
+  };
+
+  const handleNextTrack = () => {
+    setCurrentIndex((prevIndex) => {
+      if (prevIndex === null) return 0;
+      return (prevIndex + 1) % uploadedFiles.length;
+    });
+  };
+
+  const handlePrevTrack = () => {
+    setCurrentIndex((prevIndex) => {
+      if (prevIndex === null) return uploadedFiles.length - 1;
+      return (prevIndex - 1 + uploadedFiles.length) % uploadedFiles.length;
+    });
   };
 
   return (
@@ -1263,22 +1505,40 @@ function FileDashboard({ uploadedFiles }) {
       <FileGrid>
         {uploadedFiles.length > 0 ? (
           uploadedFiles.map((file, index) => (
-            <FileCard key={index} onClick={() => selectFile(file)}>
-              <p>{file.filename}</p>
+            <FileCard 
+              key={index} 
+              onClick={(e) => selectFile(index, e)} 
+              tabIndex="0" 
+              onKeyPress={(e) => {
+                if (e.key === 'Enter') selectFile(index, e);
+              }}
+              aria-label={`Play ${file.filename}`}
+            >
+              <Tooltip $text={file.filename}> {/* Corrected to use $text */}
+                <p>{file.filename}</p>
+              </Tooltip>
+              <p>{(file.size / (1024 * 1024)).toFixed(2)} MB</p>
+              {/* Add more details if necessary */}
             </FileCard>
           ))
         ) : (
           <p>No files uploaded yet.</p>
         )}
       </FileGrid>
-      {currentFile && (
+      {currentIndex !== null && (
         <MediaPlayer
-          fileUrl={currentFile.fileUrl}
-          fileName={currentFile.fileName}
-          fileType={currentFile.fileType}
-          fileSize={currentFile.fileSize}
-          duration={currentFile.duration}
+          fileUrl={
+            uploadedFiles[currentIndex].path.startsWith('/static/uploads') 
+              ? `${window.location.origin}${uploadedFiles[currentIndex].path}` 
+              : uploadedFiles[currentIndex].path
+          }
+          fileName={uploadedFiles[currentIndex].filename}
+          fileType={uploadedFiles[currentIndex].type}
+          fileSize={uploadedFiles[currentIndex].size}
+          duration={uploadedFiles[currentIndex].duration}
           onClose={closeMediaPlayer}
+          onNextTrack={handleNextTrack}
+          onPrevTrack={handlePrevTrack}
         />
       )}
     </DashboardContainer>
@@ -1298,6 +1558,206 @@ FileDashboard.propTypes = {
 };
 
 export default FileDashboard;
+
+```
+
+## File: pages/Upload.jsx
+
+```jsx
+import React, { useState } from 'react';
+import styled from 'styled-components';
+import FileUploader from '../common/FileUploader';
+import Notification from '../common/Notification';
+
+const UploadContainer = styled.div`
+  padding: 20px;
+`;
+
+function Upload() {
+  const [notification, setNotification] = useState({ message: '', type: 'success' });
+  const [uploadedFiles, setUploadedFiles] = useState([]);
+
+  return (
+    <UploadContainer>
+      <h1>Upload Files</h1>
+      {notification.message && (
+        <Notification 
+          message={notification.message} 
+          type={notification.type} 
+          onClose={() => setNotification({ message: '', type: 'success' })} 
+        />
+      )}
+      <FileUploader 
+        setUploadedFiles={setUploadedFiles} 
+        setNotification={setNotification} 
+      />
+      {/* Optionally, display uploaded files after upload */}
+      {uploadedFiles.length > 0 && (
+        <div>
+          <h2>Uploaded Files:</h2>
+          <ul>
+            {uploadedFiles.map((file, index) => (
+              <li key={index}>{file.filename}</li>
+            ))}
+          </ul>
+        </div>
+      )}
+    </UploadContainer>
+  );
+}
+
+export default Upload;
+
+```
+
+## File: pages/Dashboard.jsx
+
+```jsx
+import React, { useEffect, useState } from 'react';
+import styled from 'styled-components';
+import FileDashboard from '../common/FileDashboard';
+import Notification from '../common/Notification';
+
+const DashboardContainer = styled.div`
+  padding: 20px;
+`;
+
+function Dashboard() {
+  const [uploadedFiles, setUploadedFiles] = useState([]);
+  const [notification, setNotification] = useState({ message: '', type: 'success' });
+
+  useEffect(() => {
+    fetch('/api/file_history')
+      .then((response) => response.json())
+      .then((data) => {
+        if (data.files) {
+          setUploadedFiles(data.files);
+        }
+      })
+      .catch((error) => {
+        console.error('Error fetching file history:', error);
+        setNotification({ message: 'Failed to fetch file history.', type: 'error' });
+      });
+  }, []);
+
+  return (
+    <DashboardContainer>
+      <h1>Dashboard</h1>
+      {notification.message && (
+        <Notification 
+          message={notification.message} 
+          type={notification.type} 
+          onClose={() => setNotification({ message: '', type: 'success' })} 
+        />
+      )}
+      <FileDashboard uploadedFiles={uploadedFiles} />
+    </DashboardContainer>
+  );
+}
+
+export default Dashboard;
+
+```
+
+## File: pages/Settings.jsx
+
+```jsx
+import React, { useState } from 'react';
+import styled from 'styled-components';
+import Notification from '../common/Notification';
+import Button from '../common/Button';
+
+const SettingsContainer = styled.div`
+  padding: 20px;
+`;
+
+const SettingsForm = styled.form`
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+`;
+
+const Label = styled.label`
+  font-size: ${({ theme }) => theme.fontSizes.body};
+  color: ${({ theme }) => theme.colors.text};
+`;
+
+const Input = styled.input`
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: ${({ theme }) => theme.fontSizes.body};
+  font-family: ${({ theme }) => theme.fonts.primary};
+
+  &:focus {
+    border-color: ${({ theme }) => theme.colors.primary};
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(30, 144, 255, 0.2);
+  }
+`;
+
+function Settings() {
+  const [notification, setNotification] = useState({ message: '', type: 'success' });
+  const [settings, setSettings] = useState({
+    username: '',
+    email: '',
+  });
+
+  const handleChange = (e) => {
+    setSettings({
+      ...settings,
+      [e.target.name]: e.target.value,
+    });
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    // Implement settings update logic here
+    setNotification({ message: 'Settings updated successfully!', type: 'success' });
+  };
+
+  return (
+    <SettingsContainer>
+      <h1>Settings</h1>
+      {notification.message && (
+        <Notification 
+          message={notification.message} 
+          type={notification.type} 
+          onClose={() => setNotification({ message: '', type: 'success' })} 
+        />
+      )}
+      <SettingsForm onSubmit={handleSubmit}>
+        <div>
+          <Label htmlFor="username">Username</Label>
+          <Input 
+            type="text" 
+            id="username" 
+            name="username" 
+            value={settings.username} 
+            onChange={handleChange} 
+            required 
+          />
+        </div>
+        <div>
+          <Label htmlFor="email">Email</Label>
+          <Input 
+            type="email" 
+            id="email" 
+            name="email" 
+            value={settings.email} 
+            onChange={handleChange} 
+            required 
+          />
+        </div>
+        <Button variant="primary" type="submit">
+          Save Settings
+        </Button>
+      </SettingsForm>
+    </SettingsContainer>
+  );
+}
+
+export default Settings;
 
 ```
 
