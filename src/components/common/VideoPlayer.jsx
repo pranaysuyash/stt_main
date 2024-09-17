@@ -1,5 +1,5 @@
 // src/components/common/VideoPlayer.jsx
-import React, { useRef } from 'react';
+import React, { useRef, useState } from 'react';
 import styled from 'styled-components';
 import PropTypes from 'prop-types';
 
@@ -10,6 +10,7 @@ const VideoPlayerContainer = styled.div`
   background-color: ${({ theme }) => theme.colors.background};
   border-radius: 10px;
   text-align: center;
+  position: relative;
 `;
 
 const Video = styled.video`
@@ -38,6 +39,10 @@ const Controls = styled.div`
       background-color: ${({ theme }) => theme.colors.secondary};
     }
   }
+
+  button.loop-active {
+    background-color: #e74c3c; /* Red color to indicate active loop */
+  }
 `;
 
 const CloseButton = styled.button`
@@ -65,6 +70,7 @@ function VideoPlayer({
   onClose 
 }) {
   const videoRef = useRef(null);
+  const [isLooping, setIsLooping] = useState(false);
 
   const handleError = (e) => {
     console.error('Video playback error:', e);
@@ -80,6 +86,13 @@ function VideoPlayer({
       } else if (videoRef.current.msRequestFullscreen) { /* IE11 */
         videoRef.current.msRequestFullscreen();
       }
+    }
+  };
+
+  const toggleLoop = () => {
+    setIsLooping(!isLooping);
+    if (videoRef.current) {
+      videoRef.current.loop = !isLooping;
     }
   };
 
@@ -102,10 +115,22 @@ function VideoPlayer({
       </Video>
 
       <Controls>
-        <button onClick={handleFullscreen}>Fullscreen</button>
+        <button 
+          onClick={handleFullscreen} 
+          aria-label="Enter Fullscreen Mode"
+        >
+          Fullscreen
+        </button>
+        <button 
+          onClick={toggleLoop} 
+          aria-label={isLooping ? 'Disable Loop' : 'Enable Loop'}
+          className={isLooping ? 'loop-active' : ''}
+        >
+          {isLooping ? 'Looping' : 'Loop'}
+        </button>
       </Controls>
 
-      <CloseButton onClick={onClose}>Close</CloseButton>
+      <CloseButton onClick={onClose} aria-label="Close Video Player">Close</CloseButton>
     </VideoPlayerContainer>
   );
 }

@@ -1,0 +1,1303 @@
+Directory Structure:
+```
+├── AudioPlayer.jsx
+├── Button.jsx
+├── ErrorBoundary.jsx
+├── FileDashboard.jsx
+├── FileUploader.jsx
+├── MediaPlayer.jsx
+├── Messages.jsx
+├── Notification.jsx
+├── PreviewSection.jsx
+├── ProgressBar.jsx
+├── VideoPlayer.jsx
+└── WaveformViewer.jsx
+```
+
+## File: VideoPlayer.jsx
+
+```jsx
+// src/components/common/VideoPlayer.jsx
+import React, { useRef } from 'react';
+import styled from 'styled-components';
+import PropTypes from 'prop-types';
+
+// Styled Components
+const VideoPlayerContainer = styled.div`
+  margin-top: 30px;
+  padding: 20px;
+  background-color: ${({ theme }) => theme.colors.background};
+  border-radius: 10px;
+  text-align: center;
+`;
+
+const Video = styled.video`
+  width: 100%;
+  max-width: 800px;
+  border-radius: 5px;
+`;
+
+const Controls = styled.div`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 15px;
+
+  button {
+    margin: 0 10px;
+    padding: 8px 12px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    background-color: ${({ theme }) => theme.colors.primary};
+    color: white;
+    transition: background-color 0.2s ease;
+
+    &:hover {
+      background-color: ${({ theme }) => theme.colors.secondary};
+    }
+  }
+`;
+
+const CloseButton = styled.button`
+  margin-top: 15px;
+  background-color: ${({ theme }) => theme.colors.error};
+  border: none;
+  color: white;
+  padding: 8px 15px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+
+  &:hover {
+    background-color: #c0392b;
+  }
+`;
+
+// VideoPlayer Component
+function VideoPlayer({ 
+  fileUrl, 
+  fileName, 
+  fileType, 
+  fileSize, 
+  duration = '', // Default value
+  onClose 
+}) {
+  const videoRef = useRef(null);
+
+  const handleError = (e) => {
+    console.error('Video playback error:', e);
+    onClose(); // Close the media player on error
+  };
+
+  const handleFullscreen = () => {
+    if (videoRef.current) {
+      if (videoRef.current.requestFullscreen) {
+        videoRef.current.requestFullscreen();
+      } else if (videoRef.current.webkitRequestFullscreen) { /* Safari */
+        videoRef.current.webkitRequestFullscreen();
+      } else if (videoRef.current.msRequestFullscreen) { /* IE11 */
+        videoRef.current.msRequestFullscreen();
+      }
+    }
+  };
+
+  return (
+    <VideoPlayerContainer>
+      <h3>Now Playing: {fileName}</h3>
+      {fileSize && (
+        <p>File Size: {(fileSize / (1024 * 1024)).toFixed(2)} MB</p>
+      )}
+      {duration && <p>Duration: {duration}</p>}
+
+      <Video
+        ref={videoRef}
+        src={fileUrl}
+        controls
+        onError={handleError}
+        aria-label={`Video player for ${fileName}`}
+      >
+        Your browser does not support the video tag.
+      </Video>
+
+      <Controls>
+        <button onClick={handleFullscreen}>Fullscreen</button>
+      </Controls>
+
+      <CloseButton onClick={onClose}>Close</CloseButton>
+    </VideoPlayerContainer>
+  );
+}
+
+VideoPlayer.propTypes = {
+  fileUrl: PropTypes.string.isRequired,
+  fileName: PropTypes.string.isRequired,
+  fileType: PropTypes.string.isRequired,
+  fileSize: PropTypes.number.isRequired,
+  duration: PropTypes.string,
+  onClose: PropTypes.func.isRequired,
+};
+
+export default VideoPlayer;
+
+```
+
+## File: PreviewSection.jsx
+
+```jsx
+// frontend/src/components/common/PreviewSection.jsx
+import React from 'react';
+import styled from 'styled-components';
+import PropTypes from 'prop-types';
+
+const PreviewContainer = styled.div`
+  margin-top: 20px;
+`;
+
+const PreviewItem = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background-color: ${({ theme }) => theme.colors.background};
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  margin-bottom: 10px;
+`;
+
+const FileInfo = styled.div`
+  display: flex;
+  flex-direction: column;
+`;
+
+const RemoveButton = styled.button`
+  background-color: ${({ theme }) => theme.colors.error};
+  border: none;
+  color: white;
+  padding: 5px 10px;
+  border-radius: 3px;
+  cursor: pointer;
+
+  &:hover {
+    background-color: #c0392b;
+  }
+`;
+
+function PreviewSection({ selectedFiles, removeFile }) {
+  return (
+    <PreviewContainer>
+      <h3>Selected Files</h3>
+      {selectedFiles.map((file, index) => (
+        <PreviewItem key={index}>
+          <FileInfo>
+            <span><strong>{file.name}</strong></span>
+            <span>{(file.size / (1024 * 1024)).toFixed(2)} MB</span>
+          </FileInfo>
+          <RemoveButton onClick={() => removeFile(index)}>Remove</RemoveButton>
+        </PreviewItem>
+      ))}
+    </PreviewContainer>
+  );
+}
+
+PreviewSection.propTypes = {
+  selectedFiles: PropTypes.arrayOf(PropTypes.object).isRequired,
+  removeFile: PropTypes.func.isRequired,
+};
+
+export default PreviewSection;
+
+```
+
+## File: FileUploader.jsx
+
+```jsx
+// src/components/common/FileUploader.jsx
+import React, { useState, useRef } from 'react';
+import styled from 'styled-components';
+import PreviewSection from './PreviewSection';
+import ProgressBar from './ProgressBar';
+import Button from './Button'; // Ensure this component exists
+import { faUpload } from '@fortawesome/free-solid-svg-icons';
+import PropTypes from 'prop-types';
+import { ErrorMessage } from './Messages'; // Import only ErrorMessage
+
+const UploadSection = styled.div`
+  margin-top: 20px;
+`;
+
+const OverwritePrompt = styled.div`
+  background-color: ${({ theme }) => theme.colors.background};
+  padding: 15px;
+  border: 1px solid ${({ theme }) => theme.colors.warning};
+  border-radius: 5px;
+  margin-top: 20px;
+  
+  p {
+    margin-bottom: 15px;
+    color: ${({ theme }) => theme.colors.text};
+    font-size: ${({ theme }) => theme.fontSizes.body};
+  }
+`;
+
+// New styled component for button container
+const OverwriteButtons = styled.div`
+  display: flex;
+  justify-content: center;
+  gap: 10px; /* Space between buttons */
+  
+  button {
+    flex: 1; /* Ensure both buttons take equal space */
+  }
+`;
+
+const DropZone = styled.div`
+  border: 2px dashed #bbb;
+  border-radius: 12px;
+  background-color: ${({ theme }) => theme.colors.neutral};
+  padding: 40px;
+  text-align: center;
+  transition: background-color 0.3s ease, box-shadow 0.2s ease;
+  cursor: pointer;
+
+  &:hover, &.drag-over {
+    background-color: ${({ theme }) => theme.colors.background};
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  }
+
+  i {
+    font-size: 50px;
+    color: ${({ theme }) => theme.colors.primary};
+    margin-bottom: 10px;
+  }
+
+  p {
+    color: ${({ theme }) => theme.colors.text};
+    font-size: ${({ theme }) => theme.fontSizes.body};
+  }
+`;
+
+function FileUploader({ setUploadedFiles, setNotification }) {
+  const [selectedFiles, setSelectedFiles] = useState([]);
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [errorMessages, setErrorMessages] = useState([]); // Changed to array
+  const [isUploading, setIsUploading] = useState(false);
+  const [overwritePrompt, setOverwritePrompt] = useState(false);
+  const [overwriteFile, setOverwriteFile] = useState(null);
+  const fileInputRef = useRef(null);
+
+  // Handle file selection from input or drag-and-drop
+  const handleFiles = (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+
+    setErrorMessages([]);
+    setNotification({ message: '', type: '' });
+
+    let files;
+    if (event.type === 'drop') {
+      files = event.dataTransfer.files;
+    } else {
+      files = event.target.files;
+    }
+
+    if (files.length === 0) {
+      setErrorMessages(['No files selected.']);
+      return;
+    }
+
+    const allowedMimeTypes = [
+      'audio/mpeg',
+      'audio/wav',
+      'video/mp4',
+      'video/x-msvideo',
+      'video/quicktime' // Include quicktime to allow .mov files
+    ];
+
+    const invalidTypeFiles = Array.from(files).filter(
+      file => !allowedMimeTypes.includes(file.type)
+    );
+
+    const oversizedFiles = Array.from(files).filter(
+      file => file.size > 200 * 1024 * 1024 // 200MB
+    );
+
+    let newErrorMessages = [];
+
+    if (invalidTypeFiles.length > 0) {
+      newErrorMessages.push(`Unsupported file types: ${invalidTypeFiles.map(f => f.name).join(', ')}`);
+    }
+
+    if (oversizedFiles.length > 0) {
+      newErrorMessages.push(`Files too large (max 200MB): ${oversizedFiles.map(f => f.name).join(', ')}`);
+    }
+
+    if (newErrorMessages.length > 0) {
+      setErrorMessages(newErrorMessages);
+      return;
+    }
+
+    setSelectedFiles((prevFiles) => [...prevFiles, ...Array.from(files)]);
+  };
+
+  // Prevent default behavior in drag events
+  const handleDragOver = (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+  };
+
+  const handleDrop = (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+    handleFiles(event);
+  };
+
+  // Check if the file already exists
+  const checkFileExists = async (fileName) => {
+    try {
+      const response = await fetch(`/api/file_exists?filename=${encodeURIComponent(fileName)}`);
+      const data = await response.json();
+      return data.exists;
+    } catch (error) {
+      console.error('Error checking file existence:', error);
+      return false;
+    }
+  };
+
+  // Handle file upload to the server
+  const uploadFiles = async () => {
+    if (selectedFiles.length === 0) {
+      setErrorMessages(['Please select files to upload.']);
+      return;
+    }
+
+    const fileExists = await checkFileExists(selectedFiles[0].name);
+
+    if (fileExists) {
+      setOverwritePrompt(true);
+      setOverwriteFile(selectedFiles[0].name);
+      return;
+    }
+
+    handleUpload(selectedFiles);
+  };
+
+  const handleUpload = async(files) => {
+    setIsUploading(true);
+    setUploadProgress(0);
+    setErrorMessages([]);
+
+    const formData = new FormData();
+    files.forEach((file) => {
+      formData.append('file', file);
+    });
+
+  //   const xhr = new XMLHttpRequest();
+
+  //   xhr.upload.addEventListener('progress', (event) => {
+  //     if (event.lengthComputable) {
+  //       const percentComplete = Math.round((event.loaded / event.total) * 100);
+  //       setUploadProgress(percentComplete);
+  //     }
+  //   });
+
+  //   xhr.onreadystatechange = () => {
+  //     if (xhr.readyState === 4) {
+  //       setIsUploading(false);
+  //       setUploadProgress(0);
+
+  //       if (xhr.status === 200 || xhr.status === 207) {
+  //         const response = JSON.parse(xhr.responseText);
+  //         if (response.uploaded_files) {
+  //           setNotification({ message: 'Files uploaded successfully!', type: 'success' });
+  //         }
+  //         if (response.errors) {
+  //           const newErrors = response.errors.map(err => `${err.filename}: ${err.error}`);
+  //           setErrorMessages(newErrors);
+  //         }
+  //         setSelectedFiles([]);
+  //         fetch('/api/file_history')
+  //           .then((res) => res.json())
+  //           .then((data) => {
+  //             if (data.files) {
+  //               setUploadedFiles(data.files);
+  //             }
+  //           })
+  //           .catch((error) => console.error('Error fetching files:', error));
+  //       } else if (xhr.status === 413) {
+  //         const response = JSON.parse(xhr.responseText);
+  //         setErrorMessages([`${response.error}: ${response.message}`]);
+  //       } else {
+  //         setNotification({ message: 'Error uploading files. Please try again.', type: 'error' });
+  //         console.error('Error uploading files:', xhr.responseText);
+  //       }
+  //     }
+  //   };
+
+  //   xhr.open('POST', '/upload');
+  //   xhr.send(formData);
+  // };
+
+  try {
+    const response = await fetch('/upload', {
+      method: 'POST',
+      body: formData,
+    });
+
+    // Calculate upload progress manually since fetch doesn't provide progress updates
+    // For more advanced progress tracking, consider using Axios
+
+    const data = await response.json();
+
+    if (response.ok || response.status === 207) {
+      if (data.uploaded_files) {
+        setNotification({ message: 'Files uploaded successfully!', type: 'success' });
+      }
+      if (data.errors) {
+        const newErrors = data.errors.map(err => `${err.filename}: ${err.error}`);
+        setErrorMessages(newErrors);
+      }
+      setSelectedFiles([]);
+      const historyResponse = await fetch('/api/file_history');
+      const historyData = await historyResponse.json();
+      if (historyData.files) {
+        setUploadedFiles(historyData.files);
+      }
+    } else if (response.status === 413) {
+      const errorData = await response.json();
+      setErrorMessages([`${errorData.error}: ${errorData.message}`]);
+    } else {
+      setNotification({ message: 'Error uploading files. Please try again.', type: 'error' });
+      console.error('Error uploading files:', data);
+    }
+  } catch (error) {
+    setNotification({ message: 'Network error during file upload.', type: 'error' });
+    console.error('Network error:', error);
+  } finally {
+    setIsUploading(false);
+    setUploadProgress(0);
+  }
+};
+
+  // Remove selected files
+  const removeFile = (index) => {
+    setSelectedFiles((prevFiles) => prevFiles.filter((_, i) => i !== index));
+  };
+
+  return (
+    <UploadSection>
+      {/* Drop zone for files */}
+      <DropZone
+        role="button"
+        aria-label="File Upload Zone"
+        onDragOver={handleDragOver}
+        onDragEnter={handleDragOver}
+        onDragLeave={handleDragOver}
+        onDrop={handleDrop}
+        onClick={() => fileInputRef.current.click()}
+        className={isUploading ? 'disabled' : ''}
+      >
+        <i className="fas fa-cloud-upload-alt"></i>
+        <p>Click here or drag and drop audio or video files (max 200MB)</p>
+        <input
+          type="file"
+          id="file-input"
+          accept="audio/*,video/*"
+          multiple
+          style={{ display: 'none' }}
+          onChange={handleFiles}
+          ref={fileInputRef}
+        />
+      </DropZone>
+
+      {/* Display selected files */}
+      {selectedFiles.length > 0 && (
+        <>
+          <PreviewSection
+            selectedFiles={selectedFiles}
+            removeFile={removeFile}
+          />
+          <Button
+            variant="primary"
+            icon={faUpload}
+            onClick={uploadFiles}
+            disabled={isUploading}
+            aria-label={isUploading ? 'Uploading files' : 'Upload Files'}
+          >
+            {isUploading ? 'Uploading...' : 'Upload Files'}
+          </Button>
+          <ProgressBar progress={uploadProgress} />
+        </>
+      )}
+
+      {/* Display error messages */}
+      {errorMessages.length > 0 && (
+        <ErrorMessage>
+          {errorMessages.map((msg, index) => (
+            <p key={index}>{msg}</p>
+          ))}
+        </ErrorMessage>
+      )}
+
+      {/* Overwrite Prompt */}
+      {overwritePrompt && (
+        <OverwritePrompt>
+          <p>File "{overwriteFile}" already exists. Do you want to overwrite it?</p>
+          <OverwriteButtons>
+            <Button
+              variant="secondary"
+              customColor="#2ecc71" /* Complimentary green for "Yes" button */
+              onClick={() => {
+                handleUpload(selectedFiles);
+                setOverwritePrompt(false);
+              }}
+              aria-label="Yes, overwrite the existing file"
+            >
+              Yes
+            </Button>
+            <Button
+              variant="secondary" /* Changed from 'tertiary' to 'secondary' for consistent styling */
+              customColor="#e74c3c" /* Custom red color for "No" button */
+              onClick={() => setOverwritePrompt(false)}
+              aria-label="No, cancel the upload"
+            >
+              No
+            </Button>
+          </OverwriteButtons>
+        </OverwritePrompt>
+      )}
+    </UploadSection>
+  );
+}
+
+FileUploader.propTypes = {
+  setUploadedFiles: PropTypes.func.isRequired,
+  setNotification: PropTypes.func.isRequired,
+};
+
+export default FileUploader;
+
+```
+
+## File: ErrorBoundary.jsx
+
+```jsx
+// src/components/common/ErrorBoundary.jsx
+import React from 'react';
+import PropTypes from 'prop-types';
+import styled from 'styled-components';
+
+const FallbackContainer = styled.div`
+  padding: 20px;
+  background-color: ${({ theme }) => theme.colors.error};
+  color: white;
+  border-radius: 5px;
+  text-align: center;
+`;
+
+class ErrorBoundary extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { hasError: false };
+  }
+
+  static getDerivedStateFromError(error) {
+    return { hasError: true };
+  }
+
+  componentDidCatch(error, errorInfo) {
+    console.error('Error Boundary Caught an error:', error, errorInfo);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return <FallbackContainer>Something went wrong.</FallbackContainer>;
+    }
+
+    return this.props.children; 
+  }
+}
+
+ErrorBoundary.propTypes = {
+  children: PropTypes.node.isRequired,
+};
+
+export default ErrorBoundary;
+
+```
+
+## File: MediaPlayer.jsx
+
+```jsx
+// src/components/common/MediaPlayer.jsx
+import React from 'react';
+import AudioPlayer from './AudioPlayer';
+import VideoPlayer from './VideoPlayer';
+import PropTypes from 'prop-types';
+
+// MediaPlayer Component
+function MediaPlayer({ 
+  fileUrl, 
+  fileName, 
+  fileType, 
+  fileSize, 
+  duration = '', // Default value
+  onClose, 
+  onNextTrack, 
+  onPrevTrack 
+}) {
+  return (
+    <>
+      {fileType && fileType.startsWith('audio/') ? (
+        <AudioPlayer
+          fileUrl={fileUrl}
+          fileName={fileName}
+          fileType={fileType}
+          fileSize={fileSize}
+          duration={duration}
+          onClose={onClose}
+          onNextTrack={onNextTrack}
+          onPrevTrack={onPrevTrack}
+        />
+      ) : (
+        <VideoPlayer
+          fileUrl={fileUrl}
+          fileName={fileName}
+          fileType={fileType}
+          fileSize={fileSize}
+          duration={duration}
+          onClose={onClose}
+        />
+      )}
+    </>
+  );
+}
+
+MediaPlayer.propTypes = {
+  fileUrl: PropTypes.string.isRequired,
+  fileName: PropTypes.string.isRequired,
+  fileType: PropTypes.string.isRequired,
+  fileSize: PropTypes.number.isRequired,
+  duration: PropTypes.string,
+  onClose: PropTypes.func.isRequired,
+  onNextTrack: PropTypes.func.isRequired,
+  onPrevTrack: PropTypes.func.isRequired,
+};
+
+export default MediaPlayer;
+
+```
+
+## File: Button.jsx
+
+```jsx
+// frontend/src/components/common/Button.jsx
+import React from 'react';
+import PropTypes from 'prop-types';
+import styled from 'styled-components';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+
+const ButtonStyled = styled.button`
+  padding: 10px 20px;
+  border: none;
+  border-radius: 4px;
+  font-size: ${({ theme }) => theme.fontSizes.body};
+  cursor: pointer;
+  background-color: ${({ $variant,$customColor, theme }) =>
+    $customColor ? $customColor :
+    $variant === 'primary' ? theme.colors.primary :
+    $variant === 'secondary' ? theme.colors.secondary :
+    theme.colors.neutral};
+  color: ${({ $variant, $customColor }) =>
+    $variant === 'tertiary' ? theme.colors.text : '#fff'};
+  
+  display: flex;
+  align-items: center;
+    justify-content: center;
+
+  
+  &:hover {
+    opacity: 0.9;
+  }
+
+  &:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+  }
+
+  /* Focus Styles */
+  &:focus {
+    outline: 2px solid ${({ theme }) => theme.colors.primary};
+    outline-offset: 2px;
+  }
+`;
+
+const Button = ({ 
+  variant = 'primary', 
+  children, 
+  onClick = () => {}, 
+  disabled = false, 
+  icon = null, 
+  type = 'button',
+  customColor = null // New prop for custom background color
+}) => (
+  <ButtonStyled variant={variant} onClick={onClick} disabled={disabled} type={type} customColor={customColor} aria-label={typeof children === "string" ? children : undefined}>
+    {icon && <FontAwesomeIcon icon={icon} style={{ marginRight: '8px' }} />}
+    {children}
+  </ButtonStyled>
+);
+
+Button.propTypes = {
+  variant: PropTypes.oneOf(['primary', 'secondary', 'tertiary']),
+  children: PropTypes.node.isRequired,
+  onClick: PropTypes.func,
+  disabled: PropTypes.bool,
+  icon: PropTypes.object, // FontAwesomeIcon expects an icon object
+  type: PropTypes.oneOf(['button', 'submit', 'reset']),
+  customColor: PropTypes.string, // New prop type
+};
+
+export default Button;
+
+```
+
+## File: Notification.jsx
+
+```jsx
+// frontend/src/components/common/Notification.jsx
+import React from 'react';
+import styled from 'styled-components';
+import PropTypes from 'prop-types';
+import { faTimes } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+
+const NotificationContainer = styled.div`
+  background-color: ${({ $type, theme }) => 
+    $type === 'success' ? theme.colors.success :
+    $type === 'error' ? theme.colors.error :
+    theme.colors.warning};
+  color: white;
+  padding: 15px 20px;
+  border-radius: 5px;
+  position: relative;
+  margin-top: 20px;
+`;
+
+const CloseButton = styled.button`
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: transparent;
+  border: none;
+  color: white;
+  cursor: pointer;
+`;
+
+function Notification({ message, type = 'success', onClose }) {
+  return (
+    <NotificationContainer $type={type} role="alert" aria-live="assertive">
+      <span>{message}</span>
+      <CloseButton onClick={onClose} aria-label="Close Notification">
+        <FontAwesomeIcon icon={faTimes} />
+      </CloseButton>
+    </NotificationContainer>
+  );
+}
+
+Notification.propTypes = {
+  message: PropTypes.string.isRequired,
+  type: PropTypes.oneOf(['success', 'error', 'warning']),
+  onClose: PropTypes.func.isRequired,
+};
+
+export default Notification;
+
+```
+
+## File: WaveformViewer.jsx
+
+```jsx
+// src/components/common/WaveformViewer.jsx
+import React, { useEffect, useRef } from 'react';
+import WaveSurfer from 'wavesurfer.js';
+import styled from 'styled-components';
+
+const WaveformViewerContainer = styled.div`
+  margin-top: 20px;
+  background-color: ${({ theme }) => theme.colors.neutral};
+  padding: 20px;
+  border-radius: 10px;
+`;
+
+const Waveform = styled.div`
+  width: 100%;
+  height: 150px;
+`;
+
+function WaveformViewer({ fileUrl }) {
+  const waveformRef = useRef(null);
+  const wavesurferRef = useRef(null);
+  const resizeTimeout = useRef(null);
+
+  useEffect(() => {
+    if (waveformRef.current && fileUrl) {
+      wavesurferRef.current = WaveSurfer.create({
+        container: waveformRef.current,
+        waveColor: '#D9DCFF',
+        progressColor: '#4353FF',
+        cursorColor: '#4353FF',
+        responsive: true,
+        height: 150,
+        barWidth: 2,
+        barRadius: 3,
+        backend: 'WebAudio',
+      });
+
+      wavesurferRef.current.load(fileUrl);
+
+      // Handle errors
+      wavesurferRef.current.on('error', (error) => {
+        console.error('WaveSurfer error:', error);
+      });
+
+      // Debounced resize handler
+      const handleResize = () => {
+        clearTimeout(resizeTimeout.current);
+        resizeTimeout.current = setTimeout(() => {
+          if (wavesurferRef.current) {
+            wavesurferRef.current.empty();
+            wavesurferRef.current.drawBuffer();
+          }
+        }, 300);
+      };
+
+      window.addEventListener('resize', handleResize);
+
+      return () => {
+        window.removeEventListener('resize', handleResize);
+        clearTimeout(resizeTimeout.current);
+        if (wavesurferRef.current) {
+          wavesurferRef.current.destroy();
+        }
+      };
+    }
+  }, [fileUrl]);
+
+  return (
+    <WaveformViewerContainer>
+      <h3>Waveform Preview</h3>
+      <Waveform id="waveform-viewer" ref={waveformRef} aria-label="Audio waveform visualization"></Waveform>
+    </WaveformViewerContainer>
+  );
+}
+
+WaveformViewer.propTypes = {
+  fileUrl: PropTypes.string.isRequired,
+};
+
+export default WaveformViewer;
+
+```
+
+## File: Messages.jsx
+
+```jsx
+// frontend/src/components/common/Messages.jsx
+import styled from 'styled-components';
+import PropTypes from 'prop-types';
+
+// Error Message Component
+export const ErrorMessage = styled.div.attrs({
+  role: 'alert',
+  'aria-live': 'assertive',
+})`
+  color: ${({ theme }) => theme.colors.error};
+  background-color: #ffe6e6;
+  padding: 10px 15px;
+  border: 1px solid ${({ theme }) => theme.colors.error};
+  border-radius: 5px;
+  margin-top: 10px;
+`;
+
+ErrorMessage.propTypes = {
+  children: PropTypes.node.isRequired,
+};
+
+```
+
+## File: AudioPlayer.jsx
+
+```jsx
+import React, { useEffect, useRef, useState } from 'react';
+import WaveSurfer from 'wavesurfer.js';
+import styled from 'styled-components';
+import PropTypes from 'prop-types';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faPlay, faPause, faStop, faForward, faBackward, faVolumeUp, faVolumeMute, faRedo } from '@fortawesome/free-solid-svg-icons';
+
+// Styled Components
+const AudioPlayerContainer = styled.div`
+  margin-top: 20px;
+  text-align: center;
+  background-color: ${({ theme }) => theme.colors.background};
+  padding: 20px;
+  border-radius: 10px;
+`;
+
+const Controls = styled.div`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 15px;
+
+  button {
+    margin: 0 10px;
+    padding: 10px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    background-color: ${({ theme }) => theme.colors.primary};
+    color: white;
+    transition: background-color 0.2s ease;
+
+    &:hover {
+      background-color: ${({ theme }) => theme.colors.secondary};
+    }
+  }
+
+  input[type="range"] {
+    width: 100px;
+    margin: 0 10px;
+  }
+`;
+
+const CloseButton = styled.button`
+  margin-top: 15px;
+  background-color: ${({ theme }) => theme.colors.error};
+  border: none;
+  color: white;
+  padding: 8px 15px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+
+  &:hover {
+    background-color: #c0392b;
+  }
+`;
+
+// AudioPlayer Component
+function AudioPlayer({
+  fileUrl,
+  fileName,
+  fileSize,
+  duration = '',
+  onClose,
+  onNextTrack,
+  onPrevTrack,
+  currentTrack,
+  setCurrentTrack
+}) {
+  const waveformRef = useRef(null);
+  const wavesurferRef = useRef(null);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [volume, setVolume] = useState(1);
+  const [playbackRate, setPlaybackRate] = useState(1);
+  const [loop, setLoop] = useState(false);
+
+  useEffect(() => {
+    wavesurferRef.current = WaveSurfer.create({
+      container: waveformRef.current,
+      waveColor: '#D9DCFF',
+      progressColor: '#4353FF',
+      cursorColor: '#4353FF',
+      responsive: true,
+      height: 100,
+      cursorWidth: 2,
+      barWidth: 2,
+    });
+
+    wavesurferRef.current.load(fileUrl);
+    wavesurferRef.current.setVolume(volume);
+    wavesurferRef.current.setPlaybackRate(playbackRate);
+
+    wavesurferRef.current.on('play', () => setIsPlaying(true));
+    wavesurferRef.current.on('pause', () => setIsPlaying(false));
+    wavesurferRef.current.on('finish', () => {
+      setIsPlaying(false);
+      if (loop) {
+        wavesurferRef.current.play();
+      }
+    });
+
+    return () => {
+      wavesurferRef.current.destroy();
+    };
+  }, [fileUrl]); // Only re-run on fileUrl change
+
+  const playPause = () => {
+    wavesurferRef.current.playPause();
+  };
+
+  const stop = () => {
+    wavesurferRef.current.stop();
+  };
+
+  const handleVolumeChange = (e) => {
+    const newVolume = parseFloat(e.target.value);
+    setVolume(newVolume);
+    wavesurferRef.current.setVolume(newVolume);
+  };
+
+  const handlePlaybackRateChange = (e) => {
+    const newRate = parseFloat(e.target.value);
+    setPlaybackRate(newRate);
+    wavesurferRef.current.setPlaybackRate(newRate);
+  };
+
+  const toggleLoop = () => {
+    setLoop(!loop);
+  };
+
+  return (
+    <AudioPlayerContainer>
+      <h3>Now Playing: {fileName}</h3>
+      {fileSize && <p>File Size: {(fileSize / (1024 * 1024)).toFixed(2)} MB</p>}
+      {duration && <p>Duration: {duration}</p>}
+
+      <div id="waveform" ref={waveformRef}></div>
+      <Controls>
+        <button onClick={onPrevTrack}>
+          <FontAwesomeIcon icon={faBackward} />
+        </button>
+        <button onClick={playPause}>
+          <FontAwesomeIcon icon={isPlaying ? faPause : faPlay} />
+        </button>
+        <button onClick={onNextTrack}>
+          <FontAwesomeIcon icon={faForward} />
+        </button>
+        <button onClick={stop}>
+          <FontAwesomeIcon icon={faStop} />
+        </button>
+        <button onClick={toggleLoop} style={{ backgroundColor: loop ? '#e74c3c' : '' }}>
+          <FontAwesomeIcon icon={faRedo} />
+        </button>
+        <label>
+          <FontAwesomeIcon icon={volume > 0 ? faVolumeUp : faVolumeMute} />
+          <input
+            type="range"
+            min="0"
+            max="1"
+            step="0.01"
+            value={volume}
+            onChange={handleVolumeChange}
+            aria-label="Volume Control"
+          />
+        </label>
+        <label>
+          Speed:
+          <input
+            type="range"
+            min="0.5"
+            max="2"
+            step="0.1"
+            value={playbackRate}
+            onChange={handlePlaybackRateChange}
+            aria-label="Playback Speed Control"
+          />
+        </label>
+        <CloseButton onClick={onClose}>Close</CloseButton>
+      </Controls>
+    </AudioPlayerContainer>
+  );
+}
+
+AudioPlayer.propTypes = {
+  fileUrl: PropTypes.string.isRequired,
+  fileName: PropTypes.string.isRequired,
+  fileSize: PropTypes.number.isRequired,
+  duration: PropTypes.string,
+  onClose: PropTypes.func.isRequired,
+  onNextTrack: PropTypes.func.isRequired,
+  onPrevTrack: PropTypes.func.isRequired,
+};
+
+export default AudioPlayer;
+
+```
+
+## File: ProgressBar.jsx
+
+```jsx
+// frontend/src/components/common/ProgressBar.jsx
+import React from 'react';
+import styled from 'styled-components';
+import PropTypes from 'prop-types';
+
+const ProgressBarContainer = styled.div`
+  margin-top: 20px;
+`;
+
+const ProgressWrapper = styled.div`
+  width: 100%;
+  background-color: #e0e0e0;
+  padding: 3px;
+  border-radius: 6px;
+  overflow: hidden;
+`;
+
+const ProgressBarStyled = styled.div`
+  height: 22px;
+  background: linear-gradient(90deg, ${({ theme }) => theme.colors.primary}, #00c6ff);
+  border-radius: 3px;
+  width: ${({ $progress }) => `${$progress}%`};
+  transition: width 0.3s ease-in-out;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: 500;
+`;
+
+function ProgressBar({ progress }) {
+  if (progress === 0) return null;
+
+  return (
+    <ProgressBarContainer>
+      <ProgressWrapper>
+        <ProgressBarStyled
+          $progress={progress}
+          role="progressbar"
+          aria-valuenow={progress}
+          aria-valuemin="0"
+          aria-valuemax="100"
+        >
+          {progress}%
+        </ProgressBarStyled>
+      </ProgressWrapper>
+    </ProgressBarContainer>
+  );
+}
+
+ProgressBar.propTypes = {
+  progress: PropTypes.number.isRequired,
+};
+
+export default ProgressBar;
+
+```
+
+## File: FileDashboard.jsx
+
+```jsx
+// src/components/common/FileDashboard.jsx
+import React, { useState } from 'react';
+import MediaPlayer from './MediaPlayer';
+import styled from 'styled-components';
+import PropTypes from 'prop-types';
+
+const DashboardContainer = styled.div`
+  margin-top: 30px;
+`;
+
+const FileGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 20px;
+
+  @media (max-width: 1199px) {
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  }
+
+  @media (max-width: 767px) {
+    grid-template-columns: 1fr;
+  }
+`;
+
+const FileCard = styled.div`
+  background-color: ${({ theme }) => theme.colors.neutral};
+  padding: 20px;
+  border-radius: 10px;
+  box-sizing: border-box;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  text-align: center;
+  transition: transform 0.2s ease, box-shadow 0.3s ease;
+  cursor: pointer;
+
+  &:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+  }
+
+  p {
+    margin-bottom: 10px;
+    color: ${({ theme }) => theme.colors.text};
+    font-size: 16px;
+    font-weight: 500;
+  }
+`;
+
+function FileDashboard({ uploadedFiles }) {
+  const [currentFile, setCurrentFile] = useState(null);
+
+  const selectFile = (file) => {
+    const fullPath = file.path.startsWith('/static/uploads')
+      ? `${window.location.origin}${file.path}`
+      : file.path;
+    setCurrentFile({ 
+      fileUrl: fullPath, 
+      fileName: file.filename, 
+      fileSize: file.size, 
+      duration: file.duration, 
+      fileType: file.type // Ensure this is the correct MIME type
+    });
+  };
+
+  const closeMediaPlayer = () => {
+    setCurrentFile(null);
+  };
+
+  return (
+    <DashboardContainer>
+      <h2>Uploaded Files</h2>
+      <FileGrid>
+        {uploadedFiles.length > 0 ? (
+          uploadedFiles.map((file, index) => (
+            <FileCard key={index} onClick={() => selectFile(file)}>
+              <p>{file.filename}</p>
+            </FileCard>
+          ))
+        ) : (
+          <p>No files uploaded yet.</p>
+        )}
+      </FileGrid>
+      {currentFile && (
+        <MediaPlayer
+          fileUrl={currentFile.fileUrl}
+          fileName={currentFile.fileName}
+          fileType={currentFile.fileType}
+          fileSize={currentFile.fileSize}
+          duration={currentFile.duration}
+          onClose={closeMediaPlayer}
+        />
+      )}
+    </DashboardContainer>
+  );
+}
+
+FileDashboard.propTypes = {
+  uploadedFiles: PropTypes.arrayOf(
+    PropTypes.shape({
+      filename: PropTypes.string.isRequired,
+      path: PropTypes.string.isRequired,
+      size: PropTypes.number.isRequired,
+      type: PropTypes.string.isRequired,
+      duration: PropTypes.string,
+    })
+  ).isRequired,
+};
+
+export default FileDashboard;
+
+```
+

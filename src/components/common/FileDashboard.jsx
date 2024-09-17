@@ -1,9 +1,11 @@
 // src/components/common/FileDashboard.jsx
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import MediaPlayer from './MediaPlayer';
 import styled from 'styled-components';
 import PropTypes from 'prop-types';
+import Tooltip from './Tooltip'; // Import Tooltip component
 
+// Styled Components
 const DashboardContainer = styled.div`
   margin-top: 30px;
 `;
@@ -19,6 +21,7 @@ const FileGrid = styled.div`
 
   @media (max-width: 767px) {
     grid-template-columns: 1fr;
+    gap: 15px;
   }
 `;
 
@@ -31,6 +34,10 @@ const FileCard = styled.div`
   text-align: center;
   transition: transform 0.2s ease, box-shadow 0.3s ease;
   cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  height: 150px; /* Fixed height for consistency */
 
   &:hover {
     transform: translateY(-5px);
@@ -42,27 +49,49 @@ const FileCard = styled.div`
     color: ${({ theme }) => theme.colors.text};
     font-size: 16px;
     font-weight: 500;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  @media (max-width: 767px) {
+    padding: 15px;
+    height: auto;
+
+    p {
+      font-size: 14px;
+    }
   }
 `;
 
 function FileDashboard({ uploadedFiles }) {
-  const [currentFile, setCurrentFile] = useState(null);
+  const [currentIndex, setCurrentIndex] = useState(null);
+  const triggerRef = useRef(null);
 
-  const selectFile = (file) => {
-    const fullPath = file.path.startsWith('/static/uploads')
-      ? `${window.location.origin}${file.path}`
-      : file.path;
-    setCurrentFile({ 
-      fileUrl: fullPath, 
-      fileName: file.filename, 
-      fileSize: file.size, 
-      duration: file.duration, 
-      fileType: file.type // Ensure this is the correct MIME type
-    });
+  const selectFile = (index, event) => {
+    triggerRef.current = event.currentTarget;
+    setCurrentIndex(index);
   };
 
   const closeMediaPlayer = () => {
-    setCurrentFile(null);
+    setCurrentIndex(null);
+    if (triggerRef.current) {
+      triggerRef.current.focus();
+    }
+  };
+
+  const handleNextTrack = () => {
+    setCurrentIndex((prevIndex) => {
+      if (prevIndex === null) return 0;
+      return (prevIndex + 1) % uploadedFiles.length;
+    });
+  };
+
+  const handlePrevTrack = () => {
+    setCurrentIndex((prevIndex) => {
+      if (prevIndex === null) return uploadedFiles.length - 1;
+      return (prevIndex - 1 + uploadedFiles.length) % uploadedFiles.length;
+    });
   };
 
   return (
@@ -71,22 +100,40 @@ function FileDashboard({ uploadedFiles }) {
       <FileGrid>
         {uploadedFiles.length > 0 ? (
           uploadedFiles.map((file, index) => (
-            <FileCard key={index} onClick={() => selectFile(file)}>
-              <p>{file.filename}</p>
+            <FileCard 
+              key={index} 
+              onClick={(e) => selectFile(index, e)} 
+              tabIndex="0" 
+              onKeyPress={(e) => {
+                if (e.key === 'Enter') selectFile(index, e);
+              }}
+              aria-label={`Play ${file.filename}`}
+            >
+              <Tooltip $text={file.filename}> {/* Corrected to use $text */}
+                <p>{file.filename}</p>
+              </Tooltip>
+              <p>{(file.size / (1024 * 1024)).toFixed(2)} MB</p>
+              {/* Add more details if necessary */}
             </FileCard>
           ))
         ) : (
           <p>No files uploaded yet.</p>
         )}
       </FileGrid>
-      {currentFile && (
+      {currentIndex !== null && (
         <MediaPlayer
-          fileUrl={currentFile.fileUrl}
-          fileName={currentFile.fileName}
-          fileType={currentFile.fileType}
-          fileSize={currentFile.fileSize}
-          duration={currentFile.duration}
+          fileUrl={
+            uploadedFiles[currentIndex].path.startsWith('/static/uploads') 
+              ? `${window.location.origin}${uploadedFiles[currentIndex].path}` 
+              : uploadedFiles[currentIndex].path
+          }
+          fileName={uploadedFiles[currentIndex].filename}
+          fileType={uploadedFiles[currentIndex].type}
+          fileSize={uploadedFiles[currentIndex].size}
+          duration={uploadedFiles[currentIndex].duration}
           onClose={closeMediaPlayer}
+          onNextTrack={handleNextTrack}
+          onPrevTrack={handlePrevTrack}
         />
       )}
     </DashboardContainer>

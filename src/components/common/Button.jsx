@@ -20,6 +20,8 @@ const ButtonStyled = styled.button`
   
   display: flex;
   align-items: center;
+    justify-content: center;
+
   
   &:hover {
     opacity: 0.9;
@@ -46,7 +48,7 @@ const Button = ({
   type = 'button',
   customColor = null // New prop for custom background color
 }) => (
-  <ButtonStyled $variant={variant} onClick={onClick} disabled={disabled} type={type} $customColor={customColor} aria-label={typeof children === "string" ? children : undefined}>
+  <ButtonStyled variant={variant} onClick={onClick} disabled={disabled} type={type} customColor={customColor} aria-label={typeof children === "string" ? children : undefined}>
     {icon && <FontAwesomeIcon icon={icon} style={{ marginRight: '8px' }} />}
     {children}
   </ButtonStyled>

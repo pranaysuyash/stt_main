@@ -40,14 +40,14 @@ const OverwriteButtons = styled.div`
 const DropZone = styled.div`
   border: 2px dashed #bbb;
   border-radius: 12px;
-  background-color: #fafafa;
+  background-color: ${({ theme }) => theme.colors.neutral};
   padding: 40px;
   text-align: center;
   transition: background-color 0.3s ease, box-shadow 0.2s ease;
   cursor: pointer;
 
   &:hover, &.drag-over {
-    background-color: #f5f5f5;
+    background-color: ${({ theme }) => theme.colors.background};
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
   }
 
@@ -168,7 +168,7 @@ function FileUploader({ setUploadedFiles, setNotification }) {
     handleUpload(selectedFiles);
   };
 
-  const handleUpload = (files) => {
+  const handleUpload = async(files) => {
     setIsUploading(true);
     setUploadProgress(0);
     setErrorMessages([]);
@@ -178,51 +178,92 @@ function FileUploader({ setUploadedFiles, setNotification }) {
       formData.append('file', file);
     });
 
-    const xhr = new XMLHttpRequest();
+  //   const xhr = new XMLHttpRequest();
 
-    xhr.upload.addEventListener('progress', (event) => {
-      if (event.lengthComputable) {
-        const percentComplete = Math.round((event.loaded / event.total) * 100);
-        setUploadProgress(percentComplete);
-      }
+  //   xhr.upload.addEventListener('progress', (event) => {
+  //     if (event.lengthComputable) {
+  //       const percentComplete = Math.round((event.loaded / event.total) * 100);
+  //       setUploadProgress(percentComplete);
+  //     }
+  //   });
+
+  //   xhr.onreadystatechange = () => {
+  //     if (xhr.readyState === 4) {
+  //       setIsUploading(false);
+  //       setUploadProgress(0);
+
+  //       if (xhr.status === 200 || xhr.status === 207) {
+  //         const response = JSON.parse(xhr.responseText);
+  //         if (response.uploaded_files) {
+  //           setNotification({ message: 'Files uploaded successfully!', type: 'success' });
+  //         }
+  //         if (response.errors) {
+  //           const newErrors = response.errors.map(err => `${err.filename}: ${err.error}`);
+  //           setErrorMessages(newErrors);
+  //         }
+  //         setSelectedFiles([]);
+  //         fetch('/api/file_history')
+  //           .then((res) => res.json())
+  //           .then((data) => {
+  //             if (data.files) {
+  //               setUploadedFiles(data.files);
+  //             }
+  //           })
+  //           .catch((error) => console.error('Error fetching files:', error));
+  //       } else if (xhr.status === 413) {
+  //         const response = JSON.parse(xhr.responseText);
+  //         setErrorMessages([`${response.error}: ${response.message}`]);
+  //       } else {
+  //         setNotification({ message: 'Error uploading files. Please try again.', type: 'error' });
+  //         console.error('Error uploading files:', xhr.responseText);
+  //       }
+  //     }
+  //   };
+
+  //   xhr.open('POST', '/upload');
+  //   xhr.send(formData);
+  // };
+
+  try {
+    const response = await fetch('/upload', {
+      method: 'POST',
+      body: formData,
     });
 
-    xhr.onreadystatechange = () => {
-      if (xhr.readyState === 4) {
-        setIsUploading(false);
-        setUploadProgress(0);
+    // Calculate upload progress manually since fetch doesn't provide progress updates
+    // For more advanced progress tracking, consider using Axios
 
-        if (xhr.status === 200 || xhr.status === 207) {
-          const response = JSON.parse(xhr.responseText);
-          if (response.uploaded_files) {
-            setNotification({ message: 'Files uploaded successfully!', type: 'success' });
-          }
-          if (response.errors) {
-            const newErrors = response.errors.map(err => `${err.filename}: ${err.error}`);
-            setErrorMessages(newErrors);
-          }
-          setSelectedFiles([]);
-          fetch('/api/file_history')
-            .then((res) => res.json())
-            .then((data) => {
-              if (data.files) {
-                setUploadedFiles(data.files);
-              }
-            })
-            .catch((error) => console.error('Error fetching files:', error));
-        } else if (xhr.status === 413) {
-          const response = JSON.parse(xhr.responseText);
-          setErrorMessages([`${response.error}: ${response.message}`]);
-        } else {
-          setNotification({ message: 'Error uploading files. Please try again.', type: 'error' });
-          console.error('Error uploading files:', xhr.responseText);
-        }
+    const data = await response.json();
+
+    if (response.ok || response.status === 207) {
+      if (data.uploaded_files) {
+        setNotification({ message: 'Files uploaded successfully!', type: 'success' });
       }
-    };
-
-    xhr.open('POST', '/upload');
-    xhr.send(formData);
-  };
+      if (data.errors) {
+        const newErrors = data.errors.map(err => `${err.filename}: ${err.error}`);
+        setErrorMessages(newErrors);
+      }
+      setSelectedFiles([]);
+      const historyResponse = await fetch('/api/file_history');
+      const historyData = await historyResponse.json();
+      if (historyData.files) {
+        setUploadedFiles(historyData.files);
+      }
+    } else if (response.status === 413) {
+      const errorData = await response.json();
+      setErrorMessages([`${errorData.error}: ${errorData.message}`]);
+    } else {
+      setNotification({ message: 'Error uploading files. Please try again.', type: 'error' });
+      console.error('Error uploading files:', data);
+    }
+  } catch (error) {
+    setNotification({ message: 'Network error during file upload.', type: 'error' });
+    console.error('Network error:', error);
+  } finally {
+    setIsUploading(false);
+    setUploadProgress(0);
+  }
+};
 
   // Remove selected files
   const removeFile = (index) => {
@@ -267,6 +308,7 @@ function FileUploader({ setUploadedFiles, setNotification }) {
             icon={faUpload}
             onClick={uploadFiles}
             disabled={isUploading}
+            aria-label={isUploading ? 'Uploading files' : 'Upload Files'}
           >
             {isUploading ? 'Uploading...' : 'Upload Files'}
           </Button>
@@ -295,6 +337,7 @@ function FileUploader({ setUploadedFiles, setNotification }) {
                 handleUpload(selectedFiles);
                 setOverwritePrompt(false);
               }}
+              aria-label="Yes, overwrite the existing file"
             >
               Yes
             </Button>
@@ -302,6 +345,7 @@ function FileUploader({ setUploadedFiles, setNotification }) {
               variant="secondary" /* Changed from 'tertiary' to 'secondary' for consistent styling */
               customColor="#e74c3c" /* Custom red color for "No" button */
               onClick={() => setOverwritePrompt(false)}
+              aria-label="No, cancel the upload"
             >
               No
             </Button>

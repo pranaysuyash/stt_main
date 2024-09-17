@@ -4,11 +4,7 @@ import logging
 from werkzeug.utils import secure_filename
 from audio_processing import extract_audio_from_video, generate_waveform
 from flask_cors import CORS
-from moviepy.editor import VideoFileClip
-from mutagen import File as MutagenFile  # Ensure mutagen is installed
 import mimetypes
-
-
 
 # Initialize Flask app
 app = Flask(__name__)
@@ -21,13 +17,13 @@ if not os.path.exists(UPLOAD_FOLDER):
     os.makedirs(UPLOAD_FOLDER)
 
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
-app.config['MAX_CONTENT_LENGTH'] = 250 * 1024 * 1024  # 200MB max file size
+app.config['MAX_CONTENT_LENGTH'] = 250 * 1024 * 1024  # 250MB max file size
 ALLOWED_EXTENSIONS = {'mp3', 'wav', 'mp4', 'avi', 'mov', 'mkv'}
 
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
-# Error handler for large files
+# Single Error handler for large files
 @app.errorhandler(413)
 def request_entity_too_large(error):
     app.logger.error('File too large')
@@ -37,45 +33,11 @@ def request_entity_too_large(error):
         'message': 'Please try compressing your file or splitting it into smaller parts before uploading.'
     }), 413
 
-
 @app.route('/')
 def index():
     return render_template('index.html')
 
 # Handle file uploads (audio/video)
-# @app.route('/upload', methods=['POST'])
-# def upload_file():
-#     if 'file' not in request.files:
-#         return jsonify({'error': 'No file part'}), 400
-
-#     file = request.files['file']
-
-#     if file.filename == '':
-#         return jsonify({'error': 'No selected file'}), 400
-
-#     if file:
-#         filename = secure_filename(file.filename)
-#         file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-#         try:
-#             file.save(file_path)
-
-#             # Check if it's a video file and try extracting the audio
-#             if file.mimetype.startswith('video'):
-#                 audio_path = os.path.join(app.config['UPLOAD_FOLDER'], 'extracted_audio.wav')
-#                 extracted_audio = extract_audio_from_video(file_path, audio_path)
-
-#                 # If the video has no audio, return a warning message
-#                 if extracted_audio is None:
-#                     return jsonify({'filename': filename, 'path': f'/static/uploads/{filename}', 'warning': 'No audio track found'})
-
-#                 # Generate waveform from extracted audio
-#                 waveform_image = os.path.join(app.config['UPLOAD_FOLDER'], 'waveform.png')
-#                 generate_waveform(extracted_audio, waveform_image)
-
-#             return jsonify({'filename': filename, 'path': f'/static/uploads/{filename}'})
-#         except Exception as e:
-#             return jsonify({'error': 'Failed to save file', 'message': str(e)}), 500
-
 @app.route('/upload', methods=['POST'])
 def upload_file():
     if 'file' not in request.files:
@@ -116,7 +78,7 @@ def upload_file():
 
         if file.content_length > app.config['MAX_CONTENT_LENGTH']:
             app.logger.warning(f'File too large: {file.filename}')
-            errors.append({'filename': file.filename, 'error': 'File size exceeds the 200MB limit.'})
+            errors.append({'filename': file.filename, 'error': 'File size exceeds the 250MB limit.'})
             continue
 
         filename = secure_filename(file.filename)
@@ -148,7 +110,6 @@ def upload_file():
 
     return jsonify(response), status_code
 
-
 # Endpoint to fetch waveform for previously uploaded files (optional)
 @app.route('/waveform/<filename>', methods=['GET'])
 def get_waveform(filename):
@@ -156,7 +117,7 @@ def get_waveform(filename):
     waveform_image = os.path.join(app.config['UPLOAD_FOLDER'], 'waveform.png')
 
     # Check if the file is a video
-    if filename.endswith('.mp4') or filename.endswith('.avi'):
+    if filename.endswith('.mp4') or filename.endswith('.avi') or filename.endswith('.mov') or filename.endswith('.mkv'):
         extract_audio_from_video(audio_path, os.path.join(app.config['UPLOAD_FOLDER'], 'extracted_audio.wav'))
     
     # Generate waveform for audio
@@ -176,15 +137,7 @@ def file_exists():
         return jsonify({'exists': True})
     return jsonify({'exists': False})
 
-
 # List upload history
-# Ensure that your `/api/file_history` endpoint properly returns the full list of files.
-# @app.route('/api/file_history', methods=['GET'])
-# def file_history():
-#     files = os.listdir(app.config['UPLOAD_FOLDER'])
-#     file_list = [{'filename': f, 'path': f'/static/uploads/{f}'} for f in files if os.path.isfile(os.path.join(app.config['UPLOAD_FOLDER'], f))]
-#     return jsonify({'files': file_list})  # Return the list of files correctly
-
 @app.route('/api/file_history', methods=['GET'])
 def file_history():
     files = os.listdir(app.config['UPLOAD_FOLDER'])
@@ -201,16 +154,6 @@ def file_history():
             }
             file_list.append(file_info)
     return jsonify({'files': file_list})
-
-# # Error handler for large files
-# @app.errorhandler(413)
-# def request_entity_too_large(error):
-#     app.logger.error('File too large')
-#     return jsonify({
-#         'error': 'File too large',
-#         'max_size': '200MB',
-#         'message': 'Please try compressing your file or splitting it into smaller parts before uploading.'
-#     }), 413
 
 # Main function to run the Flask app
 if __name__ == '__main__':

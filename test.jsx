@@ -36,17 +36,9 @@ const Controls = styled.div`
     }
   }
 
-  label {
-    display: flex;
-    align-items: center;
-    margin: 0 10px;
-    color: ${({ theme }) => theme.colors.text};
-    font-size: 14px;
-  }
-
   input[type="range"] {
     width: 100px;
-    margin-left: 5px;
+    margin: 0 10px;
   }
 `;
 
@@ -115,7 +107,7 @@ function AudioPlayer({
     return () => {
       wavesurferRef.current.destroy();
     };
-  }, [fileUrl, volume, playbackRate]);
+  }, [fileUrl]);
 
   const playPause = () => {
     wavesurferRef.current.playPause();
