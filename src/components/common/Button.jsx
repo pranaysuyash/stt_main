@@ -4,67 +4,62 @@ import PropTypes from 'prop-types';
 import styled from 'styled-components';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
-// Transient Props: $variant, $customColor
 const ButtonStyled = styled.button`
   padding: 10px 20px;
   border: none;
   border-radius: 4px;
   font-size: ${({ theme }) => theme.fontSizes.body || '16px'};
   cursor: pointer;
-  
-  /* Use transient props by prefixing with $ */
   background-color: ${({ $variant, $customColor, theme }) =>
     $customColor
       ? $customColor
       : $variant === 'primary'
-      ? theme.colors.primary || '#3498db'
+      ? theme.colors.primary
       : $variant === 'secondary'
-      ? theme.colors.secondary || '#2ecc71'
-      : theme.colors.neutral || '#95a5a6'};
-  
+      ? theme.colors.secondary
+      : theme.colors.neutral};
   color: ${({ $variant, theme }) =>
-    $variant === 'tertiary' ? theme.colors.text || '#2c3e50' : '#fff'};
-  
+    $variant === 'tertiary' ? theme.colors.text : '#fff'};
   display: flex;
   align-items: center;
   justify-content: center;
-  
   &:hover {
     opacity: 0.9;
   }
-
   &:disabled {
     background-color: #ccc;
     cursor: not-allowed;
   }
-
   /* Focus Styles */
   &:focus {
-    outline: 2px solid ${({ theme }) => theme.colors.primary || '#3498db'};
+    outline: 2px solid ${({ theme }) => theme.colors.primary};
     outline-offset: 2px;
   }
 `;
 
-// Button Component
-const Button = ({ 
-  variant = 'primary', 
-  children, 
-  onClick = () => {}, 
-  disabled = false, 
-  icon = null, 
+const Button = ({
+  variant = 'primary',
+  children,
+  onClick = () => {},
+  disabled = false,
+  icon = null,
   type = 'button',
-  customColor = null
+  customColor = null,
 }) => (
-  <ButtonStyled 
-    /* Use transient props by prefixing with $ */
-    $variant={variant} 
-    onClick={onClick} 
-    disabled={disabled} 
-    type={type} 
-    $customColor={customColor} 
-    aria-label={typeof children === "string" ? children : undefined}
+  <ButtonStyled
+    $variant={variant}
+    onClick={onClick}
+    disabled={disabled}
+    type={type}
+    $customColor={customColor}
+    aria-label={typeof children === 'string' ? children : undefined}
   >
-    {icon && <FontAwesomeIcon icon={icon} style={{ marginRight: children ? "8px" : "0" }} />}
+    {icon && (
+      <FontAwesomeIcon
+        icon={icon}
+        style={{ marginRight: children ? '8px' : '0' }}
+      />
+    )}
     {children}
   </ButtonStyled>
 );

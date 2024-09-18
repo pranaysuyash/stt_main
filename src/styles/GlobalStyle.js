@@ -11,54 +11,46 @@ const GlobalStyle = createGlobalStyle`
     font-size: ${({ theme }) => theme.fontSizes.body};
     line-height: 1.5;
   }
-
   h1 {
     font-size: ${({ theme }) => theme.fontSizes.h1};
     font-weight: bold;
+    color: ${({ theme }) => theme.colors.primary}; /* Use primary color for headings */
   }
-
   h2 {
     font-size: ${({ theme }) => theme.fontSizes.h2};
     font-weight: 600;
+    color: ${({ theme }) => theme.colors.secondary}; /* Use secondary color for subheadings */
   }
-
   h3 {
     font-size: ${({ theme }) => theme.fontSizes.h3};
     font-weight: 500;
+    color: ${({ theme }) => theme.colors.primary};
   }
-
   p {
     font-size: ${({ theme }) => theme.fontSizes.body};
     font-weight: 400;
   }
-
   .small-text {
     font-size: ${({ theme }) => theme.fontSizes.small};
     font-weight: 300;
   }
-
   button {
     font-size: ${({ theme }) => theme.fontSizes.body};
     font-weight: 500;
   }
-
   /* Focus Styles for Accessibility */
   button:focus {
     outline: 2px solid ${({ theme }) => theme.colors.primary};
     outline-offset: 2px;
   }
-
   /* Additional Global Styles */
-
   a {
     font-weight: 500;
     color: ${({ theme }) => theme.colors.primary};
     text-decoration: none;
   }
-
   a:hover {
     color: ${({ theme }) => theme.colors.secondary};
   }
 `;
-
 export default GlobalStyle;

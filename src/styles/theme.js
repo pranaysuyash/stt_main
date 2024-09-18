@@ -1,13 +1,13 @@
 // src/styles/theme.js
 export const theme = {
   colors: {
-    primary: '#1E90FF',      // Ocean Blue
-    secondary: '#FFA500',    // Vibrant Orange
-    accent: '#32CD32',       // Lime Green
+    primary: '#008080',      // Teal for trust and reliability
+    secondary: '#6A0DAD',    // Purple for creativity
+    accent: '#32CD32',       // Lime Green for success
     neutral: '#FFFFFF',      // White
     background: '#F5F5F5',   // Light Gray
     text: '#2F4F4F',         // Dark Slate Gray
-    success: '#50C878',      // Emerald Green
+    success: '#32CD32',      // Lime Green
     error: '#DC143C',        // Crimson Red
     warning: '#DAA520',      // Goldenrod
   },
