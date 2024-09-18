@@ -45,3 +45,5 @@ coverage/
 *.sw?
 static/uploads/*.mov
 static/uploads/*.wav
+static/uploads/*.mp4
+static/uploads/*.mp3
