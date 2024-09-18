@@ -4,6 +4,8 @@ import MediaPlayer from './MediaPlayer';
 import styled from 'styled-components';
 import PropTypes from 'prop-types';
 import Tooltip from './Tooltip'; // Import Tooltip component
+import { Link } from 'react-router-dom'; // If using Link
+
 
 // Styled Components
 const DashboardContainer = styled.div`
