@@ -16,10 +16,17 @@ export const theme = {
     secondary: 'Montserrat, sans-serif',
   },
   fontSizes: {
-    h1: '32px',
-    h2: '24px',
-    h3: '18px',
-    body: '14px',
-    small: '12px',
+    h1: '2.5rem',    // 40px
+    h2: '2rem',      // 32px
+    h3: '1.75rem',   // 28px
+    body: '1rem',     // 16px
+    small: '0.875rem',// 14px
+  },
+  fontWeights: {
+    light: 300,
+    normal: 400,
+    medium: 500,
+    semiBold: 600,
+    bold: 700,
   },
 };

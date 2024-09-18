@@ -2,7 +2,16 @@
 import { createGlobalStyle } from 'styled-components';
 
 const GlobalStyle = createGlobalStyle`
-  body {
+html {
+    font-size: 100%; /* 16px */
+    @media (max-width: 1200px) {
+      font-size: 95%; /* ~15.2px */
+    }
+    @media (max-width: 768px) {
+      font-size: 90%; /* ~14.4px */
+    }
+  }  
+body {
     margin: 0;
     padding: 0;
     background-color: ${({ theme }) => theme.colors.background};
@@ -13,30 +22,30 @@ const GlobalStyle = createGlobalStyle`
   }
   h1 {
     font-size: ${({ theme }) => theme.fontSizes.h1};
-    font-weight: bold;
-    color: ${({ theme }) => theme.colors.primary}; /* Use primary color for headings */
+    font-weight: ${({ theme }) => theme.fontWeights.bold};
+    color: ${({ theme }) => theme.colors.primary}; /* Primary color for headings */
   }
   h2 {
     font-size: ${({ theme }) => theme.fontSizes.h2};
-    font-weight: 600;
-    color: ${({ theme }) => theme.colors.secondary}; /* Use secondary color for subheadings */
+    font-weight: ${({ theme }) => theme.fontWeights.semiBold};
+    color: ${({ theme }) => theme.colors.secondary}; /* Secondary color for subheadings */
   }
   h3 {
     font-size: ${({ theme }) => theme.fontSizes.h3};
-    font-weight: 500;
+    font-weight: ${({ theme }) => theme.fontWeights.medium};
     color: ${({ theme }) => theme.colors.primary};
   }
   p {
     font-size: ${({ theme }) => theme.fontSizes.body};
-    font-weight: 400;
+    font-weight: ${({ theme }) => theme.fontWeights.normal};
   }
   .small-text {
     font-size: ${({ theme }) => theme.fontSizes.small};
-    font-weight: 300;
+    font-weight: ${({ theme }) => theme.fontWeights.light};
   }
   button {
     font-size: ${({ theme }) => theme.fontSizes.body};
-    font-weight: 500;
+    font-weight: ${({ theme }) => theme.fontWeights.medium};
   }
   /* Focus Styles for Accessibility */
   button:focus {
@@ -45,7 +54,7 @@ const GlobalStyle = createGlobalStyle`
   }
   /* Additional Global Styles */
   a {
-    font-weight: 500;
+    font-weight: ${({ theme }) => theme.fontWeights.medium};
     color: ${({ theme }) => theme.colors.primary};
     text-decoration: none;
   }

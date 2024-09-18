@@ -11,22 +11,18 @@ import { Link } from 'react-router-dom'; // If using Link
 const DashboardContainer = styled.div`
   margin-top: 30px;
 `;
-
 const FileGrid = styled.div`
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
   gap: 20px;
-
   @media (max-width: 1199px) {
     grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
   }
-
   @media (max-width: 767px) {
     grid-template-columns: 1fr;
     gap: 15px;
   }
 `;
-
 const FileCard = styled.div`
   background-color: ${({ theme }) => theme.colors.neutral};
   padding: 20px;
@@ -40,28 +36,24 @@ const FileCard = styled.div`
   flex-direction: column;
   justify-content: center;
   height: 150px; /* Fixed height for consistency */
-
   &:hover {
     transform: translateY(-5px);
     box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
   }
-
   p {
     margin-bottom: 10px;
     color: ${({ theme }) => theme.colors.text};
-    font-size: 16px;
-    font-weight: 500;
+    font-size: 1rem; /* Use rem units from theme */
+    font-weight: ${({ theme }) => theme.fontWeights.medium};
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
   }
-
   @media (max-width: 767px) {
     padding: 15px;
     height: auto;
-
     p {
-      font-size: 14px;
+      font-size: 0.875rem; /* Smaller font size for mobile */
     }
   }
 `;

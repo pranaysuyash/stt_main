@@ -4,6 +4,7 @@ import PropTypes from 'prop-types';
 import styled from 'styled-components';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
+// Styled Component for Button
 const ButtonStyled = styled.button`
   padding: 10px 20px;
   border: none;
@@ -23,20 +24,27 @@ const ButtonStyled = styled.button`
   display: flex;
   align-items: center;
   justify-content: center;
+  transition: opacity 0.2s ease, background-color 0.2s ease;
+
+  /* Hover State */
   &:hover {
     opacity: 0.9;
   }
+
+  /* Disabled State */
   &:disabled {
     background-color: #ccc;
     cursor: not-allowed;
   }
-  /* Focus Styles */
+
+  /* Focus Styles for Accessibility */
   &:focus {
     outline: 2px solid ${({ theme }) => theme.colors.primary};
     outline-offset: 2px;
   }
 `;
 
+// Button Component
 const Button = ({
   variant = 'primary',
   children,
@@ -64,6 +72,7 @@ const Button = ({
   </ButtonStyled>
 );
 
+// PropTypes Validation
 Button.propTypes = {
   variant: PropTypes.oneOf(['primary', 'secondary', 'tertiary']),
   children: PropTypes.node,
@@ -71,7 +80,7 @@ Button.propTypes = {
   disabled: PropTypes.bool,
   icon: PropTypes.object, // FontAwesomeIcon expects an icon object
   type: PropTypes.oneOf(['button', 'submit', 'reset']),
-  customColor: PropTypes.string, // New prop type
+  customColor: PropTypes.string, // Allows overriding the background color
 };
 
 export default Button;
