@@ -4,7 +4,7 @@ import ReactDOM from 'react-dom';
 import styled from 'styled-components';
 import PropTypes from 'prop-types';
 
-// Styled Components
+// Transient Prop: $text
 const TooltipContent = styled.div`
   position: absolute;
   bottom: 125%; /* Position above the text */
@@ -18,9 +18,9 @@ const TooltipContent = styled.div`
   white-space: nowrap;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   z-index: 1001; /* Ensure it appears above other elements */
-  opacity: 0;
-  visibility: hidden;
-  transition: opacity 0.3s, visibility 0.3s;
+  opacity: 0.9;
+  pointer-events: none;
+  transition: opacity 0.3s;
 `;
 
 const TooltipArrow = styled.div`
@@ -31,9 +31,8 @@ const TooltipArrow = styled.div`
   border-width: 5px;
   border-style: solid;
   border-color: ${({ theme }) => theme.colors.background || '#000'} transparent transparent transparent;
-  opacity: 0;
-  visibility: hidden;
-  transition: opacity 0.3s, visibility 0.3s;
+  opacity: 0.9;
+  pointer-events: none;
   z-index: 1001;
 `;
 
@@ -41,14 +40,12 @@ const TooltipWrapper = styled.div`
   position: relative;
   display: inline-block;
 
-  &:hover .tooltip-content,
-  &:focus .tooltip-content {
+  &:hover .tooltip-content {
     opacity: 1;
     visibility: visible;
   }
 
-  &:hover .tooltip-arrow,
-  &:focus .tooltip-arrow {
+  &:hover .tooltip-arrow {
     opacity: 1;
     visibility: visible;
   }
