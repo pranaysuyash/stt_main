@@ -30,17 +30,19 @@ const Sidebar = styled.nav`
   display: flex;
   flex-direction: column;
   justify-content: space-between;
+  z-index: 1000;
 
-  @media (max-width: 1024px) {
-    width: ${({ collapsed }) => (collapsed ? "60px" : "200px")};
-  }
+//   @media (max-width: 1024px) {
+//     width: ${({ collapsed }) => (collapsed ? "60px" : "200px")};
+//   }
 
   @media (max-width: 768px) {
-    position: fixed;
-    z-index: 1000;
+    // position: fixed;
+    // z-index: 1000;
     transform: ${({ isMobileOpen }) =>
       isMobileOpen ? "translateX(0)" : "translateX(-100%)"};
-    transition: transform 0.3s ease-in-out;
+    width: 200px;
+    // transition: transform 0.3s ease-in-out;
   }
 `;
 
@@ -121,44 +123,44 @@ function SideNav({
 
   return (
     <Sidebar
-      $collapsed={collapsed}
-      $isMobileOpen={isMobileOpen}
+      collapsed={collapsed}
+      isMobileOpen={isMobileOpen}
       aria-label="Sidebar Navigation"
     >
       <div>
         <Logo>{!collapsed ? "WaveAnalyzer" : "WA"}</Logo>
         <NavItems>
-          <NavItem $collapsed={collapsed}>
+          <NavItem collapsed={collapsed}>
           <NavLink to="/dashboard" className={({ isActive }) => isActive ? "active" : ""}>
               <FontAwesomeIcon icon={faHome} />
               <span>Dashboard</span>
             </NavLink>
           </NavItem>
-          <NavItem $collapsed={collapsed}>
+          <NavItem collapsed={collapsed}>
           <NavLink to="/upload" className={({ isActive }) => isActive ? "active" : ""}>
               <FontAwesomeIcon icon={faUpload} />
               <span>Upload</span>
             </NavLink>
           </NavItem>
-          <NavItem $collapsed={collapsed}>
+          <NavItem collapsed={collapsed}>
           <NavLink to="/library" className={({ isActive }) => isActive ? "active" : ""}>
               <FontAwesomeIcon icon={faFolder} />
               <span>Library</span>
             </NavLink>
           </NavItem>
-          <NavItem $collapsed={collapsed}>
+          <NavItem collapsed={collapsed}>
           <NavLink to="/analysis" className={({ isActive }) => isActive ? "active" : ""}>
               <FontAwesomeIcon icon={faSearch} />
               <span>Analysis</span>
             </NavLink>
           </NavItem>
-          <NavItem $collapsed={collapsed}>
+          <NavItem collapsed={collapsed}>
           <NavLink to="/settings" className={({ isActive }) => isActive ? "active" : ""}>
               <FontAwesomeIcon icon={faCog} />
               <span>Settings</span>
             </NavLink>
           </NavItem>
-          <NavItem $collapsed={collapsed}>
+          <NavItem collapsed={collapsed}>
           <NavLink to="/help" className={({ isActive }) => isActive ? "active" : ""}>
               <FontAwesomeIcon icon={faQuestionCircle} />
               <span>Help</span>
