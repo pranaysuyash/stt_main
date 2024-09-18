@@ -5,17 +5,15 @@ import styled from 'styled-components';
 import PropTypes from 'prop-types';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPlay, faPause, faStop, faRedo, faVolumeUp, faVolumeMute } from '@fortawesome/free-solid-svg-icons';
-import debounce from 'lodash.debounce'; // Install lodash.debounce if not already installed
+import debounce from 'lodash.debounce'; 
 
-
-// Styled Components
 const AudioPlayerContainer = styled.div`
   margin-top: 20px;
   text-align: center;
   background-color: ${({ theme }) => theme.colors.background};
   padding: 20px;
   border-radius: 10px;
-    outline: none; /* Ensure focus outline is visible */
+  outline: none; 
 `;
 
 const Controls = styled.div`
@@ -23,7 +21,6 @@ const Controls = styled.div`
   justify-content: center;
   align-items: center;
   margin-top: 15px;
-
   button {
     margin: 0 10px;
     padding: 10px;
@@ -33,13 +30,11 @@ const Controls = styled.div`
     background-color: ${({ theme }) => theme.colors.primary};
     color: white;
     transition: background-color 0.2s ease;
-
     &:hover {
       background-color: ${({ theme }) => theme.colors.secondary};
       outline: none;
     }
   }
-
   label {
     display: flex;
     align-items: center;
@@ -47,7 +42,6 @@ const Controls = styled.div`
     color: ${({ theme }) => theme.colors.text};
     font-size: 14px;
   }
-
   input[type="range"] {
     width: 100px;
     margin-left: 5px;
@@ -63,7 +57,6 @@ const CloseButton = styled.button`
   border-radius: 4px;
   cursor: pointer;
   transition: background-color 0.2s ease;
-
   &:hover,
   &:focus {
     background-color: ${({ theme }) => theme.colors.errorHover || '#c0392b'};
@@ -71,7 +64,6 @@ const CloseButton = styled.button`
   }
 `;
 
-// Define initial state
 const initialState = {
   isPlaying: false,
   volume: 1,
@@ -79,7 +71,7 @@ const initialState = {
   loop: false,
   duration: '',
 };
-// Define reducer
+
 function reducer(state, action) {
   switch (action.type) {
     case 'PLAY_PAUSE':
@@ -98,34 +90,26 @@ function reducer(state, action) {
       return state;
   }
 }
-// AudioPlayer Component
+
 function AudioPlayer({
   fileUrl,
   fileName,
   fileType,
   fileSize,
+  duration = '',
   onClose,
-  triggerRef, // New prop
+  triggerRef, 
 }) {
-
   const waveformRef = useRef(null);
   const wavesurferRef = useRef(null);
   const [state, dispatch] = useReducer(reducer, initialState);
-  const { isPlaying, volume, playbackRate, loop, duration } = state;
+  const { isPlaying, volume, playbackRate, loop, duration: trackDuration } = state;
   const stateRef = useRef(state);
 
-//   const loopRef = useRef(loop); // Ref to keep track of loop state
-//  // Update loopRef whenever loop state changes
-//  useEffect(() => {
-//   loopRef.current = loop;
-// }, [loop]);
-// Update stateRef whenever state changes
-useEffect(() => {
-  stateRef.current = state;
-}, [state]);
+  useEffect(() => {
+    stateRef.current = state;
+  }, [state]);
 
-  
-  // Debounced handlers
   const debouncedSetVolume = useCallback(
     debounce((newVolume) => {
       if (wavesurferRef.current) {
@@ -144,7 +128,6 @@ useEffect(() => {
     []
   );
 
- 
   useEffect(() => {
     wavesurferRef.current = WaveSurfer.create({
       container: waveformRef.current,
@@ -156,17 +139,14 @@ useEffect(() => {
       cursorWidth: 2,
       barWidth: 2,
     });
-
     wavesurferRef.current.load(fileUrl);
     wavesurferRef.current.setVolume(volume);
     wavesurferRef.current.setPlaybackRate(playbackRate);
-
     wavesurferRef.current.on('ready', () => {
       const totalDuration = wavesurferRef.current.getDuration();
       const formattedDuration = new Date(totalDuration * 1000).toISOString().substr(14, 5);
       dispatch({ type: 'SET_DURATION', payload: formattedDuration });
     });
-
     wavesurferRef.current.on('play', () => dispatch({ type: 'PLAY_PAUSE' }));
     wavesurferRef.current.on('pause', () => dispatch({ type: 'PLAY_PAUSE' }));
     wavesurferRef.current.on('finish', () => {
@@ -175,7 +155,6 @@ useEffect(() => {
         wavesurferRef.current.play();
       }
     });
-
     return () => {
       if (wavesurferRef.current) {
         wavesurferRef.current.destroy();
@@ -190,7 +169,6 @@ useEffect(() => {
     }
   }, [volume, playbackRate]);
 
-
   const playPause = () => {
     dispatch({ type: 'PLAY_PAUSE' });
     wavesurferRef.current?.playPause();
@@ -200,17 +178,7 @@ useEffect(() => {
     dispatch({ type: 'STOP' });
     wavesurferRef.current?.stop();
   };
-  // const handleVolumeChange = (e) => {
-  //   const newVolume = parseFloat(e.target.value);
-  //   setVolume(newVolume);
-  //   wavesurferRef.current.setVolume(newVolume);
-  // };
 
-  // const handlePlaybackRateChange = (e) => {
-  //   const newRate = parseFloat(e.target.value);
-  //   setPlaybackRate(newRate);
-  //   wavesurferRef.current.setPlaybackRate(newRate);
-  // };
   const handleVolumeChange = (e) => {
     const newVolume = parseFloat(e.target.value);
     dispatch({ type: 'SET_VOLUME', payload: newVolume });
@@ -222,6 +190,7 @@ useEffect(() => {
     dispatch({ type: 'SET_PLAYBACK_RATE', payload: newRate });
     debouncedSetPlaybackRate(newRate);
   };
+
   const toggleLoop = () => {
     dispatch({ type: 'TOGGLE_LOOP' });
   };
@@ -234,21 +203,23 @@ useEffect(() => {
   };
 
   return (
-<AudioPlayerContainer tabIndex="-1" aria-label="Audio Player">      <h3>Now Playing: {fileName}</h3>
-{fileSize && (
+    <AudioPlayerContainer tabIndex="-1" aria-label="Audio Player">      
+      <h3>Now Playing: {fileName}</h3>
+      {fileSize && (
         <p>File Size: {(fileSize / (1024 * 1024)).toFixed(2)} MB</p>
       )}
-      {duration && <p>Duration: {duration}</p>}
+      {trackDuration && <p>Duration: {trackDuration}</p>}
       <div id="waveform" ref={waveformRef} role="region"
         aria-label={`Waveform for ${fileName}`}
         tabIndex="0"
         onKeyDown={(e) => {
           if (e.key === ' ' || e.key === 'Enter') {
             e.preventDefault();
-            playPause();          }
-          // Implement additional keyboard interactions as needed
+            playPause();          
+          }
         }}
-        style={{ position: 'relative' }}>{/* Optional: Add visible focus indicators */}
+        style={{ position: 'relative' }}>
+        {}
         <div
           tabIndex="-1"
           style={{
@@ -258,7 +229,8 @@ useEffect(() => {
             right: 0,
             bottom: 0,
           }}
-        ></div></div>
+        ></div>
+      </div>
       <Controls>
         <button onClick={playPause} aria-label={isPlaying ? 'Pause' : 'Play'}>
           <FontAwesomeIcon icon={isPlaying ? faPause : faPlay} />
@@ -308,7 +280,7 @@ AudioPlayer.propTypes = {
   fileSize: PropTypes.number.isRequired,
   duration: PropTypes.string,
   onClose: PropTypes.func.isRequired,
-  triggerRef: PropTypes.object, // New prop
+  triggerRef: PropTypes.object, 
 };
 
 export default AudioPlayer;

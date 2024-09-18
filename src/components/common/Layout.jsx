@@ -8,7 +8,6 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faBars } from "@fortawesome/free-solid-svg-icons";
 import PropTypes from "prop-types";
 
-// Styled Components
 const LayoutContainer = styled.div`
   display: flex;
 `;
@@ -19,7 +18,6 @@ const Content = styled.main`
   padding: 20px;
   width: 100%;
   transition: margin-left 0.3s ease-in-out;
-
   @media (max-width: 768px) {
     margin-left: 0;
   }
@@ -37,7 +35,6 @@ const MobileHeader = styled.header`
   align-items: center;
   padding: 0 20px;
   z-index: 1100;
-
   @media (max-width: 768px) {
     display: flex;
   }
@@ -50,7 +47,6 @@ const MenuButton = styled.button`
   font-size: 1.5em;
   cursor: pointer;
   outline: none;
-
   &:hover {
     color: #3498db;
   }
@@ -58,13 +54,11 @@ const MenuButton = styled.button`
 
 const ToolbarPlaceholder = styled.div`
   margin-top: 60px;
-
   @media (min-width: 769px) {
     margin-top: 0;
   }
 `;
 
-// Component
 function Layout({ children }) {
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
@@ -72,9 +66,11 @@ function Layout({ children }) {
   const toggleMobile = () => {
     setIsMobileOpen(!isMobileOpen);
   };
+
   const toggleSidebar = () => {
     setSidebarCollapsed(!sidebarCollapsed);
   };
+
   return (
     <>
       <SideNav
@@ -91,13 +87,6 @@ function Layout({ children }) {
         <h2 style={{ marginLeft: "20px" }}>WaveAnalyzer</h2>
       </MobileHeader>
       <LayoutContainer>
-        {/* <SideNav
-          isMobile={false}
-          isMobileOpen={false}
-          toggleMobile={toggleMobile}
-          collapsed={sidebarCollapsed}
-          toggleSidebar={toggleSidebar}
-        /> */}
         <Content $sidebarCollapsed={sidebarCollapsed}>
           <Breadcrumbs />
           <QuickAccessToolbar />
@@ -110,7 +99,7 @@ function Layout({ children }) {
 }
 
 Layout.propTypes = {
-  children: PropTypes.node.isRequired,
+  children: PropTypes.node, 
 };
 
 export default Layout;

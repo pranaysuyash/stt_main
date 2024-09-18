@@ -11,6 +11,7 @@ function Help() {
     <HelpContainer>
       <h1>Help</h1>
       <p>This section will provide help and support information.</p>
+      {/* Add more help content as needed */}
     </HelpContainer>
   );
 }

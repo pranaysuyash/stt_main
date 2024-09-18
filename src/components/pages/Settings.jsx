@@ -1,3 +1,4 @@
+// src/components/pages/Settings.jsx
 import React, { useState } from 'react';
 import styled from 'styled-components';
 import Notification from '../common/Notification';
@@ -24,7 +25,6 @@ const Input = styled.input`
   border-radius: 4px;
   font-size: ${({ theme }) => theme.fontSizes.body};
   font-family: ${({ theme }) => theme.fonts.primary};
-
   &:focus {
     border-color: ${({ theme }) => theme.colors.primary};
     outline: none;
@@ -48,7 +48,6 @@ function Settings() {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    // Implement settings update logic here
     setNotification({ message: 'Settings updated successfully!', type: 'success' });
   };
 

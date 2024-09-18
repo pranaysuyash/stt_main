@@ -8,19 +8,18 @@ const LibraryContainer = styled.div`
 `;
 
 function Library() {
-  // Dummy data for demonstration
   const dummyFiles = [
     {
       filename: 'SampleAudio1.mp3',
       path: '/static/uploads/SampleAudio1.mp3',
-      size: 10485760, // 10 MB
+      size: 10485760, // 10MB
       type: 'audio/mpeg',
       duration: '03:45',
     },
     {
       filename: 'SampleVideo1.mp4',
       path: '/static/uploads/SampleVideo1.mp4',
-      size: 52428800, // 50 MB
+      size: 52428800, // 50MB
       type: 'video/mp4',
       duration: '10:20',
     },

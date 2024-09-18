@@ -1,3 +1,4 @@
+// src/components/pages/Upload.jsx
 import React, { useState } from 'react';
 import styled from 'styled-components';
 import FileUploader from '../common/FileUploader';
@@ -25,7 +26,7 @@ function Upload() {
         setUploadedFiles={setUploadedFiles} 
         setNotification={setNotification} 
       />
-      {/* Optionally, display uploaded files after upload */}
+      {}
       {uploadedFiles.length > 0 && (
         <div>
           <h2>Uploaded Files:</h2>

@@ -1,3 +1,4 @@
+// src/components/pages/Dashboard.jsx
 import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
 import FileDashboard from '../common/FileDashboard';
@@ -12,8 +13,13 @@ function Dashboard() {
   const [notification, setNotification] = useState({ message: '', type: 'success' });
 
   useEffect(() => {
-    fetch('/api/file_history')
-      .then((response) => response.json())
+    fetch('/api/file_history') 
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error('Failed to fetch file history.');
+        }
+        return response.json();
+      })
       .then((data) => {
         if (data.files) {
           setUploadedFiles(data.files);

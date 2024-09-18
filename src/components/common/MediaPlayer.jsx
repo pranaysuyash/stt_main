@@ -6,10 +6,8 @@ import styled, { keyframes } from 'styled-components';
 import PropTypes from 'prop-types';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faForward, faBackward, faTimes } from '@fortawesome/free-solid-svg-icons';
-import { faPlay, faPause, faStop, faRedo, faVolumeUp, faVolumeMute } from '@fortawesome/free-solid-svg-icons';
 import FocusTrap from 'focus-trap-react';
 
-// Keyframes for fade-in animation
 const fadeIn = keyframes`
   from {
     opacity: 0;
@@ -19,18 +17,17 @@ const fadeIn = keyframes`
   }
 `;
 
-// Styled Components for Modal
 const ModalOverlay = styled.div`
   position: fixed;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  background-color: rgba(0, 0, 0, 0.5); /* Semi-transparent background */
+  background-color: rgba(0, 0, 0, 0.5); 
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 2000; /* Above other elements */
+  z-index: 2000; 
   animation: ${fadeIn} 0.3s ease-out;
 `;
 
@@ -44,7 +41,6 @@ const ModalContent = styled.div`
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
   max-height: 90vh;
   overflow-y: auto;
-
   @media (max-width: 767px) {
     padding: 15px;
     width: 95%;
@@ -62,11 +58,9 @@ const CloseIcon = styled(FontAwesomeIcon)`
   cursor: pointer;
   color: ${({ theme }) => theme.colors.error};
   font-size: 1.5rem;
-
   &:hover {
     color: #c0392b;
   }
-
   @media (max-width: 767px) {
     top: 10px;
     right: 10px;
@@ -79,7 +73,6 @@ const NavigationControls = styled.div`
   justify-content: center;
   align-items: center;
   margin-top: 20px;
-
   button {
     margin: 0 15px;
     padding: 8px 12px;
@@ -89,12 +82,10 @@ const NavigationControls = styled.div`
     background-color: ${({ theme }) => theme.colors.primary};
     color: white;
     transition: background-color 0.2s ease;
-
     &:hover {
       background-color: ${({ theme }) => theme.colors.secondary};
     }
   }
-
   @media (max-width: 767px) {
     button {
       padding: 6px 10px;
@@ -103,13 +94,12 @@ const NavigationControls = styled.div`
   }
 `;
 
-// MediaPlayer Component as Modal
 function MediaPlayer({ 
   fileUrl, 
   fileName, 
   fileType, 
   fileSize, 
-  duration = '', // Default value
+  duration = '', 
   onClose, 
   onNextTrack, 
   onPrevTrack 
@@ -121,6 +111,7 @@ function MediaPlayer({
       closeButtonRef.current.focus();
     }
   }, []);
+
   return (
     <ModalOverlay onClick={onClose} aria-modal="true" role="dialog">
       <FocusTrap>
@@ -145,8 +136,7 @@ function MediaPlayer({
               onClose={onClose}
             />
           )}
-
-          {/* Navigation Controls */}
+          {}
           <NavigationControls>
             <button onClick={onPrevTrack} aria-label="Previous Track">
               <FontAwesomeIcon icon={faBackward} /> Previous

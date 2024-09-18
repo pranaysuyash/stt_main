@@ -27,16 +27,19 @@ Directory Structure:
 │   │   │   ├── VideoPlayer.jsx
 │   │   │   └── WaveformViewer.jsx
 │   │   └── pages/
+│   │       ├── Analysis.jsx
 │   │       ├── Dashboard.jsx
 │   │       ├── Help.jsx
 │   │       ├── Library.jsx
+│   │       ├── NotFound.jsx
 │   │       ├── Settings.jsx
 │   │       └── Upload.jsx
 │   ├── styles/
 │   │   ├── GlobalStyle.js
 │   │   └── theme.js
 │   ├── App.jsx
-│   └── main.jsx
+│   ├── main.jsx
+│   └── routes.jsx
 ├── static/
 │   ├── css/
 │   ├── js/
@@ -54,50 +57,7 @@ Directory Structure:
 ## File: test.jsx
 
 ```jsx
-// src/App.jsx
-import React from 'react';
-import styled, { ThemeProvider } from 'styled-components';
-import GlobalStyle from './styles/GlobalStyle';
-import { theme } from './styles/theme';
-import ErrorBoundary from './components/common/ErrorBoundary';
-import Layout from './components/common/Layout';
-import { Switch, Route, Redirect } from 'react-router-dom';
-import Dashboard from './components/pages/Dashboard';
-import Upload from './components/pages/Upload';
-import Settings from './components/pages/Settings';
-import Help from './components/pages/Help'; // You'll need to create a Help page
-import Library from './components/pages/Library'; // You'll need to create a Library page
-const AppContainer = styled.div`
-  /* Additional global styles if needed */
-`;
-function App() {
-  return (
-    <ThemeProvider theme={theme}>
-      <GlobalStyle />
-      <ErrorBoundary>
-        <AppContainer>
-          <Layout>
-            <Switch>
-              <Route exact path="/">
-                <Redirect to="/dashboard" />
-              </Route>
-              <Route path="/dashboard" component={Dashboard} />
-              <Route path="/upload" component={Upload} />
-              <Route path="/library" component={Library} />
-              <Route path="/analysis" component={() => <div>Analysis Page (To Be Implemented)</div>} />
-              <Route path="/settings" component={Settings} />
-              <Route path="/help" component={() => <div>Help Page (To Be Implemented)</div>} />
-              <Route path="*">
-                <div>404 - Page Not Found</div>
-              </Route>
-            </Switch>
-          </Layout>
-        </AppContainer>
-      </ErrorBoundary>
-    </ThemeProvider>
-  );
-}
-export default App;
+
 ```
 
 ## File: index.html
@@ -110,7 +70,6 @@ export default App;
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Audio/Video Waveform Analyzer</title>
-    <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
@@ -130,7 +89,6 @@ import matplotlib.pyplot as plt
 from pydub import AudioSegment
 import numpy as np
 plt.switch_backend('Agg')
-# Function to extract audio from a video file
 def extract_audio_from_video(video_path, output_audio_path):
     """
     Extracts the audio track from a video file and saves it as a separate audio file.
@@ -141,15 +99,12 @@ def extract_audio_from_video(video_path, output_audio_path):
     - Path to the extracted audio file or None if the video has no audio.
     """
     video = VideoFileClip(video_path)
-    # Check if the video has an audio track
     if video.audio is None:
         print("No audio track found in the video.")
         return None
-    # If audio is present, write it to the specified file
     audio = video.audio
     audio.write_audiofile(output_audio_path)
     return output_audio_path
-# Function to generate a waveform image from an audio file
 def generate_waveform(audio_file, output_image_path):
     """
     Generates a waveform image from an audio file and saves it as an image.
@@ -159,18 +114,14 @@ def generate_waveform(audio_file, output_image_path):
     Returns:
     - Path to the generated waveform image.
     """
-    # Load the audio file using pydub
     audio = AudioSegment.from_file(audio_file)
-    # Get the raw audio data as a numpy array
     data = np.array(audio.get_array_of_samples())
-    # Create the waveform plot using matplotlib
     plt.figure(figsize=(10, 4))
     plt.plot(data, color='blue')
     plt.fill_between(range(len(data)), data, color='skyblue', alpha=0.4)
     plt.title('Waveform')
     plt.xlabel('Time (samples)')
     plt.ylabel('Amplitude')
-    # Save the generated waveform image
     plt.savefig(output_image_path)
     plt.close()
     return output_image_path
@@ -179,7 +130,6 @@ def generate_waveform(audio_file, output_image_path):
 ## File: vite.config.js
 
 ```js
-// vite.config.js
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import path from 'path';
@@ -187,65 +137,74 @@ export default defineConfig({
   plugins: [react()],
   resolve: {
     alias: {
-      '@': path.resolve(__dirname, './src'), // Optional: Alias for easier imports
+      '@': path.resolve(__dirname, './src'), 
     },
   },
   server: {
-    port: 5173, // Explicitly set the port
-    host: true, // Allows access from other devices on your network
-    strictPort: false, // Allows Vite to increment the port if 5173 is already in use
+    port: 5173, 
+    host: true, 
+    strictPort: false, 
     proxy: {
-      '/upload': 'http://localhost:5555', 
-      '/api': 'http://localhost:5555', // Proxy API calls to Flask backend
-      '/static': {
-        target: 'http://localhost:5555',   // Proxy static file requests (uploads, etc.)
+      '/api': {
+        target: 'http:
         changeOrigin: true,
+        secure: false, 
+      },
+      '/static': {
+        target: 'http:
+        changeOrigin: true,
+        secure: false, 
       },
     },
-    open: true, // Automatically open the app in the browser when the server starts
+    open: true, 
   },
-  base: './', // Ensures correct asset path resolution
+  base: './', 
 });
 ```
 
 ## File: test.py
 
 ```py
-from flask import Flask, render_template, request, jsonify, send_file
+
+```
+
+## File: app.py
+
+```py
+from flask import Flask, request, jsonify, send_file
 import os
 import logging
 from werkzeug.utils import secure_filename
 from audio_processing import extract_audio_from_video, generate_waveform
 from flask_cors import CORS
 import mimetypes
-# Initialize Flask app
 app = Flask(__name__)
-CORS(app, resources={r"/static/uploads/*": {"origins": "*"}})
+CORS(app, resources={
+    r"/api/*": {"origins": "*"},
+    r"/static/uploads/*": {"origins": "*"}
+})
 logging.basicConfig(level=logging.DEBUG)
-# Ensure uploads directory exists
 UPLOAD_FOLDER = 'static/uploads'
 if not os.path.exists(UPLOAD_FOLDER):
     os.makedirs(UPLOAD_FOLDER)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
-app.config['MAX_CONTENT_LENGTH'] = 250 * 1024 * 1024  # 250MB max file size
+app.config['MAX_CONTENT_LENGTH'] = 250 * 1024 * 1024  
 ALLOWED_EXTENSIONS = {'mp3', 'wav', 'mp4', 'avi', 'mov', 'mkv'}
 def allowed_file(filename):
+    """Check if the file has an allowed extension."""
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
-# Single Error handler for large files
 @app.errorhandler(413)
 def request_entity_too_large(error):
+    """Handle file too large error."""
     app.logger.error('File too large')
     return jsonify({
         'error': 'File too large',
         'max_size': '250MB',
         'message': 'Please try compressing your file or splitting it into smaller parts before uploading.'
     }), 413
-@app.route('/')
-def index():
-    return render_template('index.html')
-# Handle file uploads (audio/video)
-@app.route('/upload', methods=['POST'])
+@app.route('/api/upload', methods=['POST'])
 def upload_file():
+    """Handle file uploads."""
     if 'file' not in request.files:
         app.logger.error('No file part in request.')
         return jsonify({'error': 'No file part in the request.'}), 400
@@ -258,7 +217,7 @@ def upload_file():
         'audio/wav',
         'video/mp4',
         'video/x-msvideo',
-        'video/quicktime'  # Added to allow .mov files
+        'video/quicktime'  
     }
     uploaded_files = []
     errors = []
@@ -266,7 +225,7 @@ def upload_file():
         if file.filename == '':
             app.logger.warning('Empty filename encountered, skipping file.')
             errors.append({'filename': '', 'error': 'Empty filename.'})
-            continue  # Skip files with no filename
+            continue  
         if not allowed_file(file.filename):
             app.logger.warning(f'Unsupported file extension: {file.filename}')
             errors.append({'filename': file.filename, 'error': 'Unsupported file extension.'})
@@ -275,7 +234,10 @@ def upload_file():
             app.logger.warning(f'Unsupported MIME type: {file.filename} with type {file.mimetype}')
             errors.append({'filename': file.filename, 'error': 'Unsupported MIME type.'})
             continue
-        if file.content_length > app.config['MAX_CONTENT_LENGTH']:
+        file.seek(0, os.SEEK_END)
+        file_length = file.tell()
+        file.seek(0, 0) 
+        if file_length > app.config['MAX_CONTENT_LENGTH']:
             app.logger.warning(f'File too large: {file.filename}')
             errors.append({'filename': file.filename, 'error': 'File size exceeds the 250MB limit.'})
             continue
@@ -299,185 +261,37 @@ def upload_file():
         response['uploaded_files'] = uploaded_files
     if errors:
         response['errors'] = errors
-    status_code = 200 if uploaded_files and not errors else 207  # 207 Multi-Status if partial success
+    status_code = 200 if uploaded_files and not errors else 207  
     return jsonify(response), status_code
-# Endpoint to fetch waveform for previously uploaded files (optional)
-@app.route('/waveform/<filename>', methods=['GET'])
+@app.route('/api/waveform/<filename>', methods=['GET'])
 def get_waveform(filename):
+    """Generate and return waveform image for a given audio/video file."""
     audio_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
     waveform_image = os.path.join(app.config['UPLOAD_FOLDER'], 'waveform.png')
-    # Check if the file is a video
-    if filename.endswith('.mp4') or filename.endswith('.avi') or filename.endswith('.mov') or filename.endswith('.mkv'):
-        extract_audio_from_video(audio_path, os.path.join(app.config['UPLOAD_FOLDER'], 'extracted_audio.wav'))
-    # Generate waveform for audio
-    generate_waveform(os.path.join(app.config['UPLOAD_FOLDER'], 'extracted_audio.wav'), waveform_image)
-    # Return the waveform image
-    return send_file(waveform_image, mimetype='image/png')
-@app.route('/api/file_exists', methods=['GET'])
-def file_exists():
-    filename = request.args.get('filename')
-    if not filename:
-        return jsonify({'error': 'No filename provided'}), 400
-    file_path = os.path.join(app.config['UPLOAD_FOLDER'], secure_filename(filename))
-    if os.path.isfile(file_path):
-        return jsonify({'exists': True})
-    return jsonify({'exists': False})
-# List upload history
-@app.route('/api/file_history', methods=['GET'])
-def file_history():
-    files = os.listdir(app.config['UPLOAD_FOLDER'])
-    file_list = []
-    for f in files:
-        file_path = os.path.join(app.config['UPLOAD_FOLDER'], f)
-        if os.path.isfile(file_path):
-            mime_type, _ = mimetypes.guess_type(file_path)
-            file_info = {
-                'filename': f,
-                'path': f'/static/uploads/{f}',
-                'size': os.path.getsize(file_path),
-                'type': mime_type or 'application/octet-stream',
-            }
-            file_list.append(file_info)
-    return jsonify({'files': file_list})
-# Main function to run the Flask app
-if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5555, debug=True)
-```
-
-## File: app.py
-
-```py
-from flask import Flask, render_template, request, jsonify, send_file
-import os
-import logging
-from werkzeug.utils import secure_filename
-from audio_processing import extract_audio_from_video, generate_waveform
-from flask_cors import CORS
-from moviepy.editor import VideoFileClip
-from mutagen import File as MutagenFile  # Ensure mutagen is installed
-import mimetypes
-# Initialize Flask app
-app = Flask(__name__)
-CORS(app, resources={r"/static/uploads/*": {"origins": "*"}})
-logging.basicConfig(level=logging.DEBUG)
-# Ensure uploads directory exists
-UPLOAD_FOLDER = 'static/uploads'
-if not os.path.exists(UPLOAD_FOLDER):
-    os.makedirs(UPLOAD_FOLDER)
-app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
-app.config['MAX_CONTENT_LENGTH'] = 250 * 1024 * 1024  # 200MB max file size
-ALLOWED_EXTENSIONS = {'mp3', 'wav', 'mp4', 'avi', 'mov', 'mkv'}
-def allowed_file(filename):
-    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
-# Error handler for large files
-@app.errorhandler(413)
-def request_entity_too_large(error):
-    app.logger.error('File too large')
-    return jsonify({
-        'error': 'File too large',
-        'max_size': '250MB',
-        'message': 'Please try compressing your file or splitting it into smaller parts before uploading.'
-    }), 413
-@app.route('/')
-def index():
-    return render_template('index.html')
-# Handle file uploads (audio/video)
-# @app.route('/upload', methods=['POST'])
-# def upload_file():
-#     if 'file' not in request.files:
-#         return jsonify({'error': 'No file part'}), 400
-#     file = request.files['file']
-#     if file.filename == '':
-#         return jsonify({'error': 'No selected file'}), 400
-#     if file:
-#         filename = secure_filename(file.filename)
-#         file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-#         try:
-#             file.save(file_path)
-#             # Check if it's a video file and try extracting the audio
-#             if file.mimetype.startswith('video'):
-#                 audio_path = os.path.join(app.config['UPLOAD_FOLDER'], 'extracted_audio.wav')
-#                 extracted_audio = extract_audio_from_video(file_path, audio_path)
-#                 # If the video has no audio, return a warning message
-#                 if extracted_audio is None:
-#                     return jsonify({'filename': filename, 'path': f'/static/uploads/{filename}', 'warning': 'No audio track found'})
-#                 # Generate waveform from extracted audio
-#                 waveform_image = os.path.join(app.config['UPLOAD_FOLDER'], 'waveform.png')
-#                 generate_waveform(extracted_audio, waveform_image)
-#             return jsonify({'filename': filename, 'path': f'/static/uploads/{filename}'})
-#         except Exception as e:
-#             return jsonify({'error': 'Failed to save file', 'message': str(e)}), 500
-@app.route('/upload', methods=['POST'])
-def upload_file():
-    if 'file' not in request.files:
-        app.logger.error('No file part in request.')
-        return jsonify({'error': 'No file part in the request.'}), 400
-    files = request.files.getlist('file')
-    if not files or len(files) == 0:
-        app.logger.error('No files selected for upload.')
-        return jsonify({'error': 'No files selected for upload.'}), 400
-    allowed_mimetypes = {
-        'audio/mpeg',
-        'audio/wav',
-        'video/mp4',
-        'video/x-msvideo',
-        'video/quicktime'  # Added to allow .mov files
-    }
-    uploaded_files = []
-    errors = []
-    for file in files:
-        if file.filename == '':
-            app.logger.warning('Empty filename encountered, skipping file.')
-            errors.append({'filename': '', 'error': 'Empty filename.'})
-            continue  # Skip files with no filename
-        if not allowed_file(file.filename):
-            app.logger.warning(f'Unsupported file extension: {file.filename}')
-            errors.append({'filename': file.filename, 'error': 'Unsupported file extension.'})
-            continue
-        if file.mimetype not in allowed_mimetypes:
-            app.logger.warning(f'Unsupported MIME type: {file.filename} with type {file.mimetype}')
-            errors.append({'filename': file.filename, 'error': 'Unsupported MIME type.'})
-            continue
-        if file.content_length > app.config['MAX_CONTENT_LENGTH']:
-            app.logger.warning(f'File too large: {file.filename}')
-            errors.append({'filename': file.filename, 'error': 'File size exceeds the 200MB limit.'})
-            continue
-        filename = secure_filename(file.filename)
-        file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+    if not os.path.exists(audio_path):
+        app.logger.error(f'File not found: {audio_path}')
+        return jsonify({'error': 'File not found.'}), 404
+    if filename.endswith(('.mp4', '.avi', '.mov', '.mkv')):
+        extracted_audio = os.path.join(app.config['UPLOAD_FOLDER'], 'extracted_audio.wav')
         try:
-            file.save(file_path)
-            app.logger.info(f'File saved: {file_path}')
-            file_info = {
-                'filename': filename,
-                'path': f'/static/uploads/{filename}',
-                'size': os.path.getsize(file_path),
-                'type': file.mimetype
-            }
-            uploaded_files.append(file_info)
+            extract_audio_from_video(audio_path, extracted_audio)
+            generate_waveform(extracted_audio, waveform_image)
         except Exception as e:
-            app.logger.error(f'Error processing file {filename}: {e}')
-            errors.append({'filename': filename, 'error': 'Failed to process the file.'})
-    response = {}
-    if uploaded_files:
-        response['uploaded_files'] = uploaded_files
-    if errors:
-        response['errors'] = errors
-    status_code = 200 if uploaded_files and not errors else 207  # 207 Multi-Status if partial success
-    return jsonify(response), status_code
-# Endpoint to fetch waveform for previously uploaded files (optional)
-@app.route('/waveform/<filename>', methods=['GET'])
-def get_waveform(filename):
-    audio_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-    waveform_image = os.path.join(app.config['UPLOAD_FOLDER'], 'waveform.png')
-    # Check if the file is a video
-    if filename.endswith('.mp4') or filename.endswith('.avi'):
-        extract_audio_from_video(audio_path, os.path.join(app.config['UPLOAD_FOLDER'], 'extracted_audio.wav'))
-    # Generate waveform for audio
-    generate_waveform(os.path.join(app.config['UPLOAD_FOLDER'], 'extracted_audio.wav'), waveform_image)
-    # Return the waveform image
+            app.logger.error(f'Error generating waveform for {filename}: {e}')
+            return jsonify({'error': 'Failed to generate waveform.'}), 500
+    else:
+        try:
+            generate_waveform(audio_path, waveform_image)
+        except Exception as e:
+            app.logger.error(f'Error generating waveform for {filename}: {e}')
+            return jsonify({'error': 'Failed to generate waveform.'}), 500
+    if not os.path.exists(waveform_image):
+        app.logger.error(f'Waveform image not found: {waveform_image}')
+        return jsonify({'error': 'Waveform image not found.'}), 404
     return send_file(waveform_image, mimetype='image/png')
 @app.route('/api/file_exists', methods=['GET'])
 def file_exists():
+    """Check if a file exists."""
     filename = request.args.get('filename')
     if not filename:
         return jsonify({'error': 'No filename provided'}), 400
@@ -485,16 +299,14 @@ def file_exists():
     if os.path.isfile(file_path):
         return jsonify({'exists': True})
     return jsonify({'exists': False})
-# List upload history
-# Ensure that your `/api/file_history` endpoint properly returns the full list of files.
-# @app.route('/api/file_history', methods=['GET'])
-# def file_history():
-#     files = os.listdir(app.config['UPLOAD_FOLDER'])
-#     file_list = [{'filename': f, 'path': f'/static/uploads/{f}'} for f in files if os.path.isfile(os.path.join(app.config['UPLOAD_FOLDER'], f))]
-#     return jsonify({'files': file_list})  # Return the list of files correctly
 @app.route('/api/file_history', methods=['GET'])
 def file_history():
-    files = os.listdir(app.config['UPLOAD_FOLDER'])
+    """Retrieve the list of uploaded files."""
+    try:
+        files = os.listdir(app.config['UPLOAD_FOLDER'])
+    except Exception as e:
+        app.logger.error(f'Error accessing upload folder: {e}')
+        return jsonify({'error': 'Failed to access upload folder.'}), 500
     file_list = []
     for f in files:
         file_path = os.path.join(app.config['UPLOAD_FOLDER'], f)
@@ -508,16 +320,6 @@ def file_history():
             }
             file_list.append(file_info)
     return jsonify({'files': file_list})
-# # Error handler for large files
-# @app.errorhandler(413)
-# def request_entity_too_large(error):
-#     app.logger.error('File too large')
-#     return jsonify({
-#         'error': 'File too large',
-#         'max_size': '200MB',
-#         'message': 'Please try compressing your file or splitting it into smaller parts before uploading.'
-#     }), 413
-# Main function to run the Flask app
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5555, debug=True)
 ```
@@ -564,13 +366,64 @@ export default [
 ]
 ```
 
+## File: src/routes.jsx
+
+```jsx
+import React, { lazy } from 'react';
+const Dashboard = lazy(() => import('./components/pages/Dashboard'));
+const Upload = lazy(() => import('./components/pages/Upload'));
+const Library = lazy(() => import('./components/pages/Library'));
+const Settings = lazy(() => import('./components/pages/Settings'));
+const Help = lazy(() => import('./components/pages/Help'));
+const NotFound = lazy(() => import('./components/pages/NotFound'));
+const Analysis = lazy(() => import('./components/pages/Analysis'));
+const routes = [
+  {
+    path: '/',
+    element: <Dashboard />,
+    breadcrumb: 'Dashboard',
+  },
+  {
+    path: '/upload',
+    element: <Upload />,
+    breadcrumb: 'Upload',
+  },
+  {
+    path: '/library',
+    element: <Library />,
+    breadcrumb: 'Library',
+  },
+  {
+    path: '/analysis',
+    element: <Analysis />,
+    breadcrumb: 'Analysis',
+  },
+  {
+    path: '/settings',
+    element: <Settings />,
+    breadcrumb: 'Settings',
+  },
+  {
+    path: '/help',
+    element: <Help />,
+    breadcrumb: 'Help',
+  },
+  {
+    path: '*',
+    element: <NotFound />,
+    breadcrumb: 'Not Found',
+  },
+];
+export default routes;
+```
+
 ## File: src/main.jsx
 
 ```jsx
 import React from "react";
 import { createRoot } from "react-dom/client";
 import App from "./App.jsx";
-import "@fortawesome/fontawesome-free/css/all.min.css"; // Ensure FontAwesome is installed
+import "@fortawesome/fontawesome-free/css/all.min.css"; 
 import { BrowserRouter as Router } from "react-router-dom";
 createRoot(document.getElementById("root")).render(
   <React.StrictMode>
@@ -584,26 +437,15 @@ createRoot(document.getElementById("root")).render(
 ## File: src/App.jsx
 
 ```jsx
-// src/App.jsx
-import React , { Suspense, lazy } from 'react';
+import React, { Suspense } from 'react';
 import styled, { ThemeProvider } from 'styled-components';
 import GlobalStyle from './styles/GlobalStyle';
 import { theme } from './styles/theme';
 import ErrorBoundary from './components/common/ErrorBoundary';
 import Layout from './components/common/Layout';
 import { Routes, Route, Navigate } from 'react-router-dom';
-// import Dashboard from './components/pages/Dashboard';
-// import Upload from './components/pages/Upload';
-// import Settings from './components/pages/Settings';
-// import Help from './components/pages/Help'; // You'll need to create a Help page
-// import Library from './components/pages/Library'; // You'll need to create a Library page
-import Loader from './components/common/Loader'; // Create a Loader component
-// Lazy-loaded page components
-const Dashboard = lazy(() => import('./components/pages/Dashboard'));
-const Upload = lazy(() => import('./components/pages/Upload'));
-const Library = lazy(() => import('./components/pages/Library'));
-const Settings = lazy(() => import('./components/pages/Settings'));
-const Help = lazy(() => import('./components/pages/Help'));
+import Loader from './components/common/Loader';
+import routes from './routes'; 
 const AppContainer = styled.div`
   max-width: 900px;
   margin: 0 auto;
@@ -612,45 +454,6 @@ const AppContainer = styled.div`
   border-radius: 10px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 `;
-// function App() {
-//   const [uploadedFiles, setUploadedFiles] = useState([]);
-//   const [notification, setNotification] = useState({ message: '', type: '' }); // Define notification state
-//   // Fetch uploaded files when the app loads
-//   useEffect(() => {
-//     fetch('/api/file_history')
-//       .then((response) => response.json())
-//       .then((data) => {
-//         if (data.files) {
-//           setUploadedFiles(data.files);
-//         }
-//       })
-//       .catch((error) => console.error('Error fetching files:', error));
-//   }, []);
-//   return (
-//     <ThemeProvider theme={theme}>
-//       <GlobalStyle />
-//       <ErrorBoundary>
-//         <Container>
-//           <h1>Audio/Video Waveform Analyzer</h1>
-//           {/* Display Notification if exists */}
-//           {notification.message && (
-//             <Notification 
-//               message={notification.message} 
-//               type={notification.type} 
-//               onClose={() => setNotification({ message: '', type: '' })} 
-//             />
-//           )}
-//           <FileUploader 
-//             setUploadedFiles={setUploadedFiles} 
-//             setNotification={setNotification} 
-//           />
-//           <FileDashboard uploadedFiles={uploadedFiles} />
-//         </Container>
-//       </ErrorBoundary>
-//     </ThemeProvider>
-//   );
-// }
-// export default App;
 function App() {
   return (
     <ThemeProvider theme={theme}>
@@ -659,16 +462,15 @@ function App() {
         <AppContainer>
           <Layout>
             <Suspense fallback={<Loader />}>
-            <Routes>
-            <Route path="/" element={<Navigate to="/dashboard" replace />} />
-              <Route path="/dashboard" element={<Dashboard />} />
-              <Route path="/upload" element={<Upload />} />
-              <Route path="/library" element={<Library />} />
-              <Route path="/analysis" element={<div>Analysis Page (To Be Implemented)</div>} />
-              <Route path="/settings" element={<Settings />} />
-              <Route path="/help" element={<Help />} />
-              <Route path="*" element={<div>404 - Page Not Found</div>} />
-            </Routes>
+              <Routes>
+                {routes.map((route, index) => (
+                  <Route
+                    key={index}
+                    path={route.path}
+                    element={route.element}
+                  />
+                ))}
+              </Routes>
             </Suspense>
           </Layout>
         </AppContainer>
@@ -682,29 +484,35 @@ export default App;
 ## File: src/styles/theme.js
 
 ```js
-// src/styles/theme.js
 export const theme = {
   colors: {
-    primary: '#1E90FF',      // Ocean Blue
-    secondary: '#FFA500',    // Vibrant Orange
-    accent: '#32CD32',       // Lime Green
-    neutral: '#FFFFFF',      // White
-    background: '#F5F5F5',   // Light Gray
-    text: '#2F4F4F',         // Dark Slate Gray
-    success: '#50C878',      // Emerald Green
-    error: '#DC143C',        // Crimson Red
-    warning: '#DAA520',      // Goldenrod
+    primary: '#008080',      
+    secondary: '#6A0DAD',    
+    accent: '#32CD32',       
+    neutral: '#FFFFFF',      
+    background: '#F5F5F5',   
+    text: '#2F4F4F',         
+    success: '#32CD32',      
+    error: '#DC143C',        
+    warning: '#DAA520',      
   },
   fonts: {
     primary: 'Roboto, sans-serif',
     secondary: 'Montserrat, sans-serif',
   },
   fontSizes: {
-    h1: '32px',
-    h2: '24px',
-    h3: '18px',
-    body: '14px',
-    small: '12px',
+    h1: '2.5rem',    
+    h2: '2rem',      
+    h3: '1.75rem',   
+    body: '1rem',     
+    small: '0.875rem',
+  },
+  fontWeights: {
+    light: 300,
+    normal: 400,
+    medium: 500,
+    semiBold: 600,
+    bold: 700,
   },
 };
 ```
@@ -712,10 +520,18 @@ export const theme = {
 ## File: src/styles/GlobalStyle.js
 
 ```js
-// src/styles/GlobalStyle.js
 import { createGlobalStyle } from 'styled-components';
 const GlobalStyle = createGlobalStyle`
-  body {
+html {
+    font-size: 100%; 
+    @media (max-width: 1200px) {
+      font-size: 95%; 
+    }
+    @media (max-width: 768px) {
+      font-size: 90%; 
+    }
+  }  
+body {
     margin: 0;
     padding: 0;
     background-color: ${({ theme }) => theme.colors.background};
@@ -726,36 +542,37 @@ const GlobalStyle = createGlobalStyle`
   }
   h1 {
     font-size: ${({ theme }) => theme.fontSizes.h1};
-    font-weight: bold;
+    font-weight: ${({ theme }) => theme.fontWeights.bold};
+    color: ${({ theme }) => theme.colors.primary}; 
   }
   h2 {
     font-size: ${({ theme }) => theme.fontSizes.h2};
-    font-weight: 600;
+    font-weight: ${({ theme }) => theme.fontWeights.semiBold};
+    color: ${({ theme }) => theme.colors.secondary}; 
   }
   h3 {
     font-size: ${({ theme }) => theme.fontSizes.h3};
-    font-weight: 500;
+    font-weight: ${({ theme }) => theme.fontWeights.medium};
+    color: ${({ theme }) => theme.colors.primary};
   }
   p {
     font-size: ${({ theme }) => theme.fontSizes.body};
-    font-weight: 400;
+    font-weight: ${({ theme }) => theme.fontWeights.normal};
   }
   .small-text {
     font-size: ${({ theme }) => theme.fontSizes.small};
-    font-weight: 300;
+    font-weight: ${({ theme }) => theme.fontWeights.light};
   }
   button {
     font-size: ${({ theme }) => theme.fontSizes.body};
-    font-weight: 500;
+    font-weight: ${({ theme }) => theme.fontWeights.medium};
   }
-  /* Focus Styles for Accessibility */
   button:focus {
     outline: 2px solid ${({ theme }) => theme.colors.primary};
     outline-offset: 2px;
   }
-  /* Additional Global Styles */
   a {
-    font-weight: 500;
+    font-weight: ${({ theme }) => theme.fontWeights.medium};
     color: ${({ theme }) => theme.colors.primary};
     text-decoration: none;
   }
@@ -769,11 +586,9 @@ export default GlobalStyle;
 ## File: src/components/common/VideoPlayer.jsx
 
 ```jsx
-// src/components/common/VideoPlayer.jsx
 import React, { useRef, useState } from 'react';
 import styled from 'styled-components';
 import PropTypes from 'prop-types';
-// Styled Components
 const VideoPlayerContainer = styled.div`
   margin-top: 30px;
   padding: 20px;
@@ -806,7 +621,7 @@ const Controls = styled.div`
     }
   }
   button.loop-active {
-    background-color: #e74c3c; /* Red color to indicate active loop */
+    background-color: #e74c3c; 
   }
 `;
 const CloseButton = styled.button`
@@ -822,28 +637,27 @@ const CloseButton = styled.button`
     background-color: #c0392b;
   }
 `;
-// VideoPlayer Component
 function VideoPlayer({ 
   fileUrl, 
   fileName, 
   fileType, 
   fileSize, 
-  duration = '', // Default value
+  duration = '', 
   onClose 
 }) {
   const videoRef = useRef(null);
   const [isLooping, setIsLooping] = useState(false);
   const handleError = (e) => {
     console.error('Video playback error:', e);
-    onClose(); // Close the media player on error
+    onClose(); 
   };
   const handleFullscreen = () => {
     if (videoRef.current) {
       if (videoRef.current.requestFullscreen) {
         videoRef.current.requestFullscreen();
-      } else if (videoRef.current.webkitRequestFullscreen) { /* Safari */
+      } else if (videoRef.current.webkitRequestFullscreen) { 
         videoRef.current.webkitRequestFullscreen();
-      } else if (videoRef.current.msRequestFullscreen) { /* IE11 */
+      } else if (videoRef.current.msRequestFullscreen) { 
         videoRef.current.msRequestFullscreen();
       }
     }
@@ -903,7 +717,6 @@ export default VideoPlayer;
 ## File: src/components/common/PreviewSection.jsx
 
 ```jsx
-// frontend/src/components/common/PreviewSection.jsx
 import React from 'react';
 import styled from 'styled-components';
 import PropTypes from 'prop-types';
@@ -961,7 +774,6 @@ export default PreviewSection;
 ## File: src/components/common/Layout.jsx
 
 ```jsx
-// src/components/common/Layout.jsx
 import React, { useState } from "react";
 import styled from "styled-components";
 import SideNav from "./SideNav";
@@ -970,7 +782,6 @@ import QuickAccessToolbar from "./QuickAccessToolbar";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faBars } from "@fortawesome/free-solid-svg-icons";
 import PropTypes from "prop-types";
-// Styled Components
 const LayoutContainer = styled.div`
   display: flex;
 `;
@@ -1017,7 +828,6 @@ const ToolbarPlaceholder = styled.div`
     margin-top: 0;
   }
 `;
-// Component
 function Layout({ children }) {
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
@@ -1043,13 +853,6 @@ function Layout({ children }) {
         <h2 style={{ marginLeft: "20px" }}>WaveAnalyzer</h2>
       </MobileHeader>
       <LayoutContainer>
-        {/* <SideNav
-          isMobile={false}
-          isMobileOpen={false}
-          toggleMobile={toggleMobile}
-          collapsed={sidebarCollapsed}
-          toggleSidebar={toggleSidebar}
-        /> */}
         <Content $sidebarCollapsed={sidebarCollapsed}>
           <Breadcrumbs />
           <QuickAccessToolbar />
@@ -1061,7 +864,7 @@ function Layout({ children }) {
   );
 }
 Layout.propTypes = {
-  children: PropTypes.node.isRequired,
+  children: PropTypes.node, 
 };
 export default Layout;
 ```
@@ -1069,15 +872,14 @@ export default Layout;
 ## File: src/components/common/FileUploader.jsx
 
 ```jsx
-// src/components/common/FileUploader.jsx
 import React, { useState, useRef } from 'react';
 import styled from 'styled-components';
 import PreviewSection from './PreviewSection';
 import ProgressBar from './ProgressBar';
-import Button from './Button'; // Ensure this component exists
+import Button from './Button'; 
 import { faUpload } from '@fortawesome/free-solid-svg-icons';
 import PropTypes from 'prop-types';
-import { ErrorMessage } from './Messages'; // Import only ErrorMessage
+import { ErrorMessage } from './Messages'; 
 const UploadSection = styled.div`
   margin-top: 20px;
 `;
@@ -1093,13 +895,12 @@ const OverwritePrompt = styled.div`
     font-size: ${({ theme }) => theme.fontSizes.body};
   }
 `;
-// New styled component for button container
 const OverwriteButtons = styled.div`
   display: flex;
   justify-content: center;
-  gap: 10px; /* Space between buttons */
+  gap: 10px; 
   button {
-    flex: 1; /* Ensure both buttons take equal space */
+    flex: 1; 
   }
 `;
 const DropZone = styled.div`
@@ -1127,12 +928,11 @@ const DropZone = styled.div`
 function FileUploader({ setUploadedFiles, setNotification }) {
   const [selectedFiles, setSelectedFiles] = useState([]);
   const [uploadProgress, setUploadProgress] = useState(0);
-  const [errorMessages, setErrorMessages] = useState([]); // Changed to array
+  const [errorMessages, setErrorMessages] = useState([]); 
   const [isUploading, setIsUploading] = useState(false);
   const [overwritePrompt, setOverwritePrompt] = useState(false);
   const [overwriteFile, setOverwriteFile] = useState(null);
   const fileInputRef = useRef(null);
-  // Handle file selection from input or drag-and-drop
   const handleFiles = (event) => {
     event.preventDefault();
     event.stopPropagation();
@@ -1153,13 +953,13 @@ function FileUploader({ setUploadedFiles, setNotification }) {
       'audio/wav',
       'video/mp4',
       'video/x-msvideo',
-      'video/quicktime' // Include quicktime to allow .mov files
+      'video/quicktime' 
     ];
     const invalidTypeFiles = Array.from(files).filter(
       file => !allowedMimeTypes.includes(file.type)
     );
     const oversizedFiles = Array.from(files).filter(
-      file => file.size > 200 * 1024 * 1024 // 200MB
+      file => file.size > 200 * 1024 * 1024 
     );
     let newErrorMessages = [];
     if (invalidTypeFiles.length > 0) {
@@ -1174,7 +974,6 @@ function FileUploader({ setUploadedFiles, setNotification }) {
     }
     setSelectedFiles((prevFiles) => [...prevFiles, ...Array.from(files)]);
   };
-  // Prevent default behavior in drag events
   const handleDragOver = (event) => {
     event.preventDefault();
     event.stopPropagation();
@@ -1184,7 +983,6 @@ function FileUploader({ setUploadedFiles, setNotification }) {
     event.stopPropagation();
     handleFiles(event);
   };
-  // Check if the file already exists
   const checkFileExists = async (fileName) => {
     try {
       const response = await fetch(`/api/file_exists?filename=${encodeURIComponent(fileName)}`);
@@ -1195,7 +993,6 @@ function FileUploader({ setUploadedFiles, setNotification }) {
       return false;
     }
   };
-  // Handle file upload to the server
   const uploadFiles = async () => {
     if (selectedFiles.length === 0) {
       setErrorMessages(['Please select files to upload.']);
@@ -1217,54 +1014,11 @@ function FileUploader({ setUploadedFiles, setNotification }) {
     files.forEach((file) => {
       formData.append('file', file);
     });
-    //   const xhr = new XMLHttpRequest();
-    //   xhr.upload.addEventListener('progress', (event) => {
-    //     if (event.lengthComputable) {
-    //       const percentComplete = Math.round((event.loaded / event.total) * 100);
-    //       setUploadProgress(percentComplete);
-    //     }
-    //   });
-    //   xhr.onreadystatechange = () => {
-    //     if (xhr.readyState === 4) {
-    //       setIsUploading(false);
-    //       setUploadProgress(0);
-    //       if (xhr.status === 200 || xhr.status === 207) {
-    //         const response = JSON.parse(xhr.responseText);
-    //         if (response.uploaded_files) {
-    //           setNotification({ message: 'Files uploaded successfully!', type: 'success' });
-    //         }
-    //         if (response.errors) {
-    //           const newErrors = response.errors.map(err => `${err.filename}: ${err.error}`);
-    //           setErrorMessages(newErrors);
-    //         }
-    //         setSelectedFiles([]);
-    //         fetch('/api/file_history')
-    //           .then((res) => res.json())
-    //           .then((data) => {
-    //             if (data.files) {
-    //               setUploadedFiles(data.files);
-    //             }
-    //           })
-    //           .catch((error) => console.error('Error fetching files:', error));
-    //       } else if (xhr.status === 413) {
-    //         const response = JSON.parse(xhr.responseText);
-    //         setErrorMessages([`${response.error}: ${response.message}`]);
-    //       } else {
-    //         setNotification({ message: 'Error uploading files. Please try again.', type: 'error' });
-    //         console.error('Error uploading files:', xhr.responseText);
-    //       }
-    //     }
-    //   };
-    //   xhr.open('POST', '/upload');
-    //   xhr.send(formData);
-    // };
     try {
-      const response = await fetch('/upload', {
+      const response = await fetch('/api/upload', { 
         method: 'POST',
         body: formData,
       });
-      // Calculate upload progress manually since fetch doesn't provide progress updates
-      // For more advanced progress tracking, consider using Axios
       const data = await response.json();
       if (response.ok || response.status === 207) {
         if (data.uploaded_files) {
@@ -1275,7 +1029,7 @@ function FileUploader({ setUploadedFiles, setNotification }) {
           setErrorMessages(newErrors);
         }
         setSelectedFiles([]);
-        const historyResponse = await fetch('/api/file_history');
+        const historyResponse = await fetch('/api/file_history'); 
         const historyData = await historyResponse.json();
         if (historyData.files) {
           setUploadedFiles(historyData.files);
@@ -1295,13 +1049,11 @@ function FileUploader({ setUploadedFiles, setNotification }) {
       setUploadProgress(0);
     }
   };
-  // Remove selected files
   const removeFile = (index) => {
     setSelectedFiles((prevFiles) => prevFiles.filter((_, i) => i !== index));
   };
   return (
     <UploadSection>
-      {/* Drop zone for files */}
       <DropZone
         role="button"
         aria-label="File Upload Zone"
@@ -1317,14 +1069,13 @@ function FileUploader({ setUploadedFiles, setNotification }) {
         <input
           type="file"
           id="file-input"
-          accept="audio/*,video/*"
+          accept="audio/*,video/*" 
           multiple
           style={{ display: 'none' }}
-          onChange={handleFiles}
           ref={fileInputRef}
+          onChange={handleFiles}
         />
       </DropZone>
-      {/* Display selected files */}
       {selectedFiles.length > 0 && (
         <>
           <PreviewSection
@@ -1343,7 +1094,6 @@ function FileUploader({ setUploadedFiles, setNotification }) {
           <ProgressBar progress={uploadProgress} />
         </>
       )}
-      {/* Display error messages */}
       {errorMessages.length > 0 && (
         <ErrorMessage>
           {errorMessages.map((msg, index) => (
@@ -1351,14 +1101,13 @@ function FileUploader({ setUploadedFiles, setNotification }) {
           ))}
         </ErrorMessage>
       )}
-      {/* Overwrite Prompt */}
       {overwritePrompt && (
         <OverwritePrompt>
           <p>File "{overwriteFile}" already exists. Do you want to overwrite it?</p>
           <OverwriteButtons>
             <Button
               variant="secondary"
-              customColor="#2ecc71" /* Transient props are handled inside the Button component */
+              customColor="#2ecc71" 
               onClick={() => {
                 handleUpload(selectedFiles);
                 setOverwritePrompt(false);
@@ -1391,7 +1140,6 @@ export default FileUploader;
 ## File: src/components/common/ErrorBoundary.jsx
 
 ```jsx
-// src/components/common/ErrorBoundary.jsx
 import React from 'react';
 import PropTypes from 'prop-types';
 import styled from 'styled-components';
@@ -1429,7 +1177,6 @@ export default ErrorBoundary;
 ## File: src/components/common/MediaPlayer.jsx
 
 ```jsx
-// src/components/common/MediaPlayer.jsx
 import React, { useEffect, useRef, useState } from 'react';
 import AudioPlayer from './AudioPlayer';
 import VideoPlayer from './VideoPlayer';
@@ -1437,9 +1184,7 @@ import styled, { keyframes } from 'styled-components';
 import PropTypes from 'prop-types';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faForward, faBackward, faTimes } from '@fortawesome/free-solid-svg-icons';
-import { faPlay, faPause, faStop, faRedo, faVolumeUp, faVolumeMute } from '@fortawesome/free-solid-svg-icons';
 import FocusTrap from 'focus-trap-react';
-// Keyframes for fade-in animation
 const fadeIn = keyframes`
   from {
     opacity: 0;
@@ -1448,18 +1193,17 @@ const fadeIn = keyframes`
     opacity: 1;
   }
 `;
-// Styled Components for Modal
 const ModalOverlay = styled.div`
   position: fixed;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  background-color: rgba(0, 0, 0, 0.5); /* Semi-transparent background */
+  background-color: rgba(0, 0, 0, 0.5); 
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 2000; /* Above other elements */
+  z-index: 2000; 
   animation: ${fadeIn} 0.3s ease-out;
 `;
 const ModalContent = styled.div`
@@ -1522,13 +1266,12 @@ const NavigationControls = styled.div`
     }
   }
 `;
-// MediaPlayer Component as Modal
 function MediaPlayer({ 
   fileUrl, 
   fileName, 
   fileType, 
   fileSize, 
-  duration = '', // Default value
+  duration = '', 
   onClose, 
   onNextTrack, 
   onPrevTrack 
@@ -1563,7 +1306,7 @@ function MediaPlayer({
               onClose={onClose}
             />
           )}
-          {/* Navigation Controls */}
+          {}
           <NavigationControls>
             <button onClick={onPrevTrack} aria-label="Previous Track">
               <FontAwesomeIcon icon={faBackward} /> Previous
@@ -1593,32 +1336,30 @@ export default MediaPlayer;
 ## File: src/components/common/Button.jsx
 
 ```jsx
-// src/components/common/Button.jsx
 import React from 'react';
 import PropTypes from 'prop-types';
 import styled from 'styled-components';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-// Transient Props: $variant, $customColor
 const ButtonStyled = styled.button`
   padding: 10px 20px;
   border: none;
   border-radius: 4px;
   font-size: ${({ theme }) => theme.fontSizes.body || '16px'};
   cursor: pointer;
-  /* Use transient props by prefixing with $ */
   background-color: ${({ $variant, $customColor, theme }) =>
     $customColor
       ? $customColor
       : $variant === 'primary'
-      ? theme.colors.primary || '#3498db'
+      ? theme.colors.primary
       : $variant === 'secondary'
-      ? theme.colors.secondary || '#2ecc71'
-      : theme.colors.neutral || '#95a5a6'};
+      ? theme.colors.secondary
+      : theme.colors.neutral};
   color: ${({ $variant, theme }) =>
-    $variant === 'tertiary' ? theme.colors.text || '#2c3e50' : '#fff'};
+    $variant === 'tertiary' ? theme.colors.text : '#fff'};
   display: flex;
   align-items: center;
   justify-content: center;
+  transition: opacity 0.2s ease, background-color 0.2s ease;
   &:hover {
     opacity: 0.9;
   }
@@ -1626,32 +1367,34 @@ const ButtonStyled = styled.button`
     background-color: #ccc;
     cursor: not-allowed;
   }
-  /* Focus Styles */
   &:focus {
-    outline: 2px solid ${({ theme }) => theme.colors.primary || '#3498db'};
+    outline: 2px solid ${({ theme }) => theme.colors.primary};
     outline-offset: 2px;
   }
 `;
-// Button Component
-const Button = ({ 
-  variant = 'primary', 
-  children, 
-  onClick = () => {}, 
-  disabled = false, 
-  icon = null, 
+const Button = ({
+  variant = 'primary',
+  children,
+  onClick = () => {},
+  disabled = false,
+  icon = null,
   type = 'button',
-  customColor = null
+  customColor = null,
 }) => (
-  <ButtonStyled 
-    /* Use transient props by prefixing with $ */
-    $variant={variant} 
-    onClick={onClick} 
-    disabled={disabled} 
-    type={type} 
-    $customColor={customColor} 
-    aria-label={typeof children === "string" ? children : undefined}
+  <ButtonStyled
+    $variant={variant}
+    onClick={onClick}
+    disabled={disabled}
+    type={type}
+    $customColor={customColor}
+    aria-label={typeof children === 'string' ? children : undefined}
   >
-    {icon && <FontAwesomeIcon icon={icon} style={{ marginRight: children ? "8px" : "0" }} />}
+    {icon && (
+      <FontAwesomeIcon
+        icon={icon}
+        style={{ marginRight: children ? '8px' : '0' }}
+      />
+    )}
     {children}
   </ButtonStyled>
 );
@@ -1660,9 +1403,9 @@ Button.propTypes = {
   children: PropTypes.node,
   onClick: PropTypes.func,
   disabled: PropTypes.bool,
-  icon: PropTypes.object, // FontAwesomeIcon expects an icon object
+  icon: PropTypes.object, 
   type: PropTypes.oneOf(['button', 'submit', 'reset']),
-  customColor: PropTypes.string, // New prop type
+  customColor: PropTypes.string, 
 };
 export default Button;
 ```
@@ -1670,7 +1413,6 @@ export default Button;
 ## File: src/components/common/Notification.jsx
 
 ```jsx
-// frontend/src/components/common/Notification.jsx
 import React from 'react';
 import styled from 'styled-components';
 import PropTypes from 'prop-types';
@@ -1717,7 +1459,6 @@ export default Notification;
 ## File: src/components/common/WaveformViewer.jsx
 
 ```jsx
-// src/components/common/WaveformViewer.jsx
 import React, { useEffect, useRef } from 'react';
 import WaveSurfer from 'wavesurfer.js';
 import styled from 'styled-components';
@@ -1749,11 +1490,9 @@ function WaveformViewer({ fileUrl }) {
         backend: 'WebAudio',
       });
       wavesurferRef.current.load(fileUrl);
-      // Handle errors
       wavesurferRef.current.on('error', (error) => {
         console.error('WaveSurfer error:', error);
       });
-      // Debounced resize handler
       const handleResize = () => {
         clearTimeout(resizeTimeout.current);
         resizeTimeout.current = setTimeout(() => {
@@ -1789,10 +1528,8 @@ export default WaveformViewer;
 ## File: src/components/common/Messages.jsx
 
 ```jsx
-// frontend/src/components/common/Messages.jsx
 import styled from 'styled-components';
 import PropTypes from 'prop-types';
-// Error Message Component
 export const ErrorMessage = styled.div.attrs({
   role: 'alert',
   'aria-live': 'assertive',
@@ -1812,7 +1549,6 @@ ErrorMessage.propTypes = {
 ## File: src/components/common/QuickAccessToolbar.jsx
 
 ```jsx
-// src/components/common/QuickAccessToolbar.jsx
 import React, { useState, useEffect, useRef } from "react";
 import styled from "styled-components";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -1841,7 +1577,6 @@ import {
   horizontalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-// Styled Components
 const ToolbarContainer = styled.div`
   display: flex;
   padding: 10px 20px;
@@ -1877,7 +1612,6 @@ const OverflowMenu = styled.div`
   position: relative;
 `;
 const OverflowButton = styled(Button)`
-  /* You can add additional styles if needed */
 `;
 const OverflowContent = styled.div`
   position: absolute;
@@ -1905,7 +1639,6 @@ const OverflowItem = styled.button`
     background-color: #ddd;
   }
 `;
-// SortableItem Component
 function SortableItem({ id, item, removeItem }) {
   const {
     attributes,
@@ -1944,7 +1677,6 @@ function SortableItem({ id, item, removeItem }) {
     </SortableItemContainer>
   );
 }
-// Main QuickAccessToolbar Component
 function QuickAccessToolbar() {
   const [pinnedItems, setPinnedItems] = useState([]);
   const [overflowOpen, setOverflowOpen] = useState(false);
@@ -1968,23 +1700,18 @@ function QuickAccessToolbar() {
       label: "Upload New File",
       action: () => console.log("Upload New File clicked"),
     },
-    // Add more items as needed
   ];
-  // Load pinned items from localStorage on mount
   useEffect(() => {
     const savedItems = localStorage.getItem("quickAccess");
     if (savedItems) {
       setPinnedItems(JSON.parse(savedItems));
     } else {
-      // Optionally, initialize with default items
-      setPinnedItems(availableItems.slice(0, 2)); // Example: first two items
+      setPinnedItems(availableItems.slice(0, 2)); 
     }
   }, []);
-  // Save pinned items to localStorage whenever they change
   useEffect(() => {
     localStorage.setItem("quickAccess", JSON.stringify(pinnedItems));
   }, [pinnedItems]);
-  // Handle clicks outside the overflow menu to close it
   useEffect(() => {
     function handleClickOutside(event) {
       if (
@@ -1998,25 +1725,21 @@ function QuickAccessToolbar() {
     return () =>
       document.removeEventListener("mousedown", handleClickOutside);
   }, []);
-  // Add a new item to pinnedItems
   const addItem = (item) => {
     if (pinnedItems.length < availableItems.length) {
       setPinnedItems([...pinnedItems, item]);
     }
   };
-  // Remove an item from pinnedItems
   const removeItem = (id) => {
     setPinnedItems(pinnedItems.filter((item) => item.id !== id));
   };
-  // Initialize sensors for @dnd-kit
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: {
-        distance: 5, // Start dragging after moving 5 pixels
+        distance: 5, 
       },
     })
   );
-  // Handle drag end event
   const handleDragEnd = (event) => {
     const { active, over } = event;
     if (over && active.id !== over.id) {
@@ -2092,7 +1815,6 @@ export default QuickAccessToolbar;
 ## File: src/components/common/Loader.jsx
 
 ```jsx
-// src/components/common/Loader.jsx
 import React from 'react';
 import styled, { keyframes } from 'styled-components';
 const spin = keyframes`
@@ -2125,22 +1847,20 @@ export default Loader;
 ## File: src/components/common/AudioPlayer.jsx
 
 ```jsx
-// src/components/common/AudioPlayer.jsx
 import React, { useEffect, useRef, useReducer, useCallback } from 'react';
 import WaveSurfer from 'wavesurfer.js';
 import styled from 'styled-components';
 import PropTypes from 'prop-types';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPlay, faPause, faStop, faRedo, faVolumeUp, faVolumeMute } from '@fortawesome/free-solid-svg-icons';
-import debounce from 'lodash.debounce'; // Install lodash.debounce if not already installed
-// Styled Components
+import debounce from 'lodash.debounce'; 
 const AudioPlayerContainer = styled.div`
   margin-top: 20px;
   text-align: center;
   background-color: ${({ theme }) => theme.colors.background};
   padding: 20px;
   border-radius: 10px;
-    outline: none; /* Ensure focus outline is visible */
+  outline: none; 
 `;
 const Controls = styled.div`
   display: flex;
@@ -2188,7 +1908,6 @@ const CloseButton = styled.button`
     outline: none;
   }
 `;
-// Define initial state
 const initialState = {
   isPlaying: false,
   volume: 1,
@@ -2196,7 +1915,6 @@ const initialState = {
   loop: false,
   duration: '',
 };
-// Define reducer
 function reducer(state, action) {
   switch (action.type) {
     case 'PLAY_PAUSE':
@@ -2215,30 +1933,23 @@ function reducer(state, action) {
       return state;
   }
 }
-// AudioPlayer Component
 function AudioPlayer({
   fileUrl,
   fileName,
   fileType,
   fileSize,
+  duration = '',
   onClose,
-  triggerRef, // New prop
+  triggerRef, 
 }) {
   const waveformRef = useRef(null);
   const wavesurferRef = useRef(null);
   const [state, dispatch] = useReducer(reducer, initialState);
-  const { isPlaying, volume, playbackRate, loop, duration } = state;
+  const { isPlaying, volume, playbackRate, loop, duration: trackDuration } = state;
   const stateRef = useRef(state);
-//   const loopRef = useRef(loop); // Ref to keep track of loop state
-//  // Update loopRef whenever loop state changes
-//  useEffect(() => {
-//   loopRef.current = loop;
-// }, [loop]);
-// Update stateRef whenever state changes
-useEffect(() => {
-  stateRef.current = state;
-}, [state]);
-  // Debounced handlers
+  useEffect(() => {
+    stateRef.current = state;
+  }, [state]);
   const debouncedSetVolume = useCallback(
     debounce((newVolume) => {
       if (wavesurferRef.current) {
@@ -2302,16 +2013,6 @@ useEffect(() => {
     dispatch({ type: 'STOP' });
     wavesurferRef.current?.stop();
   };
-  // const handleVolumeChange = (e) => {
-  //   const newVolume = parseFloat(e.target.value);
-  //   setVolume(newVolume);
-  //   wavesurferRef.current.setVolume(newVolume);
-  // };
-  // const handlePlaybackRateChange = (e) => {
-  //   const newRate = parseFloat(e.target.value);
-  //   setPlaybackRate(newRate);
-  //   wavesurferRef.current.setPlaybackRate(newRate);
-  // };
   const handleVolumeChange = (e) => {
     const newVolume = parseFloat(e.target.value);
     dispatch({ type: 'SET_VOLUME', payload: newVolume });
@@ -2332,21 +2033,23 @@ useEffect(() => {
     }
   };
   return (
-<AudioPlayerContainer tabIndex="-1" aria-label="Audio Player">      <h3>Now Playing: {fileName}</h3>
-{fileSize && (
+    <AudioPlayerContainer tabIndex="-1" aria-label="Audio Player">      
+      <h3>Now Playing: {fileName}</h3>
+      {fileSize && (
         <p>File Size: {(fileSize / (1024 * 1024)).toFixed(2)} MB</p>
       )}
-      {duration && <p>Duration: {duration}</p>}
+      {trackDuration && <p>Duration: {trackDuration}</p>}
       <div id="waveform" ref={waveformRef} role="region"
         aria-label={`Waveform for ${fileName}`}
         tabIndex="0"
         onKeyDown={(e) => {
           if (e.key === ' ' || e.key === 'Enter') {
             e.preventDefault();
-            playPause();          }
-          // Implement additional keyboard interactions as needed
+            playPause();          
+          }
         }}
-        style={{ position: 'relative' }}>{/* Optional: Add visible focus indicators */}
+        style={{ position: 'relative' }}>
+        {}
         <div
           tabIndex="-1"
           style={{
@@ -2356,7 +2059,8 @@ useEffect(() => {
             right: 0,
             bottom: 0,
           }}
-        ></div></div>
+        ></div>
+      </div>
       <Controls>
         <button onClick={playPause} aria-label={isPlaying ? 'Pause' : 'Play'}>
           <FontAwesomeIcon icon={isPlaying ? faPause : faPlay} />
@@ -2405,7 +2109,7 @@ AudioPlayer.propTypes = {
   fileSize: PropTypes.number.isRequired,
   duration: PropTypes.string,
   onClose: PropTypes.func.isRequired,
-  triggerRef: PropTypes.object, // New prop
+  triggerRef: PropTypes.object, 
 };
 export default AudioPlayer;
 ```
@@ -2413,7 +2117,6 @@ export default AudioPlayer;
 ## File: src/components/common/SideNav.jsx
 
 ```jsx
-// src/components/common/SideNav.jsx
 import React from "react";
 import styled from "styled-components";
 import { NavLink } from "react-router-dom";
@@ -2428,9 +2131,7 @@ import {
   faArrowLeft,
   faArrowRight,
 } from "@fortawesome/free-solid-svg-icons";
-import Tooltip from "./Tooltip";
 import PropTypes from "prop-types";
-// Styled Components
 const Sidebar = styled.nav`
   position: fixed;
   left: 0;
@@ -2444,14 +2145,11 @@ const Sidebar = styled.nav`
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  @media (max-width: 1024px) {
-    width: ${({ collapsed }) => (collapsed ? "60px" : "200px")};
-  }
+  z-index: 1000;
   @media (max-width: 768px) {
-    position: fixed;
-    z-index: 1000;
     transform: ${({ isMobileOpen }) =>
       isMobileOpen ? "translateX(0)" : "translateX(-100%)"};
+    width: 200px;
     transition: transform 0.3s ease-in-out;
   }
 `;
@@ -2503,7 +2201,6 @@ const ToggleButton = styled.button`
     background-color: #1a252f;
   }
 `;
-// Component
 function SideNav({
   isMobile = false,
   isMobileOpen = false,
@@ -2511,7 +2208,6 @@ function SideNav({
   collapsed = false,
   toggleSidebar,
 }) {
-  //   const [collapsed, setCollapsed] = useState(false);
   const handleToggle = () => {
     if (isMobile) {
       toggleMobile();
@@ -2521,45 +2217,63 @@ function SideNav({
   };
   return (
     <Sidebar
-      $collapsed={collapsed}
-      $isMobileOpen={isMobileOpen}
+      collapsed={collapsed}
+      isMobileOpen={isMobileOpen}
       aria-label="Sidebar Navigation"
     >
       <div>
         <Logo>{!collapsed ? "WaveAnalyzer" : "WA"}</Logo>
         <NavItems>
-          <NavItem $collapsed={collapsed}>
-          <NavLink to="/dashboard" className={({ isActive }) => isActive ? "active" : ""}>
+          <NavItem collapsed={collapsed}>
+            <NavLink
+              to="/dashboard"
+              className={({ isActive }) => (isActive ? "active" : "")}
+            >
               <FontAwesomeIcon icon={faHome} />
               <span>Dashboard</span>
             </NavLink>
           </NavItem>
-          <NavItem $collapsed={collapsed}>
-          <NavLink to="/upload" className={({ isActive }) => isActive ? "active" : ""}>
+          <NavItem collapsed={collapsed}>
+            <NavLink
+              to="/upload"
+              className={({ isActive }) => (isActive ? "active" : "")}
+            >
               <FontAwesomeIcon icon={faUpload} />
               <span>Upload</span>
             </NavLink>
           </NavItem>
-          <NavItem $collapsed={collapsed}>
-          <NavLink to="/library" className={({ isActive }) => isActive ? "active" : ""}>
+          <NavItem collapsed={collapsed}>
+            <NavLink
+              to="/library"
+              className={({ isActive }) => (isActive ? "active" : "")}
+            >
               <FontAwesomeIcon icon={faFolder} />
               <span>Library</span>
             </NavLink>
           </NavItem>
-          <NavItem $collapsed={collapsed}>
-          <NavLink to="/analysis" className={({ isActive }) => isActive ? "active" : ""}>
+          <NavItem collapsed={collapsed}>
+            <NavLink
+              to="/analysis"
+              className={({ isActive }) => (isActive ? "active" : "")}
+            >
               <FontAwesomeIcon icon={faSearch} />
               <span>Analysis</span>
             </NavLink>
           </NavItem>
-          <NavItem $collapsed={collapsed}>
-          <NavLink to="/settings" className={({ isActive }) => isActive ? "active" : ""}>
+          <NavItem collapsed={collapsed}>
+            <NavLink
+              to="/settings"
+              className={({ isActive }) => (isActive ? "active" : "")}
+            >
               <FontAwesomeIcon icon={faCog} />
               <span>Settings</span>
             </NavLink>
           </NavItem>
-          <NavItem $collapsed={collapsed}>
-          <NavLink to="/help" className={({ isActive }) => isActive ? "active" : ""}>
+          <NavItem collapsed={collapsed}>
+            <NavLink
+              to="/help"
+              className={({ isActive }) => (isActive ? "active" : "")}
+            >
               <FontAwesomeIcon icon={faQuestionCircle} />
               <span>Help</span>
             </NavLink>
@@ -2588,15 +2302,13 @@ export default SideNav;
 ## File: src/components/common/Tooltip.jsx
 
 ```jsx
-// src/components/common/Tooltip.jsx
 import React from 'react';
 import ReactDOM from 'react-dom';
 import styled from 'styled-components';
 import PropTypes from 'prop-types';
-// Transient Prop: $text
 const TooltipContent = styled.div`
   position: absolute;
-  bottom: 125%; /* Position above the text */
+  bottom: 125%; 
   left: 50%;
   transform: translateX(-50%);
   background-color: ${({ theme }) => theme.colors.background || '#000'};
@@ -2606,7 +2318,7 @@ const TooltipContent = styled.div`
   border-radius: 4px;
   white-space: nowrap;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  z-index: 1001; /* Ensure it appears above other elements */
+  z-index: 1001; 
   opacity: 0.9;
   pointer-events: none;
   transition: opacity 0.3s;
@@ -2655,7 +2367,7 @@ function Tooltip({ $text, children }) {
   );
 }
 Tooltip.propTypes = {
-  $text: PropTypes.string.isRequired, // Updated to $text
+  $text: PropTypes.string.isRequired, 
   children: PropTypes.node.isRequired,
 };
 export default Tooltip;
@@ -2664,7 +2376,6 @@ export default Tooltip;
 ## File: src/components/common/ProgressBar.jsx
 
 ```jsx
-// frontend/src/components/common/ProgressBar.jsx
 import React from 'react';
 import styled from 'styled-components';
 import PropTypes from 'prop-types';
@@ -2717,14 +2428,12 @@ export default ProgressBar;
 ## File: src/components/common/FileDashboard.jsx
 
 ```jsx
-// src/components/common/FileDashboard.jsx
 import React, { useState, useRef } from 'react';
 import MediaPlayer from './MediaPlayer';
 import styled from 'styled-components';
 import PropTypes from 'prop-types';
-import Tooltip from './Tooltip'; // Import Tooltip component
-import { Link } from 'react-router-dom'; // If using Link
-// Styled Components
+import Tooltip from './Tooltip'; 
+import { Link } from 'react-router-dom'; 
 const DashboardContainer = styled.div`
   margin-top: 30px;
 `;
@@ -2752,7 +2461,7 @@ const FileCard = styled.div`
   display: flex;
   flex-direction: column;
   justify-content: center;
-  height: 150px; /* Fixed height for consistency */
+  height: 150px; 
   &:hover {
     transform: translateY(-5px);
     box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
@@ -2760,8 +2469,8 @@ const FileCard = styled.div`
   p {
     margin-bottom: 10px;
     color: ${({ theme }) => theme.colors.text};
-    font-size: 16px;
-    font-weight: 500;
+    font-size: 1rem; 
+    font-weight: ${({ theme }) => theme.fontWeights.medium};
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -2770,7 +2479,7 @@ const FileCard = styled.div`
     padding: 15px;
     height: auto;
     p {
-      font-size: 14px;
+      font-size: 0.875rem; 
     }
   }
 `;
@@ -2814,11 +2523,10 @@ function FileDashboard({ uploadedFiles }) {
               }}
               aria-label={`Play ${file.filename}`}
             >
-              <Tooltip $text={file.filename}> {/* Corrected to use $text */}
+              <Tooltip $text={file.filename}>
                 <p>{file.filename}</p>
               </Tooltip>
               <p>{(file.size / (1024 * 1024)).toFixed(2)} MB</p>
-              {/* Add more details if necessary */}
             </FileCard>
           ))
         ) : (
@@ -2861,74 +2569,122 @@ export default FileDashboard;
 ## File: src/components/common/Breadcrumbs.jsx
 
 ```jsx
-// src/components/common/Breadcrumbs.jsx
-import React from "react";
-import { Link, useLocation } from "react-router-dom";
-import styled from "styled-components";
-import PropTypes from "prop-types";
-// Styled Components
+import React, { useEffect, useState } from 'react';
+import { Link, useLocation, matchPath } from 'react-router-dom';
+import styled from 'styled-components';
+import PropTypes from 'prop-types';
+import routes from '../../routes'; 
 const BreadcrumbContainer = styled.nav`
   padding: 10px 20px;
-  background-color: #ecf0f1;
+  background-color: ${({ theme }) => theme.colors.background};
   font-size: 0.9em;
+  overflow: hidden;
 `;
 const BreadcrumbList = styled.ol`
   list-style: none;
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   margin: 0;
   padding: 0;
+  overflow: hidden;
 `;
 const BreadcrumbItem = styled.li`
   margin-right: 5px;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
   &:after {
     content: ">";
     margin-left: 5px;
+    @media (max-width: 768px) {
+      display: none;
+    }
   }
   &:last-child:after {
     content: "";
   }
   a {
     text-decoration: none;
-    color: #3498db;
+    color: ${({ theme }) => theme.colors.primary};
     &:hover {
       text-decoration: underline;
     }
   }
+  span {
+    color: ${({ theme }) => theme.colors.text};
+  }
 `;
-// Component
+const formatLabel = (label) =>
+  label
+    .replace(/-/g, " ")
+    .replace(/\b\w/g, (char) => char.toUpperCase());
 function Breadcrumbs() {
   const location = useLocation();
-  const pathnames = location.pathname.split("/").filter((x) => x);
+  const { pathname } = location;
+  const pathnames = pathname.split("/").filter((x) => x);
+  const [dynamicLabels, setDynamicLabels] = useState({});
+  useEffect(() => {
+    const fetchDynamicLabels = async () => {
+      const labels = {};
+      for (let index = 0; index < pathnames.length; index++) {
+        const to = `/${pathnames.slice(0, index + 1).join("/")}`;
+        const matchedRoute = routes.find((route) => matchPath({ path: route.path, end: true }, to));
+        if (matchedRoute && typeof matchedRoute.breadcrumb === 'function') {
+          const match = matchPath({ path: matchedRoute.path, end: true }, to);
+          const params = match.params;
+          const label = matchedRoute.breadcrumb(params);
+          labels[to] = label;
+        }
+      }
+      setDynamicLabels(labels);
+    };
+    fetchDynamicLabels();
+  }, [pathname, pathnames]);
+  const breadcrumbItems = pathnames.map((_, index) => {
+    const to = `/${pathnames.slice(0, index + 1).join("/")}`;
+    const matchedRoute = routes.find((route) => matchPath({ path: route.path, end: true }, to));
+    return {
+      label: dynamicLabels[to] || (matchedRoute ? matchedRoute.breadcrumb : formatLabel(pathnames[index])),
+      path: to,
+    };
+  });
+  const getVisibleBreadcrumbs = () => {
+    const maxVisible = 4; 
+    if (breadcrumbItems.length <= maxVisible) {
+      return breadcrumbItems;
+    } else {
+      const first = breadcrumbItems[0];
+      const last = breadcrumbItems[breadcrumbItems.length - 1];
+      return [first, { label: '...', path: null }, last];
+    }
+  };
+  const visibleBreadcrumbs = getVisibleBreadcrumbs();
   return (
     <BreadcrumbContainer aria-label="breadcrumb">
       <BreadcrumbList>
         <BreadcrumbItem>
-          <Link to="/dashboard">Dashboard</Link>
+          <Link to="/">Home</Link>
         </BreadcrumbItem>
-        {pathnames.map((value, index) => {
-          const to = `/${pathnames.slice(0, index + 1).join("/")}`;
-          const isLast = index === pathnames.length - 1;
-          const label = value.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
-          return (
-            <BreadcrumbItem key={to}>
-              {isLast ? <span>{label}</span> : <Link to={to}>{label}</Link>}
-            </BreadcrumbItem>
-          );
-        })}
+        {visibleBreadcrumbs.map((item, index) => (
+          <BreadcrumbItem key={index}>
+            {item.path ? (
+              <Link to={item.path}>{item.label}</Link>
+            ) : (
+              <span>{item.label}</span>
+            )}
+          </BreadcrumbItem>
+        ))}
       </BreadcrumbList>
     </BreadcrumbContainer>
   );
 }
-Breadcrumbs.propTypes = {
-};
+Breadcrumbs.propTypes = {};
 export default Breadcrumbs;
 ```
 
 ## File: src/components/pages/Help.jsx
 
 ```jsx
-// src/components/pages/Help.jsx
 import React from 'react';
 import styled from 'styled-components';
 const HelpContainer = styled.div`
@@ -2939,6 +2695,7 @@ function Help() {
     <HelpContainer>
       <h1>Help</h1>
       <p>This section will provide help and support information.</p>
+      {}
     </HelpContainer>
   );
 }
@@ -2972,7 +2729,7 @@ function Upload() {
         setUploadedFiles={setUploadedFiles} 
         setNotification={setNotification} 
       />
-      {/* Optionally, display uploaded files after upload */}
+      {}
       {uploadedFiles.length > 0 && (
         <div>
           <h2>Uploaded Files:</h2>
@@ -2989,6 +2746,50 @@ function Upload() {
 export default Upload;
 ```
 
+## File: src/components/pages/NotFound.jsx
+
+```jsx
+import React from 'react';
+import styled from 'styled-components';
+import { Link } from 'react-router-dom';
+const NotFoundContainer = styled.div`
+  padding: 20px;
+  text-align: center;
+`;
+function NotFound() {
+  return (
+    <NotFoundContainer>
+      <h1>404 - Page Not Found</h1>
+      <p>The page you're looking for doesn't exist.</p>
+      <Link to="/">
+        <button>Go to Home</button>
+      </Link>
+    </NotFoundContainer>
+  );
+}
+export default NotFound;
+```
+
+## File: src/components/pages/Analysis.jsx
+
+```jsx
+import React from 'react';
+import styled from 'styled-components';
+const AnalysisContainer = styled.div`
+  padding: 20px;
+`;
+function Analysis() {
+  return (
+    <AnalysisContainer>
+      <h1>Analysis</h1>
+      <p>This section will provide sentiment analysis and other data insights.</p>
+      {}
+    </AnalysisContainer>
+  );
+}
+export default Analysis;
+```
+
 ## File: src/components/pages/Dashboard.jsx
 
 ```jsx
@@ -3003,8 +2804,13 @@ function Dashboard() {
   const [uploadedFiles, setUploadedFiles] = useState([]);
   const [notification, setNotification] = useState({ message: '', type: 'success' });
   useEffect(() => {
-    fetch('/api/file_history')
-      .then((response) => response.json())
+    fetch('/api/file_history') 
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error('Failed to fetch file history.');
+        }
+        return response.json();
+      })
       .then((data) => {
         if (data.files) {
           setUploadedFiles(data.files);
@@ -3077,7 +2883,6 @@ function Settings() {
   };
   const handleSubmit = (e) => {
     e.preventDefault();
-    // Implement settings update logic here
     setNotification({ message: 'Settings updated successfully!', type: 'success' });
   };
   return (
@@ -3126,7 +2931,6 @@ export default Settings;
 ## File: src/components/pages/Library.jsx
 
 ```jsx
-// src/components/pages/Library.jsx
 import React from 'react';
 import styled from 'styled-components';
 import FileDashboard from '../common/FileDashboard';
@@ -3134,19 +2938,18 @@ const LibraryContainer = styled.div`
   padding: 20px;
 `;
 function Library() {
-  // Dummy data for demonstration
   const dummyFiles = [
     {
       filename: 'SampleAudio1.mp3',
       path: '/static/uploads/SampleAudio1.mp3',
-      size: 10485760, // 10 MB
+      size: 10485760, 
       type: 'audio/mpeg',
       duration: '03:45',
     },
     {
       filename: 'SampleVideo1.mp4',
       path: '/static/uploads/SampleVideo1.mp4',
-      size: 52428800, // 50 MB
+      size: 52428800, 
       type: 'video/mp4',
       duration: '10:20',
     },

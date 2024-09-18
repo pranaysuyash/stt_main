@@ -1,5 +1,4 @@
 // src/components/common/QuickAccessToolbar.jsx
-
 import React, { useState, useEffect, useRef } from "react";
 import styled from "styled-components";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -13,7 +12,6 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import Button from "./Button";
 import Tooltip from "./Tooltip";
-
 import {
   DndContext,
   closestCenter,
@@ -30,7 +28,6 @@ import {
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 
-// Styled Components
 const ToolbarContainer = styled.div`
   display: flex;
   padding: 10px 20px;
@@ -71,7 +68,6 @@ const OverflowMenu = styled.div`
 `;
 
 const OverflowButton = styled(Button)`
-  /* You can add additional styles if needed */
 `;
 
 const OverflowContent = styled.div`
@@ -102,7 +98,6 @@ const OverflowItem = styled.button`
   }
 `;
 
-// SortableItem Component
 function SortableItem({ id, item, removeItem }) {
   const {
     attributes,
@@ -112,13 +107,11 @@ function SortableItem({ id, item, removeItem }) {
     transition,
     isDragging,
   } = useSortable({ id });
-
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
     zIndex: isDragging ? 2 : 1,
   };
-
   return (
     <SortableItemContainer ref={setNodeRef} style={style} isDragging={isDragging}>
       <DragHandleStyled {...attributes} {...listeners}>
@@ -144,12 +137,10 @@ function SortableItem({ id, item, removeItem }) {
   );
 }
 
-// Main QuickAccessToolbar Component
 function QuickAccessToolbar() {
   const [pinnedItems, setPinnedItems] = useState([]);
   const [overflowOpen, setOverflowOpen] = useState(false);
   const overflowRef = useRef(null);
-
   const availableItems = [
     {
       id: "1",
@@ -169,26 +160,21 @@ function QuickAccessToolbar() {
       label: "Upload New File",
       action: () => console.log("Upload New File clicked"),
     },
-    // Add more items as needed
   ];
 
-  // Load pinned items from localStorage on mount
   useEffect(() => {
     const savedItems = localStorage.getItem("quickAccess");
     if (savedItems) {
       setPinnedItems(JSON.parse(savedItems));
     } else {
-      // Optionally, initialize with default items
-      setPinnedItems(availableItems.slice(0, 2)); // Example: first two items
+      setPinnedItems(availableItems.slice(0, 2)); 
     }
   }, []);
 
-  // Save pinned items to localStorage whenever they change
   useEffect(() => {
     localStorage.setItem("quickAccess", JSON.stringify(pinnedItems));
   }, [pinnedItems]);
 
-  // Handle clicks outside the overflow menu to close it
   useEffect(() => {
     function handleClickOutside(event) {
       if (
@@ -203,31 +189,26 @@ function QuickAccessToolbar() {
       document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // Add a new item to pinnedItems
   const addItem = (item) => {
     if (pinnedItems.length < availableItems.length) {
       setPinnedItems([...pinnedItems, item]);
     }
   };
 
-  // Remove an item from pinnedItems
   const removeItem = (id) => {
     setPinnedItems(pinnedItems.filter((item) => item.id !== id));
   };
 
-  // Initialize sensors for @dnd-kit
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: {
-        distance: 5, // Start dragging after moving 5 pixels
+        distance: 5, 
       },
     })
   );
 
-  // Handle drag end event
   const handleDragEnd = (event) => {
     const { active, over } = event;
-
     if (over && active.id !== over.id) {
       const oldIndex = pinnedItems.findIndex((item) => item.id === active.id);
       const newIndex = pinnedItems.findIndex((item) => item.id === over.id);

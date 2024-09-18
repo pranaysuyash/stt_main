@@ -1,4 +1,4 @@
-// frontend/src/components/common/ProgressBar.jsx
+// src/components/common/ProgressBar.jsx
 import React from 'react';
 import styled from 'styled-components';
 import PropTypes from 'prop-types';
@@ -30,7 +30,6 @@ const ProgressBarStyled = styled.div`
 
 function ProgressBar({ progress }) {
   if (progress === 0) return null;
-
   return (
     <ProgressBarContainer>
       <ProgressWrapper>

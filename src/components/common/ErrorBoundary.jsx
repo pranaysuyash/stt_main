@@ -29,7 +29,6 @@ class ErrorBoundary extends React.Component {
     if (this.state.hasError) {
       return <FallbackContainer>Something went wrong.</FallbackContainer>;
     }
-
     return this.props.children; 
   }
 }

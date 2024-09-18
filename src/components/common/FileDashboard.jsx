@@ -3,14 +3,13 @@ import React, { useState, useRef } from 'react';
 import MediaPlayer from './MediaPlayer';
 import styled from 'styled-components';
 import PropTypes from 'prop-types';
-import Tooltip from './Tooltip'; // Import Tooltip component
-import { Link } from 'react-router-dom'; // If using Link
+import Tooltip from './Tooltip'; 
+import { Link } from 'react-router-dom'; 
 
-
-// Styled Components
 const DashboardContainer = styled.div`
   margin-top: 30px;
 `;
+
 const FileGrid = styled.div`
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
@@ -23,6 +22,7 @@ const FileGrid = styled.div`
     gap: 15px;
   }
 `;
+
 const FileCard = styled.div`
   background-color: ${({ theme }) => theme.colors.neutral};
   padding: 20px;
@@ -35,7 +35,7 @@ const FileCard = styled.div`
   display: flex;
   flex-direction: column;
   justify-content: center;
-  height: 150px; /* Fixed height for consistency */
+  height: 150px; 
   &:hover {
     transform: translateY(-5px);
     box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
@@ -43,7 +43,7 @@ const FileCard = styled.div`
   p {
     margin-bottom: 10px;
     color: ${({ theme }) => theme.colors.text};
-    font-size: 1rem; /* Use rem units from theme */
+    font-size: 1rem; 
     font-weight: ${({ theme }) => theme.fontWeights.medium};
     overflow: hidden;
     text-overflow: ellipsis;
@@ -53,7 +53,7 @@ const FileCard = styled.div`
     padding: 15px;
     height: auto;
     p {
-      font-size: 0.875rem; /* Smaller font size for mobile */
+      font-size: 0.875rem; 
     }
   }
 `;
@@ -103,11 +103,10 @@ function FileDashboard({ uploadedFiles }) {
               }}
               aria-label={`Play ${file.filename}`}
             >
-              <Tooltip $text={file.filename}> {/* Corrected to use $text */}
+              <Tooltip $text={file.filename}>
                 <p>{file.filename}</p>
               </Tooltip>
               <p>{(file.size / (1024 * 1024)).toFixed(2)} MB</p>
-              {/* Add more details if necessary */}
             </FileCard>
           ))
         ) : (
