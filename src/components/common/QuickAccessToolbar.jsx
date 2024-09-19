@@ -30,25 +30,36 @@ import { CSS } from "@dnd-kit/utilities";
 
 const ToolbarContainer = styled.div`
   display: flex;
+  flex-wrap: wrap;
   padding: 10px 20px;
   background-color: #bdc3c7;
   align-items: center;
+
+  @media (max-width: 768px) {
+    padding: 10px 10px;
+  }
 `;
 
 const DraggableArea = styled.div`
   display: flex;
   align-items: center;
   flex-grow: 1;
+  flex-wrap: wrap;
+
+  @media (max-width: 768px) {
+    justify-content: center;
+  }
 `;
 
 const SortableItemContainer = styled.div`
   display: flex;
   align-items: center;
-  margin-right: 15px;
+  margin: 5px;
   padding: 5px;
   background-color: ${(props) =>
     props.isDragging ? "#f0f0f0" : "transparent"};
   border-radius: 4px;
+  flex-shrink: 0;
 `;
 
 const DragHandleStyled = styled.div`

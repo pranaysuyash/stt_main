@@ -7,6 +7,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 // Styled Component for Button
 const ButtonStyled = styled.button`
   padding: 10px 20px;
+  min-width: 100px;
   border: none;
   border-radius: 4px;
   font-size: ${({ theme }) => theme.fontSizes.body || '16px'};
@@ -26,6 +27,8 @@ const ButtonStyled = styled.button`
   justify-content: center;
   transition: opacity 0.2s ease, background-color 0.2s ease;
 
+  flex: 1 0 auto;
+
   /* Hover State */
   &:hover {
     opacity: 0.9;
@@ -42,6 +45,12 @@ const ButtonStyled = styled.button`
     outline: 2px solid ${({ theme }) => theme.colors.primary};
     outline-offset: 2px;
   }
+
+  @media (max-width: 768px) {
+    padding: 8px 12px;
+    min-width: 80px;
+  font-size: ${({ theme }) => theme.fontSizes.small || '12px'};
+    }
 `;
 
 // Button Component

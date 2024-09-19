@@ -47,9 +47,11 @@ Directory Structure:
 ├── templates/
 ├── app.py
 ├── audio_processing.py
+├── celery_app.py
 ├── eslint.config.js
 ├── index.html
 ├── logic.py
+├── tasks.py
 ├── test.jsx
 ├── test.py
 └── vite.config.js
@@ -82,6 +84,82 @@ Directory Structure:
 </html>
 ```
 
+## File: tasks.py
+
+```py
+from celery_app import celery
+import os
+import logging
+from audio_processing import extract_audio_from_video, generate_waveform
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+@celery.task(bind=True, name='tasks.process_uploaded_file')
+def process_uploaded_file(self, file_path, filename):
+    """
+    Celery task to process the uploaded file.
+    Steps:
+    1. Extract audio if it's a video.
+    2. Generate waveform.
+    """
+    try:
+        upload_folder = celery.conf.get('UPLOAD_FOLDER', 'static/uploads')
+        logger.info(f"Starting processing for file: {filename}")
+        if filename.lower().endswith(('.mp4', '.avi', '.mov', '.mkv')):
+            base_name = os.path.splitext(filename)[0]
+            audio_output_path = os.path.join(upload_folder, f"{base_name}_audio.wav")
+            waveform_image_path = os.path.join(upload_folder, f"{base_name}_waveform.png")
+            extracted_audio = extract_audio_from_video(file_path, audio_output_path)
+            if not extracted_audio:
+                logger.error(f"Audio extraction failed for file: {filename}")
+                return {'status': 'failed', 'message': 'Audio extraction failed.'}
+            generated_waveform = generate_waveform(extracted_audio, waveform_image_path)
+            if not generated_waveform:
+                logger.error(f"Waveform generation failed for file: {filename}")
+                return {'status': 'failed', 'message': 'Waveform generation failed.'}
+            logger.info(f"Processing completed for file: {filename}")
+        else:
+            base_name = os.path.splitext(filename)[0]
+            waveform_image_path = os.path.join(upload_folder, f"{base_name}_waveform.png")
+            generated_waveform = generate_waveform(file_path, waveform_image_path)
+            if not generated_waveform:
+                logger.error(f"Waveform generation failed for file: {filename}")
+                return {'status': 'failed', 'message': 'Waveform generation failed.'}
+            logger.info(f"Processing completed for file: {filename}")
+        return {'status': 'success', 'message': 'File processed successfully.'}
+    except Exception as e:
+        logger.exception(f"Unexpected error processing file {filename}: {e}")
+        raise  
+```
+
+## File: celery_app.py
+
+```py
+from celery import Celery
+import os
+def make_celery():
+    """
+    Initialize Celery with Flask app's configuration.
+    """
+    celery = Celery(
+        'stt_main',
+        broker='redis://localhost:6379/0',
+        backend='redis://localhost:6379/0',
+        include=['tasks']
+    )
+    BASE_DIR = os.path.abspath(os.path.dirname(__file__))
+    UPLOAD_FOLDER = os.path.join(BASE_DIR, 'static', 'uploads')
+    celery.conf.update(
+        task_serializer='json',
+        accept_content=['json'],
+        result_serializer='json',
+        timezone='UTC',
+        enable_utc=True,
+        UPLOAD_FOLDER=UPLOAD_FOLDER
+    )
+    return celery
+celery = make_celery()
+```
+
 ## File: audio_processing.py
 
 ```py
@@ -89,6 +167,11 @@ from moviepy.editor import VideoFileClip
 import matplotlib.pyplot as plt
 from pydub import AudioSegment
 import numpy as np
+import subprocess
+import logging
+import os
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 plt.switch_backend('Agg')
 def extract_audio_from_video(video_path, output_audio_path):
     """
@@ -97,15 +180,30 @@ def extract_audio_from_video(video_path, output_audio_path):
     - video_path: Path to the video file.
     - output_audio_path: Path where the extracted audio file will be saved.
     Returns:
-    - Path to the extracted audio file or None if the video has no audio.
+    - Path to the extracted audio file or None if the video has no audio or extraction failed.
     """
-    video = VideoFileClip(video_path)
-    if video.audio is None:
-        print("No audio track found in the video.")
+    try:
+        logger.info(f"Attempting to extract audio from video: {video_path}")
+        if not os.path.exists(video_path):
+            logger.error(f"Video file does not exist: {video_path}")
+            return None
+        video = VideoFileClip(video_path)
+        if video.audio is None:
+            logger.warning(f"No audio track found in the video: {video_path}")
+            video.close()
+            return None
+        logger.info(f"Extracting audio to: {output_audio_path}")
+        video.audio.write_audiofile(output_audio_path, logger=None)  
+        video.close()
+        if os.path.exists(output_audio_path):
+            logger.info(f"Audio extraction successful: {output_audio_path}")
+            return output_audio_path
+        else:
+            logger.error(f"Audio extraction failed, file not found: {output_audio_path}")
+            return None
+    except Exception as e:
+        logger.exception(f"Exception occurred during audio extraction: {e}")
         return None
-    audio = video.audio
-    audio.write_audiofile(output_audio_path)
-    return output_audio_path
 def generate_waveform(audio_file, output_image_path):
     """
     Generates a waveform image from an audio file and saves it as an image.
@@ -113,19 +211,31 @@ def generate_waveform(audio_file, output_image_path):
     - audio_file: Path to the audio file.
     - output_image_path: Path where the waveform image will be saved.
     Returns:
-    - Path to the generated waveform image.
+    - Path to the generated waveform image or None if generation failed.
     """
-    audio = AudioSegment.from_file(audio_file)
-    data = np.array(audio.get_array_of_samples())
-    plt.figure(figsize=(10, 4))
-    plt.plot(data, color='blue')
-    plt.fill_between(range(len(data)), data, color='skyblue', alpha=0.4)
-    plt.title('Waveform')
-    plt.xlabel('Time (samples)')
-    plt.ylabel('Amplitude')
-    plt.savefig(output_image_path)
-    plt.close()
-    return output_image_path
+    try:
+        logger.info(f"Generating waveform for audio file: {audio_file}")
+        if not os.path.exists(audio_file):
+            logger.error(f"Audio file does not exist: {audio_file}")
+            return None
+        audio = AudioSegment.from_file(audio_file)
+        data = np.array(audio.get_array_of_samples())
+        if audio.channels == 2:
+            data = data.reshape((-1, 2))
+            data = data.mean(axis=1)
+        plt.figure(figsize=(10, 4))
+        plt.plot(data, color='blue')
+        plt.fill_between(range(len(data)), data, color='skyblue', alpha=0.4)
+        plt.title('Waveform')
+        plt.xlabel('Time (samples)')
+        plt.ylabel('Amplitude')
+        plt.savefig(output_image_path)
+        plt.close()
+        logger.info(f"Waveform image saved at: {output_image_path}")
+        return output_image_path
+    except Exception as e:
+        logger.exception(f"Exception occurred during waveform generation: {e}")
+        return None
 ```
 
 ## File: vite.config.js
@@ -629,42 +739,51 @@ from flask import Flask, request, jsonify, send_file
 import os
 import logging
 from werkzeug.utils import secure_filename
-from audio_processing import extract_audio_from_video, generate_waveform
 from flask_cors import CORS
+from celery_app import celery  
+from celery.result import AsyncResult
 import mimetypes
 app = Flask(__name__)
+BASE_DIR = os.path.abspath(os.path.dirname(__file__))
+UPLOAD_FOLDER = os.path.join(BASE_DIR, 'static', 'uploads')
+app.config.update(
+    CELERY_BROKER_URL='redis://localhost:6379/0',
+    CELERY_RESULT_BACKEND='redis://localhost:6379/0',
+    UPLOAD_FOLDER=UPLOAD_FOLDER,
+    MAX_CONTENT_LENGTH=300 * 1024 * 1024  
+)
+os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
+celery.conf.update(
+    UPLOAD_FOLDER=app.config['UPLOAD_FOLDER']
+)
 CORS(app, resources={
     r"/api/*": {"origins": "*"},
     r"/static/uploads/*": {"origins": "*"}
 })
-logging.basicConfig(level=logging.DEBUG)
-UPLOAD_FOLDER = 'static/uploads'
-if not os.path.exists(UPLOAD_FOLDER):
-    os.makedirs(UPLOAD_FOLDER)
-app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
-app.config['MAX_CONTENT_LENGTH'] = 250 * 1024 * 1024  
 ALLOWED_EXTENSIONS = {'mp3', 'wav', 'mp4', 'avi', 'mov', 'mkv'}
 def allowed_file(filename):
     """Check if the file has an allowed extension."""
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 @app.errorhandler(413)
 def request_entity_too_large(error):
     """Handle file too large error."""
-    app.logger.error('File too large')
+    logger.error('File too large')
     return jsonify({
         'error': 'File too large',
-        'max_size': '250MB',
+        'max_size': '300MB',
         'message': 'Please try compressing your file or splitting it into smaller parts before uploading.'
     }), 413
 @app.route('/api/upload', methods=['POST'])
 def upload_file():
     """Handle file uploads."""
     if 'file' not in request.files:
-        app.logger.error('No file part in request.')
+        logger.error('No file part in request.')
         return jsonify({'error': 'No file part in the request.'}), 400
     files = request.files.getlist('file')
     if not files or len(files) == 0:
-        app.logger.error('No files selected for upload.')
+        logger.error('No files selected for upload.')
         return jsonify({'error': 'No files selected for upload.'}), 400
     allowed_mimetypes = {
         'audio/mpeg',
@@ -675,31 +794,32 @@ def upload_file():
     }
     uploaded_files = []
     errors = []
+    task_ids = []
     for file in files:
         if file.filename == '':
-            app.logger.warning('Empty filename encountered, skipping file.')
+            logger.warning('Empty filename encountered, skipping file.')
             errors.append({'filename': '', 'error': 'Empty filename.'})
             continue  
         if not allowed_file(file.filename):
-            app.logger.warning(f'Unsupported file extension: {file.filename}')
+            logger.warning(f'Unsupported file extension: {file.filename}')
             errors.append({'filename': file.filename, 'error': 'Unsupported file extension.'})
             continue
         if file.mimetype not in allowed_mimetypes:
-            app.logger.warning(f'Unsupported MIME type: {file.filename} with type {file.mimetype}')
+            logger.warning(f'Unsupported MIME type: {file.filename} with type {file.mimetype}')
             errors.append({'filename': file.filename, 'error': 'Unsupported MIME type.'})
             continue
         file.seek(0, os.SEEK_END)
         file_length = file.tell()
         file.seek(0, 0) 
         if file_length > app.config['MAX_CONTENT_LENGTH']:
-            app.logger.warning(f'File too large: {file.filename}')
+            logger.warning(f'File too large: {file.filename}')
             errors.append({'filename': file.filename, 'error': 'File size exceeds the 250MB limit.'})
             continue
         filename = secure_filename(file.filename)
         file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
         try:
             file.save(file_path)
-            app.logger.info(f'File saved: {file_path}')
+            logger.info(f'File saved: {file_path}')
             file_info = {
                 'filename': filename,
                 'path': f'/static/uploads/{filename}',
@@ -707,40 +827,76 @@ def upload_file():
                 'type': file.mimetype
             }
             uploaded_files.append(file_info)
+            task = celery.send_task('tasks.process_uploaded_file', args=[file_path, filename])
+            task_ids.append({'filename': filename, 'task_id': task.id})
+            logger.info(f'Task enqueued for {filename} with task ID {task.id}')
         except Exception as e:
-            app.logger.error(f'Error processing file {filename}: {e}')
+            logger.error(f'Error processing file {filename}: {e}')
             errors.append({'filename': filename, 'error': 'Failed to process the file.'})
     response = {}
     if uploaded_files:
         response['uploaded_files'] = uploaded_files
+    if task_ids:
+        response['task_ids'] = task_ids
     if errors:
         response['errors'] = errors
     status_code = 200 if uploaded_files and not errors else 207  
     return jsonify(response), status_code
+@app.route('/api/task_status/<task_id>', methods=['GET'])
+def task_status(task_id):
+    """Check the status of a Celery task."""
+    task = AsyncResult(task_id, app=celery)
+    if task.state == 'PENDING':
+        response = {
+            'state': task.state,
+            'status': 'Pending...'
+        }
+    elif task.state == 'SUCCESS':
+        response = {
+            'state': task.state,
+            'status': 'Task completed successfully.',
+            'result': task.result
+        }
+    elif task.state == 'FAILURE':
+        response = {
+            'state': task.state,
+            'status': str(task.info),  
+            'traceback': task.traceback  
+        }
+    else:
+        response = {
+            'state': task.state,
+            'status': str(task.info)
+        }
+    return jsonify(response)
 @app.route('/api/waveform/<filename>', methods=['GET'])
 def get_waveform(filename):
     """Generate and return waveform image for a given audio/video file."""
     audio_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-    waveform_image = os.path.join(app.config['UPLOAD_FOLDER'], 'waveform.png')
+    base_name, ext = os.path.splitext(filename)
+    waveform_image = os.path.join(app.config['UPLOAD_FOLDER'], f'{base_name}_waveform.png')
     if not os.path.exists(audio_path):
-        app.logger.error(f'File not found: {audio_path}')
+        logger.error(f'File not found: {audio_path}')
         return jsonify({'error': 'File not found.'}), 404
-    if filename.endswith(('.mp4', '.avi', '.mov', '.mkv')):
-        extracted_audio = os.path.join(app.config['UPLOAD_FOLDER'], 'extracted_audio.wav')
+    if filename.lower().endswith(('.mp4', '.avi', '.mov', '.mkv')):
+        extracted_audio = os.path.join(app.config['UPLOAD_FOLDER'], f'{base_name}_audio.wav')
         try:
             extract_audio_from_video(audio_path, extracted_audio)
+            if not os.path.exists(extracted_audio):
+                logger.error(f'Audio extraction failed for {filename}')
+                return jsonify({'error': 'Failed to extract audio from video.'}), 500
             generate_waveform(extracted_audio, waveform_image)
         except Exception as e:
-            app.logger.error(f'Error generating waveform for {filename}: {e}')
+            logger.error(f'Error generating waveform for {filename}: {e}')
             return jsonify({'error': 'Failed to generate waveform.'}), 500
     else:
         try:
             generate_waveform(audio_path, waveform_image)
         except Exception as e:
-            app.logger.error(f'Error generating waveform for {filename}: {e}')
+            logger.error(f'Error generating waveform for {filename}: {e}')
             return jsonify({'error': 'Failed to generate waveform.'}), 500
     if not os.path.exists(waveform_image):
-        app.logger.error(f'Waveform image not found: {waveform_image}')
+        logger.error(f'Waveform image not found: {waveform_image}')
         return jsonify({'error': 'Waveform image not found.'}), 404
     return send_file(waveform_image, mimetype='image/png')
 @app.route('/api/file_exists', methods=['GET'])
@@ -759,7 +915,7 @@ def file_history():
     try:
         files = os.listdir(app.config['UPLOAD_FOLDER'])
     except Exception as e:
-        app.logger.error(f'Error accessing upload folder: {e}')
+        logger.error(f'Error accessing upload folder: {e}')
         return jsonify({'error': 'Failed to access upload folder.'}), 500
     file_list = []
     for f in files:
@@ -774,7 +930,7 @@ def file_history():
             }
             file_list.append(file_info)
     return jsonify({'files': file_list})
-if __name__ == '__main__':
+if __name__ == "__main__":
     app.run(host='0.0.0.0', port=5555, debug=True)
 ```
 
@@ -1413,14 +1569,14 @@ function FileUploader({ setUploadedFiles, setNotification }) {
       file => !allowedMimeTypes.includes(file.type)
     );
     const oversizedFiles = Array.from(files).filter(
-      file => file.size > 200 * 1024 * 1024 
+      file => file.size > 300 * 1024 * 1024 
     );
     let newErrorMessages = [];
     if (invalidTypeFiles.length > 0) {
       newErrorMessages.push(`Unsupported file types: ${invalidTypeFiles.map(f => f.name).join(', ')}`);
     }
     if (oversizedFiles.length > 0) {
-      newErrorMessages.push(`Files too large (max 200MB): ${oversizedFiles.map(f => f.name).join(', ')}`);
+      newErrorMessages.push(`Files too large (max 300MB): ${oversizedFiles.map(f => f.name).join(', ')}`);
     }
     if (newErrorMessages.length > 0) {
       setErrorMessages(newErrorMessages);
@@ -1519,7 +1675,7 @@ function FileUploader({ setUploadedFiles, setNotification }) {
         className={isUploading ? 'disabled' : ''}
       >
         <i className="fas fa-cloud-upload-alt"></i>
-        <p>Click here or drag and drop audio or video files (max 200MB)</p>
+        <p>Click here or drag and drop audio or video files (max 300MB)</p>
         <input
           type="file"
           id="file-input"
