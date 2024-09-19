@@ -11,7 +11,7 @@ import routes from './routes'; // Updated import statement
 const AppContainer = styled.div`
   max-width: 900px;
   margin: 0 auto;
-  padding: 20px;
+  // padding: 20px;
   background-color: ${({ theme }) => theme.colors.background};
   border-radius: 10px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);

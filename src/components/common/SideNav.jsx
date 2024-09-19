@@ -32,8 +32,8 @@ const Sidebar = styled.nav`
   @media (max-width: 768px) {
     transform: ${({ isMobileOpen }) =>
       isMobileOpen ? "translateX(0)" : "translateX(-100%)"};
-    width: 200px;
-    transition: transform 0.3s ease-in-out;
+    width: ${({ collapsed }) => (collapsed ? "60px" : "200px")}; /* Adjust width for mobile */
+    transition: transform 0.3s ease-in-out, width 0.3s ease-in-out;
   }
 `;
 
@@ -74,6 +74,12 @@ const NavItem = styled.li`
     display: ${({ collapsed }) => (collapsed ? "none" : "inline")};
     white-space: nowrap;
   }
+
+  @media (max-width: 768px) {
+    padding: 10px 15px;
+    svg {
+      font-size: 1em;
+    }
 `;
 
 const ToggleButton = styled.button`

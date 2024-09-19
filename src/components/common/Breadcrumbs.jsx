@@ -786,6 +786,14 @@ const BreadcrumbContainer = styled.nav`
   background-color: ${({ theme }) => theme.colors.background};
   font-size: 0.9em;
   overflow: hidden;
+  z-index: 1101;
+
+  @media (max-width: 768px) {
+  margin-top: 40px;
+  padding: 10px 20px;
+  font-size: 0.8em;
+}
+
 `;
 
 const BreadcrumbList = styled.ol`
