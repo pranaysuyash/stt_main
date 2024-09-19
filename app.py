@@ -1,251 +1,231 @@
-# app.py
+# File: app.py
 
-from flask import Flask, request, jsonify, send_file
 import os
-import logging
+import mimetypes
+from flask import Flask, request, jsonify, send_from_directory, abort
 from werkzeug.utils import secure_filename
 from flask_cors import CORS
-from celery_app import celery  # Import Celery instance
-from celery.result import AsyncResult
-import mimetypes
+from moviepy.editor import VideoFileClip
+from datetime import datetime
 
-# Initialize Flask app
 app = Flask(__name__)
 
-# Determine the absolute path for the upload folder
-BASE_DIR = os.path.abspath(os.path.dirname(__file__))
-UPLOAD_FOLDER = os.path.join(BASE_DIR, 'static', 'uploads')
+UPLOAD_FOLDER = 'static/uploads'
+ALLOWED_EXTENSIONS = {
+    'audio': {'mp3', 'wav', 'aac', 'flac', 'ogg', 'm4a'},
+    'video': {'mp4', 'avi', 'mov', 'mkv', 'flv', 'wmv'},
+    'image': {'jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp'}
+}
+MAX_CONTENT_LENGTH = 300 * 1024 * 1024  # 300MB
 
-# Configure Flask app
-app.config.update(
-    CELERY_BROKER_URL='redis://localhost:6379/0',
-    CELERY_RESULT_BACKEND='redis://localhost:6379/0',
-    UPLOAD_FOLDER=UPLOAD_FOLDER,
-    MAX_CONTENT_LENGTH=1024 * 1024 * 1024  # 1024 MB max total file size
-)
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+app.config['MAX_CONTENT_LENGTH'] = MAX_CONTENT_LENGTH
 
-# Ensure upload folder exists
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 
-# Set Celery's UPLOAD_FOLDER configuration
-celery.conf.update(
-    UPLOAD_FOLDER=app.config['UPLOAD_FOLDER']
-)
+mimetypes.init()
+mimetypes.add_type('audio/mp3', '.mp3')
+mimetypes.add_type('audio/wav', '.wav')
+mimetypes.add_type('audio/aac', '.aac')
+mimetypes.add_type('audio/flac', '.flac')
+mimetypes.add_type('audio/ogg', '.ogg')
+mimetypes.add_type('audio/m4a', '.m4a')
+mimetypes.add_type('video/mp4', '.mp4')
+mimetypes.add_type('video/x-msvideo', '.avi')
+mimetypes.add_type('video/quicktime', '.mov')
+mimetypes.add_type('video/x-matroska', '.mkv')
+mimetypes.add_type('video/x-flv', '.flv')
+mimetypes.add_type('video/x-ms-wmv', '.wmv')
+mimetypes.add_type('image/jpeg', '.jpg')
+mimetypes.add_type('image/jpeg', '.jpeg')
+mimetypes.add_type('image/png', '.png')
+mimetypes.add_type('image/gif', '.gif')
+mimetypes.add_type('image/bmp', '.bmp')
+mimetypes.add_type('image/webp', '.webp')
 
-# Configure CORS
-CORS(app, resources={
-    r"/api/*": {"origins": "*"},
-    r"/static/uploads/*": {"origins": "*"}
-})
-
-ALLOWED_EXTENSIONS = {'mp3', 'wav', 'mp4', 'avi', 'mov', 'mkv'}
+CORS(app, resources={r"/api/*": {"origins": "*"}})
 
 def allowed_file(filename):
-    """Check if the file has an allowed extension."""
-    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+    """
+    Check if the file has an allowed extension.
+    """
+    if '.' not in filename:
+        return False
+    ext = filename.rsplit('.', 1)[1].lower()
+    for category in ALLOWED_EXTENSIONS:
+        if ext in ALLOWED_EXTENSIONS[category]:
+            return True
+    return False
 
-# Configure logging
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
+def get_file_category(filename):
+    """
+    Determine the category of the file based on its extension.
+    Returns 'audio', 'video', 'image', or None.
+    """
+    if '.' not in filename:
+        return None
+    ext = filename.rsplit('.', 1)[1].lower()
+    for category, extensions in ALLOWED_EXTENSIONS.items():
+        if ext in extensions:
+            return category
+    return None
 
-@app.errorhandler(413)
-def request_entity_too_large(error):
-    """Handle file too large error."""
-    logger.error('File too large')
-    return jsonify({
-        'error': 'File too large',
-        'max_size': '300MB',
-        'message': 'Please try compressing your file or splitting it into smaller parts before uploading.'
-    }), 413
+def extract_audio(video_path, audio_path):
+    """
+    Extract audio from a video file and save it.
+    """
+    try:
+        with VideoFileClip(video_path) as video:
+            audio = video.audio
+            if audio:
+                audio.write_audiofile(audio_path)
+                return True, ""
+            else:
+                return False, "No audio track found in the video."
+    except Exception as e:
+        return False, str(e)
 
 @app.route('/api/upload', methods=['POST'])
 def upload_file():
-    """Handle file uploads."""
+    """
+    Handle file uploads.
+    """
     if 'file' not in request.files:
-        logger.error('No file part in request.')
         return jsonify({'error': 'No file part in the request.'}), 400
-
     files = request.files.getlist('file')
-    if not files or len(files) == 0:
-        logger.error('No files selected for upload.')
-        return jsonify({'error': 'No files selected for upload.'}), 400
-
-    allowed_mimetypes = {
-        'audio/mpeg',
-        'audio/wav',
-        'video/mp4',
-        'video/x-msvideo',
-        'video/quicktime'  
+    if not files:
+        return jsonify({'error': 'No files selected for uploading.'}), 400
+    response = {
+        'uploaded_files': [],
+        'errors': []
     }
-
-    uploaded_files = []
-    errors = []
-    task_ids = []
-
     for file in files:
         if file.filename == '':
-            logger.warning('Empty filename encountered, skipping file.')
-            errors.append({'filename': '', 'error': 'Empty filename.'})
-            continue  
-
-        if not allowed_file(file.filename):
-            logger.warning(f'Unsupported file extension: {file.filename}')
-            errors.append({'filename': file.filename, 'error': 'Unsupported file extension.'})
+            response['errors'].append({'filename': '', 'error': 'No selected file.'})
             continue
-
-        if file.mimetype not in allowed_mimetypes:
-            logger.warning(f'Unsupported MIME type: {file.filename} with type {file.mimetype}')
-            errors.append({'filename': file.filename, 'error': 'Unsupported MIME type.'})
-            continue
-
-        file.seek(0, os.SEEK_END)
-        file_length = file.tell()
-        file.seek(0, 0) 
-
-        if file_length > app.config['MAX_CONTENT_LENGTH']:
-            logger.warning(f'File too large: {file.filename}')
-            errors.append({'filename': file.filename, 'error': 'File size exceeds the 250MB limit.'})
-            continue
-
-        filename = secure_filename(file.filename)
-        file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-
-        try:
-            file.save(file_path)
-            logger.info(f'File saved: {file_path}')
-
-            file_info = {
-                'filename': filename,
-                'path': f'/static/uploads/{filename}',
-                'size': os.path.getsize(file_path),
-                'type': file.mimetype
-            }
-            uploaded_files.append(file_info)
-
-            # Enqueue Celery task using fully qualified task name
-            task = celery.send_task('tasks.process_uploaded_file', args=[file_path, filename])
-            task_ids.append({'filename': filename, 'task_id': task.id})
-            logger.info(f'Task enqueued for {filename} with task ID {task.id}')
-
-        except Exception as e:
-            logger.error(f'Error processing file {filename}: {e}')
-            errors.append({'filename': filename, 'error': 'Failed to process the file.'})
-
-    response = {}
-    if uploaded_files:
-        response['uploaded_files'] = uploaded_files
-    if task_ids:
-        response['task_ids'] = task_ids
-    if errors:
-        response['errors'] = errors
-
-    status_code = 200 if uploaded_files and not errors else 207  
-    return jsonify(response), status_code
-
-@app.route('/api/task_status/<task_id>', methods=['GET'])
-def task_status(task_id):
-    """Check the status of a Celery task."""
-    task = AsyncResult(task_id, app=celery)
-    if task.state == 'PENDING':
-        response = {
-            'state': task.state,
-            'status': 'Pending...'
-        }
-    elif task.state == 'SUCCESS':
-        response = {
-            'state': task.state,
-            'status': 'Task completed successfully.',
-            'result': task.result
-        }
-    elif task.state == 'FAILURE':
-        # Access exception information
-        response = {
-            'state': task.state,
-            'status': str(task.info),  # This will include the exception message
-            'traceback': task.traceback  # Optional: Include traceback for debugging
-        }
-    else:
-        response = {
-            'state': task.state,
-            'status': str(task.info)
-        }
-    return jsonify(response)
-
-@app.route('/api/waveform/<filename>', methods=['GET'])
-def get_waveform(filename):
-    """Generate and return waveform image for a given audio/video file."""
-    audio_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-    base_name, ext = os.path.splitext(filename)
-    waveform_image = os.path.join(app.config['UPLOAD_FOLDER'], f'{base_name}_waveform.png')
-
-    if not os.path.exists(audio_path):
-        logger.error(f'File not found: {audio_path}')
-        return jsonify({'error': 'File not found.'}), 404
-
-    if filename.lower().endswith(('.mp4', '.avi', '.mov', '.mkv')):
-        extracted_audio = os.path.join(app.config['UPLOAD_FOLDER'], f'{base_name}_audio.wav')
-        try:
-            # Extract audio
-            extract_audio_from_video(audio_path, extracted_audio)
-
-            # Check if audio extraction was successful
-            if not os.path.exists(extracted_audio):
-                logger.error(f'Audio extraction failed for {filename}')
-                return jsonify({'error': 'Failed to extract audio from video.'}), 500
-
-            # Generate waveform
-            generate_waveform(extracted_audio, waveform_image)
-        except Exception as e:
-            logger.error(f'Error generating waveform for {filename}: {e}')
-            return jsonify({'error': 'Failed to generate waveform.'}), 500
-    else:
-        try:
-            # Generate waveform directly from audio
-            generate_waveform(audio_path, waveform_image)
-        except Exception as e:
-            logger.error(f'Error generating waveform for {filename}: {e}')
-            return jsonify({'error': 'Failed to generate waveform.'}), 500
-
-    if not os.path.exists(waveform_image):
-        logger.error(f'Waveform image not found: {waveform_image}')
-        return jsonify({'error': 'Waveform image not found.'}), 404
-
-    return send_file(waveform_image, mimetype='image/png')
+        if file and allowed_file(file.filename):
+            filename = secure_filename(file.filename)
+            file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+            if os.path.exists(file_path):
+                response['errors'].append({'filename': filename, 'error': 'File already exists.'})
+                continue
+            try:
+                file.save(file_path)
+                file_mime_type = mimetypes.guess_type(file_path)[0] or 'application/octet-stream'
+                print(f"Uploaded File: {filename}, MIME Type: {file_mime_type}")  # Debugging log
+                file_info = {
+                    'filename': filename,
+                    'path': f'/static/uploads/{filename}',
+                    'size': os.path.getsize(file_path),
+                    'type': file_mime_type,
+                    'duration': ''
+                }
+                category = get_file_category(filename)
+                if category == 'video':
+                    audio_filename = f"{os.path.splitext(filename)[0]}_audio.wav"
+                    audio_path = os.path.join(app.config['UPLOAD_FOLDER'], audio_filename)
+                    success, message = extract_audio(file_path, audio_path)
+                    if success:
+                        file_info['extracted_audio'] = {
+                            'filename': audio_filename,
+                            'path': f'/static/uploads/{audio_filename}',
+                            'size': os.path.getsize(audio_path),
+                            'type': mimetypes.guess_type(audio_path)[0] or 'application/octet-stream',
+                            'duration': ''  
+                        }
+                        response['uploaded_files'].append(file_info)
+                    else:
+                        response['errors'].append({'filename': filename, 'error': f'Audio extraction failed: {message}'})
+                else:
+                    response['uploaded_files'].append(file_info)
+            except Exception as e:
+                response['errors'].append({'filename': filename, 'error': str(e)})
+        else:
+            response['errors'].append({'filename': file.filename, 'error': 'File type not allowed.'})
+    return jsonify(response), 200
 
 @app.route('/api/file_exists', methods=['GET'])
 def file_exists():
-    """Check if a file exists."""
-    filename = request.args.get('filename')
+    """
+    Check if a file with the given filename exists.
+    """
+    filename = request.args.get('filename', '')
     if not filename:
-        return jsonify({'error': 'No filename provided'}), 400
-
-    file_path = os.path.join(app.config['UPLOAD_FOLDER'], secure_filename(filename))
-    if os.path.isfile(file_path):
-        return jsonify({'exists': True})
-    return jsonify({'exists': False})
+        return jsonify({'error': 'Filename parameter is missing.'}), 400
+    filename = secure_filename(filename)
+    file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+    exists = os.path.exists(file_path)
+    return jsonify({'exists': exists}), 200
 
 @app.route('/api/file_history', methods=['GET'])
 def file_history():
-    """Retrieve the list of uploaded files."""
-    try:
-        files = os.listdir(app.config['UPLOAD_FOLDER'])
-    except Exception as e:
-        logger.error(f'Error accessing upload folder: {e}')
-        return jsonify({'error': 'Failed to access upload folder.'}), 500
-
+    """
+    Retrieve the list of uploaded files with their metadata.
+    """
+    files = os.listdir(app.config['UPLOAD_FOLDER'])
     file_list = []
     for f in files:
         file_path = os.path.join(app.config['UPLOAD_FOLDER'], f)
         if os.path.isfile(file_path):
             mime_type, _ = mimetypes.guess_type(file_path)
+            category = get_file_category(f)
+            duration = ''
+            if category in ['audio', 'video']:
+                try:
+                    if category == 'audio':
+                        from moviepy.editor import AudioFileClip
+                        with AudioFileClip(file_path) as clip:
+                            duration = str(int(clip.duration // 60)).zfill(2) + ":" + str(int(clip.duration % 60)).zfill(2)
+                    elif category == 'video':
+                        from moviepy.editor import VideoFileClip
+                        with VideoFileClip(file_path) as clip:
+                            duration = str(int(clip.duration // 60)).zfill(2) + ":" + str(int(clip.duration % 60)).zfill(2)
+                except Exception as e:
+                    duration = ''
             file_info = {
                 'filename': f,
                 'path': f'/static/uploads/{f}',
                 'size': os.path.getsize(file_path),
                 'type': mime_type or 'application/octet-stream',
+                'duration': duration
             }
             file_list.append(file_info)
-    return jsonify({'files': file_list})
+    return jsonify({'files': file_list}), 200
 
-if __name__ == "__main__":
+@app.route('/static/uploads/<path:filename>', methods=['GET'])
+def serve_file(filename):
+    """
+    Serve uploaded files.
+    """
+    return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
+
+@app.errorhandler(413)
+def request_entity_too_large(error):
+    """
+    Handle file size limit error.
+    """
+    return jsonify({'error': 'File is too large. Maximum upload size is 300MB.'}), 413
+
+@app.errorhandler(404)
+def not_found(error):
+    """
+    Handle 404 errors.
+    """
+    return jsonify({'error': 'Resource not found.'}), 404
+
+@app.errorhandler(405)
+def method_not_allowed(error):
+    """
+    Handle 405 errors.
+    """
+    return jsonify({'error': 'Method not allowed.'}), 405
+
+@app.errorhandler(Exception)
+def handle_exception(e):
+    """
+    Handle generic exceptions.
+    """
+    return jsonify({'error': str(e)}), 500
+
+if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5555, debug=True)

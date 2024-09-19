@@ -1,98 +1,9 @@
 // src/components/common/MediaPlayer.jsx
-import React, { useEffect, useRef, useState } from 'react';
+
+import React from 'react';
 import AudioPlayer from './AudioPlayer';
-import VideoPlayer from './VideoPlayer';
-import styled, { keyframes } from 'styled-components';
+import VideoPlayer from './VideoPlayer'; 
 import PropTypes from 'prop-types';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faForward, faBackward, faTimes } from '@fortawesome/free-solid-svg-icons';
-import FocusTrap from 'focus-trap-react';
-
-const fadeIn = keyframes`
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-`;
-
-const ModalOverlay = styled.div`
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(0, 0, 0, 0.5); 
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 2000; 
-  animation: ${fadeIn} 0.3s ease-out;
-`;
-
-const ModalContent = styled.div`
-  background-color: ${({ theme }) => theme.colors.background};
-  padding: 20px;
-  border-radius: 10px;
-  width: 90%;
-  max-width: 800px;
-  position: relative;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-  max-height: 90vh;
-  overflow-y: auto;
-  @media (max-width: 767px) {
-    padding: 15px;
-    width: 95%;
-    max-width: 100%;
-    border-radius: 0;
-    height: 100vh;
-    max-height: 100vh;
-  }
-`;
-
-const CloseIcon = styled(FontAwesomeIcon)`
-  position: absolute;
-  top: 15px;
-  right: 15px;
-  cursor: pointer;
-  color: ${({ theme }) => theme.colors.error};
-  font-size: 1.5rem;
-  &:hover {
-    color: #c0392b;
-  }
-  @media (max-width: 767px) {
-    top: 10px;
-    right: 10px;
-    font-size: 1.2rem;
-  }
-`;
-
-const NavigationControls = styled.div`
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  margin-top: 20px;
-  button {
-    margin: 0 15px;
-    padding: 8px 12px;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    background-color: ${({ theme }) => theme.colors.primary};
-    color: white;
-    transition: background-color 0.2s ease;
-    &:hover {
-      background-color: ${({ theme }) => theme.colors.secondary};
-    }
-  }
-  @media (max-width: 767px) {
-    button {
-      padding: 6px 10px;
-      margin: 0 10px;
-    }
-  }
-`;
 
 function MediaPlayer({ 
   fileUrl, 
@@ -101,54 +12,42 @@ function MediaPlayer({
   fileSize, 
   duration = '', 
   onClose, 
-  onNextTrack, 
-  onPrevTrack 
+  isPlaying, 
+  togglePlayPause 
 }) {
-  const closeButtonRef = useRef(null);
+  const mimeType = fileType;
 
-  useEffect(() => {
-    if (closeButtonRef.current) {
-      closeButtonRef.current.focus();
-    }
-  }, []);
-
-  return (
-    <ModalOverlay onClick={onClose} aria-modal="true" role="dialog">
-      <FocusTrap>
-        <ModalContent onClick={(e) => e.stopPropagation()}>
-          <CloseIcon icon={faTimes} onClick={onClose} aria-label="Close Media Player" ref={closeButtonRef} />
-          {fileType && fileType.startsWith('audio/') ? (
-            <AudioPlayer
-              fileUrl={fileUrl}
-              fileName={fileName}
-              fileType={fileType}
-              fileSize={fileSize}
-              duration={duration}
-              onClose={onClose}
-            />
-          ) : (
-            <VideoPlayer
-              fileUrl={fileUrl}
-              fileName={fileName}
-              fileType={fileType}
-              fileSize={fileSize}
-              duration={duration}
-              onClose={onClose}
-            />
-          )}
-          {}
-          <NavigationControls>
-            <button onClick={onPrevTrack} aria-label="Previous Track">
-              <FontAwesomeIcon icon={faBackward} /> Previous
-            </button>
-            <button onClick={onNextTrack} aria-label="Next Track">
-              Next <FontAwesomeIcon icon={faForward} />
-            </button>
-          </NavigationControls>
-        </ModalContent>
-      </FocusTrap>
-    </ModalOverlay>
-  );
+  if (mimeType.startsWith('audio/')) {
+    return (
+      <AudioPlayer
+        key={fileName} // Ensure unique key
+        fileUrl={fileUrl}
+        fileName={fileName}
+        fileType={fileType}
+        fileSize={fileSize}
+        duration={duration}
+        onClose={onClose}
+        isPlaying={isPlaying}
+        togglePlayPause={togglePlayPause}
+      />
+    );
+  } else if (mimeType.startsWith('video/')) {
+    return (
+      <VideoPlayer
+        key={fileName} // Ensure unique key
+        fileUrl={fileUrl}
+        fileName={fileName}
+        fileType={fileType}
+        fileSize={fileSize}
+        duration={duration}
+        onClose={onClose}
+        isPlaying={isPlaying}
+        togglePlayPause={togglePlayPause}
+      />
+    );
+  } else {
+    return <div role="alert">Unsupported media type selected.</div>;
+  }
 }
 
 MediaPlayer.propTypes = {
@@ -158,8 +57,8 @@ MediaPlayer.propTypes = {
   fileSize: PropTypes.number.isRequired,
   duration: PropTypes.string,
   onClose: PropTypes.func.isRequired,
-  onNextTrack: PropTypes.func.isRequired,
-  onPrevTrack: PropTypes.func.isRequired,
+  isPlaying: PropTypes.bool.isRequired, 
+  togglePlayPause: PropTypes.func.isRequired, 
 };
 
 export default MediaPlayer;

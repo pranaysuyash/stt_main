@@ -13,7 +13,9 @@ Directory Structure:
 │   │   │   ├── Button.jsx
 │   │   │   ├── ErrorBoundary.jsx
 │   │   │   ├── FileDashboard.jsx
+│   │   │   ├── FileDashboardStyles.jsx
 │   │   │   ├── FileUploader.jsx
+│   │   │   ├── ImageViewer.jsx
 │   │   │   ├── Layout.jsx
 │   │   │   ├── Loader.jsx
 │   │   │   ├── MediaPlayer.jsx
@@ -25,6 +27,7 @@ Directory Structure:
 │   │   │   ├── SideNav.jsx
 │   │   │   ├── Tooltip.jsx
 │   │   │   ├── VideoPlayer.jsx
+│   │   │   ├── ViewerModal.jsx
 │   │   │   └── WaveformViewer.jsx
 │   │   └── pages/
 │   │       ├── Analysis.jsx
@@ -37,6 +40,8 @@ Directory Structure:
 │   ├── styles/
 │   │   ├── GlobalStyle.js
 │   │   └── theme.js
+│   ├── utils/
+│   │   └── mediaUtils.js
 │   ├── App.jsx
 │   ├── main.jsx
 │   └── routes.jsx
@@ -60,41 +65,167 @@ Directory Structure:
 ## File: test.jsx
 
 ```jsx
-const ToolbarContainer = styled.div`
-  display: flex;
-  flex-wrap: wrap;
-  padding: 10px 20px;
-  background-color: #bdc3c7;
-  align-items: center;
-  @media (max-width: 768px) {
-    padding: 10px 10px;
+import React, { useState, useRef } from 'react';
+import MediaPlayer from './MediaPlayer';
+import ImageViewer from './ImageViewer'; 
+import styled from 'styled-components';
+import PropTypes from 'prop-types';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faForward, faBackward, faTimes } from '@fortawesome/free-solid-svg-icons';
+import Tooltip from './Tooltip'; 
+const DashboardContainer = styled.div`
+  margin-top: 30px;
+`;
+const FileGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 20px;
+  @media (max-width: 1199px) {
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  }
+  @media (max-width: 767px) {
+    grid-template-columns: 1fr;
+    gap: 15px;
   }
 `;
-const DraggableArea = styled.div`
+const FileCard = styled.div`
+  background-color: ${({ theme }) => theme.colors.neutral};
+  padding: 20px;
+  border-radius: 10px;
+  box-sizing: border-box;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  text-align: center;
+  transition: transform 0.2s ease, box-shadow 0.3s ease;
+  cursor: pointer;
   display: flex;
-  align-items: center;
-  flex-grow: 1;
-  flex-wrap: nowrap; 
-  overflow-x: auto; 
-  -webkit-overflow-scrolling: touch;
-  @media (max-width: 768px) {
-    justify-content: flex-start;
+  flex-direction: column;
+  justify-content: center;
+  height: 150px; 
+  &:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+  }
+  p {
+    margin-bottom: 10px;
+    color: ${({ theme }) => theme.colors.text};
+    font-size: 1rem; 
+    font-weight: ${({ theme }) => theme.fontWeights.medium};
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  @media (max-width: 767px) {
+    padding: 15px;
+    height: auto;
+    p {
+      font-size: 0.875rem; 
+    }
   }
 `;
-const SortableItemContainer = styled.div`
-  display: flex;
-  align-items: center;
-  margin: 5px;
-  padding: 5px;
-  background-color: ${(props) =>
-    props.isDragging ? "#f0f0f0" : "transparent"};
-  border-radius: 4px;
-  flex-shrink: 0;
-  min-width: 100px; 
-  @media (max-width: 768px) {
-    min-width: 80px; 
-  }
-`;
+function FileDashboard({ uploadedFiles }) {
+  const [currentIndex, setCurrentIndex] = useState(null);
+  const [currentMediaType, setCurrentMediaType] = useState(null); 
+  const triggerRef = useRef(null);
+  const selectFile = (index, event) => {
+    triggerRef.current = event.currentTarget;
+    const file = uploadedFiles[index];
+    const mimeType = file.type;
+    if (mimeType.startsWith('audio/') || mimeType.startsWith('video/')) {
+      setCurrentMediaType('media');
+      setCurrentIndex(index);
+    } else if (mimeType.startsWith('image/')) {
+      setCurrentMediaType('image');
+      setCurrentIndex(index);
+    } else {
+      console.error('Unsupported media type:', mimeType);
+    }
+  };
+  const closeViewer = () => {
+    setCurrentIndex(null);
+    setCurrentMediaType(null);
+    if (triggerRef.current) {
+      triggerRef.current.focus();
+    }
+  };
+  const handleNextTrack = () => {
+    setCurrentIndex((prevIndex) => {
+      if (prevIndex === null) return 0;
+      return (prevIndex + 1) % uploadedFiles.length;
+    });
+  };
+  const handlePrevTrack = () => {
+    setCurrentIndex((prevIndex) => {
+      if (prevIndex === null) return uploadedFiles.length - 1;
+      return (prevIndex - 1 + uploadedFiles.length) % uploadedFiles.length;
+    });
+  };
+  return (
+    <DashboardContainer>
+      <h2>Uploaded Files</h2>
+      <FileGrid>
+        {uploadedFiles.length > 0 ? (
+          uploadedFiles.map((file, index) => (
+            <FileCard 
+              key={index} 
+              onClick={(e) => selectFile(index, e)} 
+              tabIndex="0" 
+              onKeyPress={(e) => {
+                if (e.key === 'Enter') selectFile(index, e);
+              }}
+              aria-label={`Play or view ${file.filename}`}
+            >
+              <Tooltip $text={file.filename}>
+                <p>{file.filename}</p>
+              </Tooltip>
+              <p>{(file.size / (1024 * 1024)).toFixed(2)} MB</p>
+            </FileCard>
+          ))
+        ) : (
+          <p>No files uploaded yet.</p>
+        )}
+      </FileGrid>
+      {currentIndex !== null && currentMediaType === 'media' && (
+        <MediaPlayer
+          fileUrl={
+            uploadedFiles[currentIndex].path.startsWith('/static/uploads') 
+              ? `${window.location.origin}${uploadedFiles[currentIndex].path}` 
+              : uploadedFiles[currentIndex].path
+          }
+          fileName={uploadedFiles[currentIndex].filename}
+          fileType={uploadedFiles[currentIndex].type}
+          fileSize={uploadedFiles[currentIndex].size}
+          duration={uploadedFiles[currentIndex].duration}
+          onClose={closeViewer}
+          onNextTrack={handleNextTrack}
+          onPrevTrack={handlePrevTrack}
+        />
+      )}
+      {currentIndex !== null && currentMediaType === 'image' && (
+        <ImageViewer
+          fileUrl={
+            uploadedFiles[currentIndex].path.startsWith('/static/uploads') 
+              ? `${window.location.origin}${uploadedFiles[currentIndex].path}` 
+              : uploadedFiles[currentIndex].path
+          }
+          fileName={uploadedFiles[currentIndex].filename}
+          onClose={closeViewer}
+        />
+      )}
+    </DashboardContainer>
+  );
+}
+FileDashboard.propTypes = {
+  uploadedFiles: PropTypes.arrayOf(
+    PropTypes.shape({
+      filename: PropTypes.string.isRequired,
+      path: PropTypes.string.isRequired,
+      size: PropTypes.number.isRequired,
+      type: PropTypes.string.isRequired,
+      duration: PropTypes.string,
+    })
+  ).isRequired,
+};
+export default FileDashboard;
 ```
 
 ## File: index.html
@@ -769,202 +900,216 @@ if __name__ == "__main__":
 ## File: app.py
 
 ```py
-from flask import Flask, request, jsonify, send_file
 import os
-import logging
+import mimetypes
+from flask import Flask, request, jsonify, send_from_directory, abort
 from werkzeug.utils import secure_filename
 from flask_cors import CORS
-from celery_app import celery  
-from celery.result import AsyncResult
-import mimetypes
+from moviepy.editor import VideoFileClip
+from datetime import datetime
 app = Flask(__name__)
-BASE_DIR = os.path.abspath(os.path.dirname(__file__))
-UPLOAD_FOLDER = os.path.join(BASE_DIR, 'static', 'uploads')
-app.config.update(
-    CELERY_BROKER_URL='redis://localhost:6379/0',
-    CELERY_RESULT_BACKEND='redis://localhost:6379/0',
-    UPLOAD_FOLDER=UPLOAD_FOLDER,
-    MAX_CONTENT_LENGTH=1024 * 1024 * 1024  
-)
+UPLOAD_FOLDER = 'static/uploads'
+ALLOWED_EXTENSIONS = {
+    'audio': {'mp3', 'wav', 'aac', 'flac', 'ogg', 'm4a'},
+    'video': {'mp4', 'avi', 'mov', 'mkv', 'flv', 'wmv'},
+    'image': {'jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp'}
+}
+MAX_CONTENT_LENGTH = 300 * 1024 * 1024  
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+app.config['MAX_CONTENT_LENGTH'] = MAX_CONTENT_LENGTH
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
-celery.conf.update(
-    UPLOAD_FOLDER=app.config['UPLOAD_FOLDER']
-)
-CORS(app, resources={
-    r"/api/*": {"origins": "*"},
-    r"/static/uploads/*": {"origins": "*"}
-})
-ALLOWED_EXTENSIONS = {'mp3', 'wav', 'mp4', 'avi', 'mov', 'mkv'}
+mimetypes.init()
+mimetypes.add_type('audio/mp3', '.mp3')
+mimetypes.add_type('audio/wav', '.wav')
+mimetypes.add_type('audio/aac', '.aac')
+mimetypes.add_type('audio/flac', '.flac')
+mimetypes.add_type('audio/ogg', '.ogg')
+mimetypes.add_type('audio/m4a', '.m4a')
+mimetypes.add_type('video/mp4', '.mp4')
+mimetypes.add_type('video/x-msvideo', '.avi')
+mimetypes.add_type('video/quicktime', '.mov')
+mimetypes.add_type('video/x-matroska', '.mkv')
+mimetypes.add_type('video/x-flv', '.flv')
+mimetypes.add_type('video/x-ms-wmv', '.wmv')
+mimetypes.add_type('image/jpeg', '.jpg')
+mimetypes.add_type('image/jpeg', '.jpeg')
+mimetypes.add_type('image/png', '.png')
+mimetypes.add_type('image/gif', '.gif')
+mimetypes.add_type('image/bmp', '.bmp')
+mimetypes.add_type('image/webp', '.webp')
+CORS(app, resources={r"/api/*": {"origins": "*"}})
 def allowed_file(filename):
-    """Check if the file has an allowed extension."""
-    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
-@app.errorhandler(413)
-def request_entity_too_large(error):
-    """Handle file too large error."""
-    logger.error('File too large')
-    return jsonify({
-        'error': 'File too large',
-        'max_size': '300MB',
-        'message': 'Please try compressing your file or splitting it into smaller parts before uploading.'
-    }), 413
+    """
+    Check if the file has an allowed extension.
+    """
+    if '.' not in filename:
+        return False
+    ext = filename.rsplit('.', 1)[1].lower()
+    for category in ALLOWED_EXTENSIONS:
+        if ext in ALLOWED_EXTENSIONS[category]:
+            return True
+    return False
+def get_file_category(filename):
+    """
+    Determine the category of the file based on its extension.
+    Returns 'audio', 'video', 'image', or None.
+    """
+    if '.' not in filename:
+        return None
+    ext = filename.rsplit('.', 1)[1].lower()
+    for category, extensions in ALLOWED_EXTENSIONS.items():
+        if ext in extensions:
+            return category
+    return None
+def extract_audio(video_path, audio_path):
+    """
+    Extract audio from a video file and save it.
+    """
+    try:
+        with VideoFileClip(video_path) as video:
+            audio = video.audio
+            if audio:
+                audio.write_audiofile(audio_path)
+                return True, ""
+            else:
+                return False, "No audio track found in the video."
+    except Exception as e:
+        return False, str(e)
 @app.route('/api/upload', methods=['POST'])
 def upload_file():
-    """Handle file uploads."""
+    """
+    Handle file uploads.
+    """
     if 'file' not in request.files:
-        logger.error('No file part in request.')
         return jsonify({'error': 'No file part in the request.'}), 400
     files = request.files.getlist('file')
-    if not files or len(files) == 0:
-        logger.error('No files selected for upload.')
-        return jsonify({'error': 'No files selected for upload.'}), 400
-    allowed_mimetypes = {
-        'audio/mpeg',
-        'audio/wav',
-        'video/mp4',
-        'video/x-msvideo',
-        'video/quicktime'  
+    if not files:
+        return jsonify({'error': 'No files selected for uploading.'}), 400
+    response = {
+        'uploaded_files': [],
+        'errors': []
     }
-    uploaded_files = []
-    errors = []
-    task_ids = []
     for file in files:
         if file.filename == '':
-            logger.warning('Empty filename encountered, skipping file.')
-            errors.append({'filename': '', 'error': 'Empty filename.'})
-            continue  
-        if not allowed_file(file.filename):
-            logger.warning(f'Unsupported file extension: {file.filename}')
-            errors.append({'filename': file.filename, 'error': 'Unsupported file extension.'})
+            response['errors'].append({'filename': '', 'error': 'No selected file.'})
             continue
-        if file.mimetype not in allowed_mimetypes:
-            logger.warning(f'Unsupported MIME type: {file.filename} with type {file.mimetype}')
-            errors.append({'filename': file.filename, 'error': 'Unsupported MIME type.'})
-            continue
-        file.seek(0, os.SEEK_END)
-        file_length = file.tell()
-        file.seek(0, 0) 
-        if file_length > app.config['MAX_CONTENT_LENGTH']:
-            logger.warning(f'File too large: {file.filename}')
-            errors.append({'filename': file.filename, 'error': 'File size exceeds the 250MB limit.'})
-            continue
-        filename = secure_filename(file.filename)
-        file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-        try:
-            file.save(file_path)
-            logger.info(f'File saved: {file_path}')
-            file_info = {
-                'filename': filename,
-                'path': f'/static/uploads/{filename}',
-                'size': os.path.getsize(file_path),
-                'type': file.mimetype
-            }
-            uploaded_files.append(file_info)
-            task = celery.send_task('tasks.process_uploaded_file', args=[file_path, filename])
-            task_ids.append({'filename': filename, 'task_id': task.id})
-            logger.info(f'Task enqueued for {filename} with task ID {task.id}')
-        except Exception as e:
-            logger.error(f'Error processing file {filename}: {e}')
-            errors.append({'filename': filename, 'error': 'Failed to process the file.'})
-    response = {}
-    if uploaded_files:
-        response['uploaded_files'] = uploaded_files
-    if task_ids:
-        response['task_ids'] = task_ids
-    if errors:
-        response['errors'] = errors
-    status_code = 200 if uploaded_files and not errors else 207  
-    return jsonify(response), status_code
-@app.route('/api/task_status/<task_id>', methods=['GET'])
-def task_status(task_id):
-    """Check the status of a Celery task."""
-    task = AsyncResult(task_id, app=celery)
-    if task.state == 'PENDING':
-        response = {
-            'state': task.state,
-            'status': 'Pending...'
-        }
-    elif task.state == 'SUCCESS':
-        response = {
-            'state': task.state,
-            'status': 'Task completed successfully.',
-            'result': task.result
-        }
-    elif task.state == 'FAILURE':
-        response = {
-            'state': task.state,
-            'status': str(task.info),  
-            'traceback': task.traceback  
-        }
-    else:
-        response = {
-            'state': task.state,
-            'status': str(task.info)
-        }
-    return jsonify(response)
-@app.route('/api/waveform/<filename>', methods=['GET'])
-def get_waveform(filename):
-    """Generate and return waveform image for a given audio/video file."""
-    audio_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-    base_name, ext = os.path.splitext(filename)
-    waveform_image = os.path.join(app.config['UPLOAD_FOLDER'], f'{base_name}_waveform.png')
-    if not os.path.exists(audio_path):
-        logger.error(f'File not found: {audio_path}')
-        return jsonify({'error': 'File not found.'}), 404
-    if filename.lower().endswith(('.mp4', '.avi', '.mov', '.mkv')):
-        extracted_audio = os.path.join(app.config['UPLOAD_FOLDER'], f'{base_name}_audio.wav')
-        try:
-            extract_audio_from_video(audio_path, extracted_audio)
-            if not os.path.exists(extracted_audio):
-                logger.error(f'Audio extraction failed for {filename}')
-                return jsonify({'error': 'Failed to extract audio from video.'}), 500
-            generate_waveform(extracted_audio, waveform_image)
-        except Exception as e:
-            logger.error(f'Error generating waveform for {filename}: {e}')
-            return jsonify({'error': 'Failed to generate waveform.'}), 500
-    else:
-        try:
-            generate_waveform(audio_path, waveform_image)
-        except Exception as e:
-            logger.error(f'Error generating waveform for {filename}: {e}')
-            return jsonify({'error': 'Failed to generate waveform.'}), 500
-    if not os.path.exists(waveform_image):
-        logger.error(f'Waveform image not found: {waveform_image}')
-        return jsonify({'error': 'Waveform image not found.'}), 404
-    return send_file(waveform_image, mimetype='image/png')
+        if file and allowed_file(file.filename):
+            filename = secure_filename(file.filename)
+            file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+            if os.path.exists(file_path):
+                response['errors'].append({'filename': filename, 'error': 'File already exists.'})
+                continue
+            try:
+                file.save(file_path)
+                file_mime_type = mimetypes.guess_type(file_path)[0] or 'application/octet-stream'
+                print(f"Uploaded File: {filename}, MIME Type: {file_mime_type}")  
+                file_info = {
+                    'filename': filename,
+                    'path': f'/static/uploads/{filename}',
+                    'size': os.path.getsize(file_path),
+                    'type': file_mime_type,
+                    'duration': ''
+                }
+                category = get_file_category(filename)
+                if category == 'video':
+                    audio_filename = f"{os.path.splitext(filename)[0]}_audio.wav"
+                    audio_path = os.path.join(app.config['UPLOAD_FOLDER'], audio_filename)
+                    success, message = extract_audio(file_path, audio_path)
+                    if success:
+                        file_info['extracted_audio'] = {
+                            'filename': audio_filename,
+                            'path': f'/static/uploads/{audio_filename}',
+                            'size': os.path.getsize(audio_path),
+                            'type': mimetypes.guess_type(audio_path)[0] or 'application/octet-stream',
+                            'duration': ''  
+                        }
+                        response['uploaded_files'].append(file_info)
+                    else:
+                        response['errors'].append({'filename': filename, 'error': f'Audio extraction failed: {message}'})
+                else:
+                    response['uploaded_files'].append(file_info)
+            except Exception as e:
+                response['errors'].append({'filename': filename, 'error': str(e)})
+        else:
+            response['errors'].append({'filename': file.filename, 'error': 'File type not allowed.'})
+    return jsonify(response), 200
 @app.route('/api/file_exists', methods=['GET'])
 def file_exists():
-    """Check if a file exists."""
-    filename = request.args.get('filename')
+    """
+    Check if a file with the given filename exists.
+    """
+    filename = request.args.get('filename', '')
     if not filename:
-        return jsonify({'error': 'No filename provided'}), 400
-    file_path = os.path.join(app.config['UPLOAD_FOLDER'], secure_filename(filename))
-    if os.path.isfile(file_path):
-        return jsonify({'exists': True})
-    return jsonify({'exists': False})
+        return jsonify({'error': 'Filename parameter is missing.'}), 400
+    filename = secure_filename(filename)
+    file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+    exists = os.path.exists(file_path)
+    return jsonify({'exists': exists}), 200
 @app.route('/api/file_history', methods=['GET'])
 def file_history():
-    """Retrieve the list of uploaded files."""
-    try:
-        files = os.listdir(app.config['UPLOAD_FOLDER'])
-    except Exception as e:
-        logger.error(f'Error accessing upload folder: {e}')
-        return jsonify({'error': 'Failed to access upload folder.'}), 500
+    """
+    Retrieve the list of uploaded files with their metadata.
+    """
+    files = os.listdir(app.config['UPLOAD_FOLDER'])
     file_list = []
     for f in files:
         file_path = os.path.join(app.config['UPLOAD_FOLDER'], f)
         if os.path.isfile(file_path):
             mime_type, _ = mimetypes.guess_type(file_path)
+            category = get_file_category(f)
+            duration = ''
+            if category in ['audio', 'video']:
+                try:
+                    if category == 'audio':
+                        from moviepy.editor import AudioFileClip
+                        with AudioFileClip(file_path) as clip:
+                            duration = str(int(clip.duration // 60)).zfill(2) + ":" + str(int(clip.duration % 60)).zfill(2)
+                    elif category == 'video':
+                        from moviepy.editor import VideoFileClip
+                        with VideoFileClip(file_path) as clip:
+                            duration = str(int(clip.duration // 60)).zfill(2) + ":" + str(int(clip.duration % 60)).zfill(2)
+                except Exception as e:
+                    duration = ''
             file_info = {
                 'filename': f,
                 'path': f'/static/uploads/{f}',
                 'size': os.path.getsize(file_path),
                 'type': mime_type or 'application/octet-stream',
+                'duration': duration
             }
             file_list.append(file_info)
-    return jsonify({'files': file_list})
-if __name__ == "__main__":
+    return jsonify({'files': file_list}), 200
+@app.route('/static/uploads/<path:filename>', methods=['GET'])
+def serve_file(filename):
+    """
+    Serve uploaded files.
+    """
+    return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
+@app.errorhandler(413)
+def request_entity_too_large(error):
+    """
+    Handle file size limit error.
+    """
+    return jsonify({'error': 'File is too large. Maximum upload size is 300MB.'}), 413
+@app.errorhandler(404)
+def not_found(error):
+    """
+    Handle 404 errors.
+    """
+    return jsonify({'error': 'Resource not found.'}), 404
+@app.errorhandler(405)
+def method_not_allowed(error):
+    """
+    Handle 405 errors.
+    """
+    return jsonify({'error': 'Method not allowed.'}), 405
+@app.errorhandler(Exception)
+def handle_exception(e):
+    """
+    Handle generic exceptions.
+    """
+    return jsonify({'error': str(e)}), 500
+if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5555, debug=True)
 ```
 
@@ -1129,6 +1274,20 @@ function App() {
 export default App;
 ```
 
+## File: src/utils/mediaUtils.js
+
+```js
+export const isAudioFile = (mimeType) => {
+    return mimeType.startsWith('audio/');
+  };
+  export const isVideoFile = (mimeType) => {
+    return mimeType.startsWith('video/');
+  };
+  export const isImageFile = (mimeType) => {
+    return mimeType.startsWith('image/');
+  };
+```
+
 ## File: src/styles/theme.js
 
 ```js
@@ -1285,19 +1444,30 @@ const CloseButton = styled.button`
     background-color: #c0392b;
   }
 `;
+const ErrorMessage = styled.div`
+  color: red;
+  margin-bottom: 10px;
+`;
 function VideoPlayer({ 
   fileUrl, 
   fileName, 
   fileType, 
   fileSize, 
   duration = '', 
-  onClose 
+  onClose, 
+  onError,
+  isPlaying,
+  togglePlayPause, 
 }) {
   const videoRef = useRef(null);
-  const [isLooping, setIsLooping] = useState(false);
+  const [loop, setLoop] = useState(false);
+  const [error, setError] = useState('');
   const handleError = (e) => {
     console.error('Video playback error:', e);
-    onClose(); 
+    setError('Failed to play the video. It might be corrupted or unsupported.');
+    if (onError) {
+      onError(e);
+    }
   };
   const handleFullscreen = () => {
     if (videoRef.current) {
@@ -1311,10 +1481,20 @@ function VideoPlayer({
     }
   };
   const toggleLoop = () => {
-    setIsLooping(!isLooping);
+    setLoop(!loop);
     if (videoRef.current) {
-      videoRef.current.loop = !isLooping;
+      videoRef.current.loop = !loop;
     }
+  };
+  const stopVideo = () => {
+    if (videoRef.current) {
+      videoRef.current.pause();
+      videoRef.current.currentTime = 0;
+      togglePlayPause(); 
+    }
+  };
+  const closePlayer = () => {
+    onClose();
   };
   return (
     <VideoPlayerContainer>
@@ -1323,12 +1503,19 @@ function VideoPlayer({
         <p>File Size: {(fileSize / (1024 * 1024)).toFixed(2)} MB</p>
       )}
       {duration && <p>Duration: {duration}</p>}
+      {error && (
+        <ErrorMessage role="alert">
+          {error}
+        </ErrorMessage>
+      )}
       <Video
         ref={videoRef}
         src={fileUrl}
         controls
         onError={handleError}
         aria-label={`Video player for ${fileName}`}
+        onPlay={togglePlayPause}
+        onPause={togglePlayPause}
       >
         Your browser does not support the video tag.
       </Video>
@@ -1341,13 +1528,16 @@ function VideoPlayer({
         </button>
         <button 
           onClick={toggleLoop} 
-          aria-label={isLooping ? 'Disable Loop' : 'Enable Loop'}
-          className={isLooping ? 'loop-active' : ''}
+          aria-label={loop ? 'Disable Loop' : 'Enable Loop'}
+          className={loop ? 'loop-active' : ''}
         >
-          {isLooping ? 'Looping' : 'Loop'}
+          {loop ? 'Looping' : 'Loop'}
+        </button>
+        <button onClick={stopVideo} aria-label="Stop Video">
+          Stop
         </button>
       </Controls>
-      <CloseButton onClick={onClose} aria-label="Close Video Player">Close</CloseButton>
+      <CloseButton onClick={closePlayer} aria-label="Close Video Player">Close</CloseButton>
     </VideoPlayerContainer>
   );
 }
@@ -1358,8 +1548,83 @@ VideoPlayer.propTypes = {
   fileSize: PropTypes.number.isRequired,
   duration: PropTypes.string,
   onClose: PropTypes.func.isRequired,
+  onError: PropTypes.func, 
+  isPlaying: PropTypes.bool.isRequired,
+  togglePlayPause: PropTypes.func.isRequired,
 };
 export default VideoPlayer;
+```
+
+## File: src/components/common/FileDashboardStyles.jsx
+
+```jsx
+import styled from 'styled-components';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+export const FileItem = styled.div`
+  display: flex;
+  align-items: center;
+  padding: 10px;
+  background-color: ${({ theme }) => theme.colors.neutral};
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  margin-bottom: 10px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  &:hover {
+    background-color: ${({ theme }) => theme.colors.background};
+  }
+`;
+export const FileName = styled.span`
+  flex: 1;
+  font-weight: 500;
+  color: ${({ theme }) => theme.colors.text};
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+`;
+export const FileTypeIcon = styled(FontAwesomeIcon)`
+  margin-right: 10px;
+  color: ${({ theme }) => theme.colors.primary};
+`;
+export const FileActions = styled.div`
+  display: flex;
+  align-items: center;
+`;
+export const ActionButton = styled.button`
+  background: none;
+  border: none;
+  color: ${({ theme }) => theme.colors.text};
+  margin-left: 10px;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: color 0.2s ease;
+  &:hover {
+    color: ${({ theme }) => theme.colors.primary};
+  }
+  &:focus {
+    outline: 2px solid ${({ theme }) => theme.colors.primary};
+    outline-offset: 2px;
+  }
+`;
+export const ActionIcon = styled(FontAwesomeIcon)`
+  pointer-events: none;
+`;
+export const ActionLabel = styled.span`
+  display: none;
+`;
+export const FilePreview = styled.div`
+  margin-top: 10px;
+  width: 100%;
+  height: 100px; 
+  background-color: #f9f9f9;
+  border: 1px dashed #ccc;
+  border-radius: 5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #999;
+  font-size: 0.9rem;
+`;
 ```
 
 ## File: src/components/common/PreviewSection.jsx
@@ -1520,268 +1785,194 @@ export default Layout;
 
 ```jsx
 import React, { useState, useRef } from 'react';
-import styled from 'styled-components';
-import PreviewSection from './PreviewSection';
-import ProgressBar from './ProgressBar';
-import Button from './Button'; 
-import { faUpload } from '@fortawesome/free-solid-svg-icons';
+import MediaPlayer from './MediaPlayer';
+import ImageViewer from './ImageViewer'; 
+import {
+  FileItem,
+  FileName,
+  FileTypeIcon,
+  FileActions,
+  ActionButton,
+  ActionIcon,
+  ActionLabel,
+  FilePreview
+} from "./FileDashboardStyles";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { 
+  faForward, 
+  faBackward, 
+  faTimes,
+  faFileAudio,
+  faFileVideo,
+  faFileImage,
+  faDownload,
+  faTrash
+} from "@fortawesome/free-solid-svg-icons";
+import Tooltip from './Tooltip'; 
 import PropTypes from 'prop-types';
-import { ErrorMessage } from './Messages'; 
-const UploadSection = styled.div`
-  margin-top: 20px;
+import styled from 'styled-components';
+const DashboardContainer = styled.div`
+  margin-top: 30px;
 `;
-const OverwritePrompt = styled.div`
-  background-color: ${({ theme }) => theme.colors.background};
-  padding: 15px;
-  border: 1px solid ${({ theme }) => theme.colors.warning};
-  border-radius: 5px;
-  margin-top: 20px;
-  p {
-    margin-bottom: 15px;
-    color: ${({ theme }) => theme.colors.text};
-    font-size: ${({ theme }) => theme.fontSizes.body};
+const FileGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 20px;
+  @media (max-width: 1199px) {
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  }
+  @media (max-width: 767px) {
+    grid-template-columns: 1fr;
+    gap: 15px;
   }
 `;
-const OverwriteButtons = styled.div`
-  display: flex;
-  justify-content: center;
-  gap: 10px; 
-  button {
-    flex: 1; 
-  }
-`;
-const DropZone = styled.div`
-  border: 2px dashed #bbb;
-  border-radius: 12px;
+const FileCard = styled.div`
   background-color: ${({ theme }) => theme.colors.neutral};
-  padding: 40px;
+  padding: 20px;
+  border-radius: 10px;
+  box-sizing: border-box;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   text-align: center;
-  transition: background-color 0.3s ease, box-shadow 0.2s ease;
+  transition: transform 0.2s ease, box-shadow 0.3s ease;
   cursor: pointer;
-  &:hover, &.drag-over {
-    background-color: ${({ theme }) => theme.colors.background};
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-  }
-  i {
-    font-size: 50px;
-    color: ${({ theme }) => theme.colors.primary};
-    margin-bottom: 10px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  height: 150px; 
+  &:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
   }
   p {
+    margin-bottom: 10px;
     color: ${({ theme }) => theme.colors.text};
-    font-size: ${({ theme }) => theme.fontSizes.body};
+    font-size: 1rem; 
+    font-weight: ${({ theme }) => theme.fontWeights.medium};
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  @media (max-width: 767px) {
+    padding: 15px;
+    height: auto;
+    p {
+      font-size: 0.875rem; 
+    }
   }
 `;
-function FileUploader({ setUploadedFiles, setNotification }) {
-  const [selectedFiles, setSelectedFiles] = useState([]);
-  const [uploadProgress, setUploadProgress] = useState(0);
-  const [errorMessages, setErrorMessages] = useState([]); 
-  const [isUploading, setIsUploading] = useState(false);
-  const [overwritePrompt, setOverwritePrompt] = useState(false);
-  const [overwriteFile, setOverwriteFile] = useState(null);
-  const fileInputRef = useRef(null);
-  const handleFiles = (event) => {
-    event.preventDefault();
-    event.stopPropagation();
-    setErrorMessages([]);
-    setNotification({ message: '', type: '' });
-    let files;
-    if (event.type === 'drop') {
-      files = event.dataTransfer.files;
+function FileDashboard({ uploadedFiles }) {
+  const [currentIndex, setCurrentIndex] = useState(null);
+  const [currentMediaType, setCurrentMediaType] = useState(null); 
+  const triggerRef = useRef(null);
+  const selectFile = (index, event) => {
+    triggerRef.current = event.currentTarget;
+    const file = uploadedFiles[index];
+    const mimeType = file.type;
+    console.log(`Selected file: ${file.filename}, MIME Type: ${mimeType}`);
+    const isExtractedAudio = file.filename.endsWith('_audio.wav'); 
+    if (isExtractedAudio) {
+      return; 
+    }
+    if (mimeType.startsWith('audio/') || mimeType.startsWith('video/')) {
+      setCurrentMediaType('media');
+      setCurrentIndex(index);
+      console.log('Opening MediaPlayer');
+    } else if (mimeType.startsWith('image/')) {
+      setCurrentMediaType('image');
+      setCurrentIndex(index);
+      console.log('Opening ImageViewer');
     } else {
-      files = event.target.files;
-    }
-    if (files.length === 0) {
-      setErrorMessages(['No files selected.']);
-      return;
-    }
-    const allowedMimeTypes = [
-      'audio/mpeg',
-      'audio/wav',
-      'video/mp4',
-      'video/x-msvideo',
-      'video/quicktime' 
-    ];
-    const invalidTypeFiles = Array.from(files).filter(
-      file => !allowedMimeTypes.includes(file.type)
-    );
-    const oversizedFiles = Array.from(files).filter(
-      file => file.size > 300 * 1024 * 1024 
-    );
-    let newErrorMessages = [];
-    if (invalidTypeFiles.length > 0) {
-      newErrorMessages.push(`Unsupported file types: ${invalidTypeFiles.map(f => f.name).join(', ')}`);
-    }
-    if (oversizedFiles.length > 0) {
-      newErrorMessages.push(`Files too large (max 300MB): ${oversizedFiles.map(f => f.name).join(', ')}`);
-    }
-    if (newErrorMessages.length > 0) {
-      setErrorMessages(newErrorMessages);
-      return;
-    }
-    setSelectedFiles((prevFiles) => [...prevFiles, ...Array.from(files)]);
-  };
-  const handleDragOver = (event) => {
-    event.preventDefault();
-    event.stopPropagation();
-  };
-  const handleDrop = (event) => {
-    event.preventDefault();
-    event.stopPropagation();
-    handleFiles(event);
-  };
-  const checkFileExists = async (fileName) => {
-    try {
-      const response = await fetch(`/api/file_exists?filename=${encodeURIComponent(fileName)}`);
-      const data = await response.json();
-      return data.exists;
-    } catch (error) {
-      console.error('Error checking file existence:', error);
-      return false;
+      console.error('Unsupported media type:', mimeType);
     }
   };
-  const uploadFiles = async () => {
-    if (selectedFiles.length === 0) {
-      setErrorMessages(['Please select files to upload.']);
-      return;
+  const closeViewer = () => {
+    setCurrentIndex(null);
+    setCurrentMediaType(null);
+    if (triggerRef.current) {
+      triggerRef.current.focus(); 
     }
-    const fileExists = await checkFileExists(selectedFiles[0].name);
-    if (fileExists) {
-      setOverwritePrompt(true);
-      setOverwriteFile(selectedFiles[0].name);
-      return;
-    }
-    handleUpload(selectedFiles);
   };
-  const handleUpload = async (files) => {
-    setIsUploading(true);
-    setUploadProgress(0);
-    setErrorMessages([]);
-    const formData = new FormData();
-    files.forEach((file) => {
-      formData.append('file', file);
+  const handleNextTrack = () => {
+    setCurrentIndex((prevIndex) => {
+      if (prevIndex === null) return 0;
+      return (prevIndex + 1) % uploadedFiles.length;
     });
-    try {
-      const response = await fetch('/api/upload', { 
-        method: 'POST',
-        body: formData,
-      });
-      const data = await response.json();
-      if (response.ok || response.status === 207) {
-        if (data.uploaded_files) {
-          setNotification({ message: 'Files uploaded successfully!', type: 'success' });
-        }
-        if (data.errors) {
-          const newErrors = data.errors.map(err => `${err.filename}: ${err.error}`);
-          setErrorMessages(newErrors);
-        }
-        setSelectedFiles([]);
-        const historyResponse = await fetch('/api/file_history'); 
-        const historyData = await historyResponse.json();
-        if (historyData.files) {
-          setUploadedFiles(historyData.files);
-        }
-      } else if (response.status === 413) {
-        const errorData = await response.json();
-        setErrorMessages([`${errorData.error}: ${errorData.message}`]);
-      } else {
-        setNotification({ message: 'Error uploading files. Please try again.', type: 'error' });
-        console.error('Error uploading files:', data);
-      }
-    } catch (error) {
-      setNotification({ message: 'Network error during file upload.', type: 'error' });
-      console.error('Network error:', error);
-    } finally {
-      setIsUploading(false);
-      setUploadProgress(0);
-    }
   };
-  const removeFile = (index) => {
-    setSelectedFiles((prevFiles) => prevFiles.filter((_, i) => i !== index));
+  const handlePrevTrack = () => {
+    setCurrentIndex((prevIndex) => {
+      if (prevIndex === null) return uploadedFiles.length - 1;
+      return (prevIndex - 1 + uploadedFiles.length) % uploadedFiles.length;
+    });
   };
   return (
-    <UploadSection>
-      <DropZone
-        role="button"
-        aria-label="File Upload Zone"
-        onDragOver={handleDragOver}
-        onDragEnter={handleDragOver}
-        onDragLeave={handleDragOver}
-        onDrop={handleDrop}
-        onClick={() => fileInputRef.current.click()}
-        className={isUploading ? 'disabled' : ''}
-      >
-        <i className="fas fa-cloud-upload-alt"></i>
-        <p>Click here or drag and drop audio or video files (max 300MB)</p>
-        <input
-          type="file"
-          id="file-input"
-          accept="audio/*,video/*" 
-          multiple
-          style={{ display: 'none' }}
-          ref={fileInputRef}
-          onChange={handleFiles}
-        />
-      </DropZone>
-      {selectedFiles.length > 0 && (
-        <>
-          <PreviewSection
-            selectedFiles={selectedFiles}
-            removeFile={removeFile}
-          />
-          <Button
-            variant="primary"
-            icon={faUpload}
-            onClick={uploadFiles}
-            disabled={isUploading}
-            aria-label={isUploading ? 'Uploading files' : 'Upload Files'}
-          >
-            {isUploading ? 'Uploading...' : 'Upload Files'}
-          </Button>
-          <ProgressBar progress={uploadProgress} />
-        </>
-      )}
-      {errorMessages.length > 0 && (
-        <ErrorMessage>
-          {errorMessages.map((msg, index) => (
-            <p key={index}>{msg}</p>
-          ))}
-        </ErrorMessage>
-      )}
-      {overwritePrompt && (
-        <OverwritePrompt>
-          <p>File "{overwriteFile}" already exists. Do you want to overwrite it?</p>
-          <OverwriteButtons>
-            <Button
-              variant="secondary"
-              customColor="#2ecc71" 
-              onClick={() => {
-                handleUpload(selectedFiles);
-                setOverwritePrompt(false);
+    <DashboardContainer>
+      <h2>Uploaded Files</h2>
+      <FileGrid>
+        {uploadedFiles.length > 0 ? (
+          uploadedFiles.map((file, index) => (
+            <FileCard 
+              key={index} 
+              onClick={(e) => selectFile(index, e)} 
+              tabIndex="0" 
+              onKeyPress={(e) => {
+                if (e.key === 'Enter') selectFile(index, e);
               }}
-              aria-label="Yes, overwrite the existing file"
+              aria-label={`${
+                file.type.startsWith('image/') ? 'View' : 'Play'
+              } ${file.filename}`}
             >
-              Yes
-            </Button>
-            <Button
-              variant="secondary"
-              customColor="#e74c3c"
-              onClick={() => setOverwritePrompt(false)}
-              aria-label="No, cancel the upload"
-            >
-              No
-            </Button>
-          </OverwriteButtons>
-        </OverwritePrompt>
+              <Tooltip $text={file.filename}>
+                <p>{file.filename}</p>
+              </Tooltip>
+              <p>{(file.size / (1024 * 1024)).toFixed(2)} MB</p>
+            </FileCard>
+          ))
+        ) : (
+          <p>No files uploaded yet.</p>
+        )}
+      </FileGrid>
+      {currentIndex !== null && currentMediaType === 'media' && (
+        <MediaPlayer
+          fileUrl={
+            uploadedFiles[currentIndex].path.startsWith('/static/uploads') 
+              ? `${window.location.origin}${uploadedFiles[currentIndex].path}` 
+              : uploadedFiles[currentIndex].path
+          }
+          fileName={uploadedFiles[currentIndex].filename}
+          fileType={uploadedFiles[currentIndex].type}
+          fileSize={uploadedFiles[currentIndex].size}
+          duration={uploadedFiles[currentIndex].duration}
+          onClose={closeViewer}
+          onNextTrack={handleNextTrack}
+          onPrevTrack={handlePrevTrack}
+        />
       )}
-    </UploadSection>
+      {currentIndex !== null && currentMediaType === 'image' && (
+        <ImageViewer
+          fileUrl={
+            uploadedFiles[currentIndex].path.startsWith('/static/uploads') 
+              ? `${window.location.origin}${uploadedFiles[currentIndex].path}` 
+              : uploadedFiles[currentIndex].path
+          }
+          fileName={uploadedFiles[currentIndex].filename}
+          onClose={closeViewer}
+        />
+      )}
+    </DashboardContainer>
   );
 }
-FileUploader.propTypes = {
-  setUploadedFiles: PropTypes.func.isRequired,
-  setNotification: PropTypes.func.isRequired,
+FileDashboard.propTypes = {
+  uploadedFiles: PropTypes.arrayOf(
+    PropTypes.shape({
+      filename: PropTypes.string.isRequired,
+      path: PropTypes.string.isRequired,
+      size: PropTypes.number.isRequired,
+      type: PropTypes.string.isRequired,
+      duration: PropTypes.string,
+    })
+  ).isRequired,
 };
-export default FileUploader;
+export default FileDashboard;
 ```
 
 ## File: src/components/common/ErrorBoundary.jsx
@@ -1830,7 +2021,7 @@ import VideoPlayer from './VideoPlayer';
 import styled, { keyframes } from 'styled-components';
 import PropTypes from 'prop-types';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faForward, faBackward, faTimes } from '@fortawesome/free-solid-svg-icons';
+import { faTimes } from '@fortawesome/free-solid-svg-icons';
 import FocusTrap from 'focus-trap-react';
 const fadeIn = keyframes`
   from {
@@ -1888,30 +2079,9 @@ const CloseIcon = styled(FontAwesomeIcon)`
     font-size: 1.2rem;
   }
 `;
-const NavigationControls = styled.div`
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  margin-top: 20px;
-  button {
-    margin: 0 15px;
-    padding: 8px 12px;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    background-color: ${({ theme }) => theme.colors.primary};
-    color: white;
-    transition: background-color 0.2s ease;
-    &:hover {
-      background-color: ${({ theme }) => theme.colors.secondary};
-    }
-  }
-  @media (max-width: 767px) {
-    button {
-      padding: 6px 10px;
-      margin: 0 10px;
-    }
-  }
+const ErrorMessage = styled.div`
+  color: red;
+  margin-bottom: 10px;
 `;
 function MediaPlayer({ 
   fileUrl, 
@@ -1920,21 +2090,41 @@ function MediaPlayer({
   fileSize, 
   duration = '', 
   onClose, 
-  onNextTrack, 
-  onPrevTrack 
 }) {
   const closeButtonRef = useRef(null);
+  const [error, setError] = useState('');
+  const [isPlaying, setIsPlaying] = useState(false); 
   useEffect(() => {
     if (closeButtonRef.current) {
       closeButtonRef.current.focus();
     }
   }, []);
+  const isAudio = fileType && fileType.startsWith('audio/');
+  const isVideo = fileType && fileType.startsWith('video/');
+  console.log(`MediaPlayer: File Type - ${fileType}`); 
+  const handleError = (e) => {
+    console.error('Media playback error:', e);
+    setError('Failed to play the media file. It might be corrupted or unsupported.');
+  };
+  const togglePlayPause = () => {
+    setIsPlaying(!isPlaying);
+  };
   return (
     <ModalOverlay onClick={onClose} aria-modal="true" role="dialog">
       <FocusTrap>
         <ModalContent onClick={(e) => e.stopPropagation()}>
-          <CloseIcon icon={faTimes} onClick={onClose} aria-label="Close Media Player" ref={closeButtonRef} />
-          {fileType && fileType.startsWith('audio/') ? (
+          <CloseIcon 
+            icon={faTimes} 
+            onClick={onClose} 
+            aria-label="Close Media Player" 
+            ref={closeButtonRef} 
+          />
+          {error && (
+            <ErrorMessage role="alert">
+              {error}
+            </ErrorMessage>
+          )}
+          {isAudio ? (
             <AudioPlayer
               fileUrl={fileUrl}
               fileName={fileName}
@@ -1942,8 +2132,10 @@ function MediaPlayer({
               fileSize={fileSize}
               duration={duration}
               onClose={onClose}
+              isPlaying={isPlaying}
+              togglePlayPause={togglePlayPause} 
             />
-          ) : (
+          ) : isVideo ? (
             <VideoPlayer
               fileUrl={fileUrl}
               fileName={fileName}
@@ -1951,17 +2143,13 @@ function MediaPlayer({
               fileSize={fileSize}
               duration={duration}
               onClose={onClose}
+              onError={handleError}
+              isPlaying={isPlaying}
+              togglePlayPause={togglePlayPause} 
             />
+          ) : (
+            <div role="alert">Unsupported media type selected.</div>
           )}
-          {}
-          <NavigationControls>
-            <button onClick={onPrevTrack} aria-label="Previous Track">
-              <FontAwesomeIcon icon={faBackward} /> Previous
-            </button>
-            <button onClick={onNextTrack} aria-label="Next Track">
-              Next <FontAwesomeIcon icon={faForward} />
-            </button>
-          </NavigationControls>
         </ModalContent>
       </FocusTrap>
     </ModalOverlay>
@@ -1974,8 +2162,6 @@ MediaPlayer.propTypes = {
   fileSize: PropTypes.number.isRequired,
   duration: PropTypes.string,
   onClose: PropTypes.func.isRequired,
-  onNextTrack: PropTypes.func.isRequired,
-  onPrevTrack: PropTypes.func.isRequired,
 };
 export default MediaPlayer;
 ```
@@ -2220,6 +2406,7 @@ import {
   DndContext,
   closestCenter,
   PointerSensor,
+  TouchSensor, 
   useSensor,
   useSensors,
 } from "@dnd-kit/core";
@@ -2347,6 +2534,19 @@ function SortableItem({ id, item, removeItem }) {
   );
 }
 function QuickAccessToolbar() {
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 5, 
+      },
+    }),
+    useSensor(TouchSensor, {
+      activationConstraint: {
+        delay: 250,
+        tolerance: 5,
+      },
+    })
+  );
   const [pinnedItems, setPinnedItems] = useState([]);
   const [overflowOpen, setOverflowOpen] = useState(false);
   const overflowRef = useRef(null);
@@ -2402,13 +2602,6 @@ function QuickAccessToolbar() {
   const removeItem = (id) => {
     setPinnedItems(pinnedItems.filter((item) => item.id !== id));
   };
-  const sensors = useSensors(
-    useSensor(PointerSensor, {
-      activationConstraint: {
-        distance: 5, 
-      },
-    })
-  );
   const handleDragEnd = (event) => {
     const { active, over } = event;
     if (over && active.id !== over.id) {
@@ -2516,7 +2709,7 @@ export default Loader;
 ## File: src/components/common/AudioPlayer.jsx
 
 ```jsx
-import React, { useEffect, useRef, useReducer, useCallback } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import WaveSurfer from 'wavesurfer.js';
 import styled from 'styled-components';
 import PropTypes from 'prop-types';
@@ -2547,7 +2740,6 @@ const Controls = styled.div`
     transition: background-color 0.2s ease;
     &:hover {
       background-color: ${({ theme }) => theme.colors.secondary};
-      outline: none;
     }
   }
   label {
@@ -2571,37 +2763,14 @@ const CloseButton = styled.button`
   border-radius: 4px;
   cursor: pointer;
   transition: background-color 0.2s ease;
-  &:hover,
-  &:focus {
-    background-color: ${({ theme }) => theme.colors.errorHover || '#c0392b'};
-    outline: none;
+  &:hover {
+    background-color: #c0392b;
   }
 `;
-const initialState = {
-  isPlaying: false,
-  volume: 1,
-  playbackRate: 1,
-  loop: false,
-  duration: '',
-};
-function reducer(state, action) {
-  switch (action.type) {
-    case 'PLAY_PAUSE':
-      return { ...state, isPlaying: !state.isPlaying };
-    case 'STOP':
-      return { ...state, isPlaying: false };
-    case 'SET_VOLUME':
-      return { ...state, volume: action.payload };
-    case 'SET_PLAYBACK_RATE':
-      return { ...state, playbackRate: action.payload };
-    case 'TOGGLE_LOOP':
-      return { ...state, loop: !state.loop };
-    case 'SET_DURATION':
-      return { ...state, duration: action.payload };
-    default:
-      return state;
-  }
-}
+const ErrorMessage = styled.div`
+  color: red;
+  margin-bottom: 10px;
+`;
 function AudioPlayer({
   fileUrl,
   fileName,
@@ -2609,32 +2778,15 @@ function AudioPlayer({
   fileSize,
   duration = '',
   onClose,
-  triggerRef, 
+  isPlaying, 
+  togglePlayPause, 
 }) {
   const waveformRef = useRef(null);
   const wavesurferRef = useRef(null);
-  const [state, dispatch] = useReducer(reducer, initialState);
-  const { isPlaying, volume, playbackRate, loop, duration: trackDuration } = state;
-  const stateRef = useRef(state);
-  useEffect(() => {
-    stateRef.current = state;
-  }, [state]);
-  const debouncedSetVolume = useCallback(
-    debounce((newVolume) => {
-      if (wavesurferRef.current) {
-        wavesurferRef.current.setVolume(newVolume);
-      }
-    }, 300),
-    []
-  );
-  const debouncedSetPlaybackRate = useCallback(
-    debounce((newRate) => {
-      if (wavesurferRef.current) {
-        wavesurferRef.current.setPlaybackRate(newRate);
-      }
-    }, 300),
-    []
-  );
+  const [volume, setVolume] = useState(1);
+  const [playbackRate, setPlaybackRate] = useState(1);
+  const [loop, setLoop] = useState(false);
+  const [error, setError] = useState('');
   useEffect(() => {
     wavesurferRef.current = WaveSurfer.create({
       container: waveformRef.current,
@@ -2652,54 +2804,55 @@ function AudioPlayer({
     wavesurferRef.current.on('ready', () => {
       const totalDuration = wavesurferRef.current.getDuration();
       const formattedDuration = new Date(totalDuration * 1000).toISOString().substr(14, 5);
-      dispatch({ type: 'SET_DURATION', payload: formattedDuration });
     });
-    wavesurferRef.current.on('play', () => dispatch({ type: 'PLAY_PAUSE' }));
-    wavesurferRef.current.on('pause', () => dispatch({ type: 'PLAY_PAUSE' }));
     wavesurferRef.current.on('finish', () => {
-      dispatch({ type: 'STOP' });
-      if (stateRef.current.loop) {
+      if (loop) {
         wavesurferRef.current.play();
+      } else {
+        togglePlayPause(); 
       }
+    });
+    wavesurferRef.current.on('error', (e) => {
+      console.error('WaveSurfer error:', e);
+      setError('Failed to play the audio. It might be corrupted or unsupported.');
+      onClose();
     });
     return () => {
       if (wavesurferRef.current) {
         wavesurferRef.current.destroy();
       }
     };
-  }, [fileUrl]);
+  }, [fileUrl, playbackRate, volume, loop, onClose, togglePlayPause]);
   useEffect(() => {
     if (wavesurferRef.current) {
       wavesurferRef.current.setVolume(volume);
       wavesurferRef.current.setPlaybackRate(playbackRate);
+      if (isPlaying) {
+        wavesurferRef.current.play();
+      } else {
+        wavesurferRef.current.pause();
+      }
     }
-  }, [volume, playbackRate]);
-  const playPause = () => {
-    dispatch({ type: 'PLAY_PAUSE' });
-    wavesurferRef.current?.playPause();
-  };
-  const stop = () => {
-    dispatch({ type: 'STOP' });
-    wavesurferRef.current?.stop();
-  };
+  }, [volume, playbackRate, isPlaying]);
   const handleVolumeChange = (e) => {
     const newVolume = parseFloat(e.target.value);
-    dispatch({ type: 'SET_VOLUME', payload: newVolume });
-    debouncedSetVolume(newVolume);
+    setVolume(newVolume);
   };
   const handlePlaybackRateChange = (e) => {
     const newRate = parseFloat(e.target.value);
-    dispatch({ type: 'SET_PLAYBACK_RATE', payload: newRate });
-    debouncedSetPlaybackRate(newRate);
+    setPlaybackRate(newRate);
   };
   const toggleLoop = () => {
-    dispatch({ type: 'TOGGLE_LOOP' });
+    setLoop(!loop);
+  };
+  const stop = () => {
+    if (wavesurferRef.current) {
+      wavesurferRef.current.stop();
+      togglePlayPause(); 
+    }
   };
   const closePlayer = () => {
     onClose();
-    if (triggerRef && triggerRef.current) {
-      triggerRef.current.focus();
-    }
   };
   return (
     <AudioPlayerContainer tabIndex="-1" aria-label="Audio Player">      
@@ -2707,38 +2860,26 @@ function AudioPlayer({
       {fileSize && (
         <p>File Size: {(fileSize / (1024 * 1024)).toFixed(2)} MB</p>
       )}
-      {trackDuration && <p>Duration: {trackDuration}</p>}
+      {duration && <p>Duration: {duration}</p>}
+      {error && (
+        <ErrorMessage role="alert">
+          {error}
+        </ErrorMessage>
+      )}
       <div id="waveform" ref={waveformRef} role="region"
         aria-label={`Waveform for ${fileName}`}
         tabIndex="0"
-        onKeyDown={(e) => {
-          if (e.key === ' ' || e.key === 'Enter') {
-            e.preventDefault();
-            playPause();          
-          }
-        }}
-        style={{ position: 'relative' }}>
-        {}
-        <div
-          tabIndex="-1"
-          style={{
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-          }}
-        ></div>
+      >
       </div>
       <Controls>
-        <button onClick={playPause} aria-label={isPlaying ? 'Pause' : 'Play'}>
+        <button onClick={togglePlayPause} aria-label={isPlaying ? 'Pause' : 'Play'}>
           <FontAwesomeIcon icon={isPlaying ? faPause : faPlay} />
         </button>
         <button onClick={stop} aria-label="Stop">
           <FontAwesomeIcon icon={faStop} />
         </button>
         <button onClick={toggleLoop} aria-label={loop ? 'Disable Loop' : 'Enable Loop'} style={{ backgroundColor: loop ? '#e74c3c' : '' }}>
-          <FontAwesomeIcon icon={faRedo} />
+          {loop ? 'Looping' : 'Loop'}
         </button>
         <label>
           <FontAwesomeIcon icon={volume > 0 ? faVolumeUp : faVolumeMute} />
@@ -2778,9 +2919,212 @@ AudioPlayer.propTypes = {
   fileSize: PropTypes.number.isRequired,
   duration: PropTypes.string,
   onClose: PropTypes.func.isRequired,
-  triggerRef: PropTypes.object, 
+  isPlaying: PropTypes.bool.isRequired, 
+  togglePlayPause: PropTypes.func.isRequired, 
 };
 export default AudioPlayer;
+```
+
+## File: src/components/common/ViewerModal.jsx
+
+```jsx
+import React, { useEffect, useState, useRef } from 'react';
+import styled, { keyframes } from 'styled-components';
+import PropTypes from 'prop-types';
+import MediaPlayer from './MediaPlayer';
+import ImageViewer from './ImageViewer';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faTimes, faForward, faBackward } from '@fortawesome/free-solid-svg-icons';
+import FocusTrap from 'focus-trap-react';
+import { isAudioFile, isVideoFile, isImageFile } from "../../utils/mediaUtils"; 
+const fadeIn = keyframes`
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+`;
+const ModalOverlay = styled.div`
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.7); 
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 3000; 
+  animation: ${fadeIn} 0.3s ease-out;
+`;
+const ModalContent = styled.div`
+  background-color: ${({ theme }) => theme.colors.background};
+  padding: 20px;
+  border-radius: 10px;
+  width: 95%;
+  max-width: 900px;
+  position: relative;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+  max-height: 90vh;
+  overflow-y: auto;
+  @media (max-width: 768px) {
+    padding: 15px;
+    width: 100%;
+    border-radius: 0;
+    height: 100vh;
+    max-height: 100vh;
+  }
+`;
+const CloseIcon = styled(FontAwesomeIcon)`
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  cursor: pointer;
+  color: ${({ theme }) => theme.colors.error};
+  font-size: 1.5rem;
+  &:hover {
+    color: #c0392b;
+  }
+  @media (max-width: 768px) {
+    top: 10px;
+    right: 10px;
+    font-size: 1.2rem;
+  }
+`;
+const NavigationControls = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 15px;
+  button {
+    background: none;
+    border: none;
+    color: ${({ theme }) => theme.colors.primary};
+    font-size: 1.2rem;
+    cursor: pointer;
+    transition: color 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    &:hover {
+      color: ${({ theme }) => theme.colors.secondary};
+    }
+    &:disabled {
+      color: #7f8c8d;
+      cursor: not-allowed;
+    }
+  }
+  @media (max-width: 768px) {
+    button {
+      font-size: 1rem;
+    }
+  }
+`;
+function ViewerModal({ 
+  uploadedFiles, 
+  initialIndex, 
+  onClose 
+}) {
+  const [currentIndex, setCurrentIndex] = useState(initialIndex);
+  const currentFile = uploadedFiles[currentIndex];
+  const closeButtonRef = useRef(null);
+  useEffect(() => {
+    if (closeButtonRef.current) {
+      closeButtonRef.current.focus();
+    }
+  }, []);
+  const goToNext = () => {
+    if (currentIndex < uploadedFiles.length - 1) {
+      setCurrentIndex(currentIndex + 1);
+    }
+  };
+  const goToPrevious = () => {
+    if (currentIndex > 0) {
+      setCurrentIndex(currentIndex - 1);
+    }
+  };
+  const mimeType = currentFile.type;
+  const renderViewer = () => {
+    if (isAudioFile(mimeType) || isVideoFile(mimeType)) {
+      return (
+        <MediaPlayer
+          fileUrl={
+            currentFile.path.startsWith('/static/uploads') 
+              ? `${window.location.origin}${currentFile.path}` 
+              : currentFile.path
+          }
+          fileName={currentFile.filename}
+          fileType={currentFile.type}
+          fileSize={currentFile.size}
+          duration={currentFile.duration}
+          onClose={onClose}
+        />
+      );
+    } else if (isImageFile(mimeType)) {
+      return (
+        <ImageViewer
+          fileUrl={
+            currentFile.path.startsWith('/static/uploads') 
+              ? `${window.location.origin}${currentFile.path}` 
+              : currentFile.path
+          }
+          fileName={currentFile.filename}
+          onClose={onClose}
+        />
+      );
+    } else {
+      return <div role="alert">Unsupported media type selected.</div>;
+    }
+  };
+  return (
+    <ModalOverlay onClick={onClose} aria-modal="true" role="dialog">
+      <FocusTrap>
+        <ModalContent onClick={(e) => e.stopPropagation()}>
+          <CloseIcon 
+            icon={faTimes} 
+            onClick={onClose} 
+            aria-label="Close Viewer"
+            ref={closeButtonRef}
+          />
+          {renderViewer()}
+          <NavigationControls>
+            <button 
+              onClick={goToPrevious} 
+              disabled={currentIndex === 0}
+              aria-label="Previous File"
+            >
+              <FontAwesomeIcon icon={faBackward} />
+              Previous
+            </button>
+            <button 
+              onClick={goToNext} 
+              disabled={currentIndex === uploadedFiles.length - 1}
+              aria-label="Next File"
+            >
+              Next
+              <FontAwesomeIcon icon={faForward} />
+            </button>
+          </NavigationControls>
+        </ModalContent>
+      </FocusTrap>
+    </ModalOverlay>
+  );
+}
+ViewerModal.propTypes = {
+  uploadedFiles: PropTypes.arrayOf(
+    PropTypes.shape({
+      filename: PropTypes.string.isRequired,
+      path: PropTypes.string.isRequired,
+      size: PropTypes.number.isRequired,
+      type: PropTypes.string.isRequired,
+      duration: PropTypes.string,
+    })
+  ).isRequired,
+  initialIndex: PropTypes.number.isRequired,
+  onClose: PropTypes.func.isRequired,
+};
+export default ViewerModal;
 ```
 
 ## File: src/components/common/SideNav.jsx
@@ -2973,6 +3317,135 @@ SideNav.propTypes = {
 export default SideNav;
 ```
 
+## File: src/components/common/ImageViewer.jsx
+
+```jsx
+import React, { useEffect, useRef } from 'react';
+import styled from 'styled-components';
+import PropTypes from 'prop-types';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faTimes, faSearchPlus, faSearchMinus } from '@fortawesome/free-solid-svg-icons';
+import FocusTrap from 'focus-trap-react';
+const ModalOverlay = styled.div`
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.8); 
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 2000; 
+`;
+const ModalContent = styled.div`
+  position: relative;
+  background-color: ${({ theme }) => theme.colors.background};
+  padding: 20px;
+  border-radius: 10px;
+  max-width: 90%;
+  max-height: 90%;
+  overflow: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+`;
+const CloseButton = styled.button`
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: transparent;
+  border: none;
+  color: #fff;
+  font-size: 1.5rem;
+  cursor: pointer;
+  &:hover {
+    color: #ccc;
+  }
+`;
+const ZoomControls = styled.div`
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 10px;
+  button {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 1.2rem;
+    cursor: pointer;
+    transition: color 0.2s ease;
+    &:hover {
+      color: #3498db;
+    }
+    &:focus {
+      outline: 2px solid #3498db;
+      outline-offset: 2px;
+    }
+  }
+`;
+const ImageStyled = styled.img`
+  max-width: 100%;
+  max-height: 80vh;
+  transform: scale(${({ zoom }) => zoom});
+  transition: transform 0.3s ease;
+`;
+function ImageViewer({ fileUrl, fileName, onClose }) {
+  const [zoom, setZoom] = React.useState(1);
+  const imageRef = useRef(null);
+  const zoomIn = () => {
+    setZoom((prevZoom) => Math.min(prevZoom + 0.2, 3));
+  };
+  const zoomOut = () => {
+    setZoom((prevZoom) => Math.max(prevZoom - 0.2, 1));
+  };
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') {
+        onClose();
+      }
+      if (e.key === '+') {
+        zoomIn();
+      }
+      if (e.key === '-') {
+        zoomOut();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [onClose]);
+  return (
+    <ModalOverlay onClick={onClose} aria-modal="true" role="dialog">
+      <FocusTrap>
+        <ModalContent onClick={(e) => e.stopPropagation()}>
+          <CloseButton onClick={onClose} aria-label="Close Image Viewer">
+            <FontAwesomeIcon icon={faTimes} />
+          </CloseButton>
+          <h3>{fileName}</h3>
+          <ImageStyled src={fileUrl} alt={fileName} zoom={zoom} ref={imageRef} />
+          <ZoomControls>
+            <button onClick={zoomIn} aria-label="Zoom In">
+              <FontAwesomeIcon icon={faSearchPlus} />
+            </button>
+            <button onClick={zoomOut} aria-label="Zoom Out">
+              <FontAwesomeIcon icon={faSearchMinus} />
+            </button>
+          </ZoomControls>
+        </ModalContent>
+      </FocusTrap>
+    </ModalOverlay>
+  );
+}
+ImageViewer.propTypes = {
+  fileUrl: PropTypes.string.isRequired,
+  fileName: PropTypes.string.isRequired,
+  onClose: PropTypes.func.isRequired,
+};
+export default ImageViewer;
+```
+
 ## File: src/components/common/Tooltip.jsx
 
 ```jsx
@@ -3058,7 +3531,7 @@ const ProgressBarStyled = styled.div`
   background: linear-gradient(90deg, ${({ theme }) => theme.colors.primary}, #00c6ff);
   border-radius: 3px;
   width: ${({ $progress }) => `${$progress}%`};
-  transition: width 0.3s ease-in-out;
+  transition: width 1s ease-in-out;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -3093,11 +3566,10 @@ export default ProgressBar;
 
 ```jsx
 import React, { useState, useRef } from 'react';
-import MediaPlayer from './MediaPlayer';
 import styled from 'styled-components';
+import ViewerModal from './ViewerModal';
 import PropTypes from 'prop-types';
 import Tooltip from './Tooltip'; 
-import { Link } from 'react-router-dom'; 
 const DashboardContainer = styled.div`
   margin-top: 30px;
 `;
@@ -3148,29 +3620,20 @@ const FileCard = styled.div`
   }
 `;
 function FileDashboard({ uploadedFiles }) {
-  const [currentIndex, setCurrentIndex] = useState(null);
+  const [isViewerOpen, setIsViewerOpen] = useState(false);
+  const [selectedIndex, setSelectedIndex] = useState(null);
   const triggerRef = useRef(null);
   const selectFile = (index, event) => {
     triggerRef.current = event.currentTarget;
-    setCurrentIndex(index);
+    setSelectedIndex(index);
+    setIsViewerOpen(true);
   };
-  const closeMediaPlayer = () => {
-    setCurrentIndex(null);
+  const closeViewer = () => {
+    setIsViewerOpen(false);
+    setSelectedIndex(null);
     if (triggerRef.current) {
       triggerRef.current.focus();
     }
-  };
-  const handleNextTrack = () => {
-    setCurrentIndex((prevIndex) => {
-      if (prevIndex === null) return 0;
-      return (prevIndex + 1) % uploadedFiles.length;
-    });
-  };
-  const handlePrevTrack = () => {
-    setCurrentIndex((prevIndex) => {
-      if (prevIndex === null) return uploadedFiles.length - 1;
-      return (prevIndex - 1 + uploadedFiles.length) % uploadedFiles.length;
-    });
   };
   return (
     <DashboardContainer>
@@ -3185,7 +3648,7 @@ function FileDashboard({ uploadedFiles }) {
               onKeyPress={(e) => {
                 if (e.key === 'Enter') selectFile(index, e);
               }}
-              aria-label={`Play ${file.filename}`}
+              aria-label={`Play or view ${file.filename}`}
             >
               <Tooltip $text={file.filename}>
                 <p>{file.filename}</p>
@@ -3197,20 +3660,11 @@ function FileDashboard({ uploadedFiles }) {
           <p>No files uploaded yet.</p>
         )}
       </FileGrid>
-      {currentIndex !== null && (
-        <MediaPlayer
-          fileUrl={
-            uploadedFiles[currentIndex].path.startsWith('/static/uploads') 
-              ? `${window.location.origin}${uploadedFiles[currentIndex].path}` 
-              : uploadedFiles[currentIndex].path
-          }
-          fileName={uploadedFiles[currentIndex].filename}
-          fileType={uploadedFiles[currentIndex].type}
-          fileSize={uploadedFiles[currentIndex].size}
-          duration={uploadedFiles[currentIndex].duration}
-          onClose={closeMediaPlayer}
-          onNextTrack={handleNextTrack}
-          onPrevTrack={handlePrevTrack}
+      {isViewerOpen && selectedIndex !== null && (
+        <ViewerModal
+          uploadedFiles={uploadedFiles}
+          initialIndex={selectedIndex}
+          onClose={closeViewer}
         />
       )}
     </DashboardContainer>

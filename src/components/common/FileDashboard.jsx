@@ -1,10 +1,11 @@
 // src/components/common/FileDashboard.jsx
+
 import React, { useState, useRef } from 'react';
-import MediaPlayer from './MediaPlayer';
 import styled from 'styled-components';
+import ViewerModal from './ViewerModal';
 import PropTypes from 'prop-types';
-import Tooltip from './Tooltip'; 
-import { Link } from 'react-router-dom'; 
+import Tooltip from './Tooltip';
+import { isAudioFile, isVideoFile, isImageFile } from "../../utils/mediaUtils";
 
 const DashboardContainer = styled.div`
   margin-top: 30px;
@@ -14,9 +15,11 @@ const FileGrid = styled.div`
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
   gap: 20px;
+  
   @media (max-width: 1199px) {
     grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
   }
+  
   @media (max-width: 767px) {
     grid-template-columns: 1fr;
     gap: 15px;
@@ -35,57 +38,64 @@ const FileCard = styled.div`
   display: flex;
   flex-direction: column;
   justify-content: center;
-  height: 150px; 
+  height: 150px;
+
   &:hover {
     transform: translateY(-5px);
     box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
   }
+
   p {
     margin-bottom: 10px;
     color: ${({ theme }) => theme.colors.text};
-    font-size: 1rem; 
+    font-size: 1rem;
     font-weight: ${({ theme }) => theme.fontWeights.medium};
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
   }
+
   @media (max-width: 767px) {
     padding: 15px;
     height: auto;
+
     p {
-      font-size: 0.875rem; 
+      font-size: 0.875rem;
     }
   }
 `;
 
 function FileDashboard({ uploadedFiles }) {
-  const [currentIndex, setCurrentIndex] = useState(null);
+  const [isViewerOpen, setIsViewerOpen] = useState(false);
+  const [selectedIndex, setSelectedIndex] = useState(null);
+  const [currentMediaType, setCurrentMediaType] = useState(null);
   const triggerRef = useRef(null);
 
   const selectFile = (index, event) => {
     triggerRef.current = event.currentTarget;
-    setCurrentIndex(index);
-  };
+    const file = uploadedFiles[index];
+    const mimeType = file.type;
 
-  const closeMediaPlayer = () => {
-    setCurrentIndex(null);
-    if (triggerRef.current) {
-      triggerRef.current.focus();
+    if (isAudioFile(mimeType) || isVideoFile(mimeType)) {
+      setCurrentMediaType(isAudioFile(mimeType) ? 'audio' : 'video');
+      setSelectedIndex(index);
+      setIsViewerOpen(true);
+    } else if (isImageFile(mimeType)) {
+      setCurrentMediaType('image');
+      setSelectedIndex(index);
+      setIsViewerOpen(true);
+    } else {
+      console.error('Unsupported media type:', mimeType);
     }
   };
 
-  const handleNextTrack = () => {
-    setCurrentIndex((prevIndex) => {
-      if (prevIndex === null) return 0;
-      return (prevIndex + 1) % uploadedFiles.length;
-    });
-  };
-
-  const handlePrevTrack = () => {
-    setCurrentIndex((prevIndex) => {
-      if (prevIndex === null) return uploadedFiles.length - 1;
-      return (prevIndex - 1 + uploadedFiles.length) % uploadedFiles.length;
-    });
+  const closeViewer = () => {
+    setIsViewerOpen(false);
+    setSelectedIndex(null);
+    setCurrentMediaType(null);
+    if (triggerRef.current) {
+      triggerRef.current.focus();
+    }
   };
 
   return (
@@ -94,14 +104,16 @@ function FileDashboard({ uploadedFiles }) {
       <FileGrid>
         {uploadedFiles.length > 0 ? (
           uploadedFiles.map((file, index) => (
-            <FileCard 
-              key={index} 
-              onClick={(e) => selectFile(index, e)} 
-              tabIndex="0" 
+            <FileCard
+              key={index}
+              onClick={(e) => selectFile(index, e)}
+              tabIndex="0"
               onKeyPress={(e) => {
                 if (e.key === 'Enter') selectFile(index, e);
               }}
-              aria-label={`Play ${file.filename}`}
+              aria-label={`${
+                isImageFile(file.type) ? 'View' : 'Play'
+              } ${file.filename}`}
             >
               <Tooltip $text={file.filename}>
                 <p>{file.filename}</p>
@@ -113,20 +125,12 @@ function FileDashboard({ uploadedFiles }) {
           <p>No files uploaded yet.</p>
         )}
       </FileGrid>
-      {currentIndex !== null && (
-        <MediaPlayer
-          fileUrl={
-            uploadedFiles[currentIndex].path.startsWith('/static/uploads') 
-              ? `${window.location.origin}${uploadedFiles[currentIndex].path}` 
-              : uploadedFiles[currentIndex].path
-          }
-          fileName={uploadedFiles[currentIndex].filename}
-          fileType={uploadedFiles[currentIndex].type}
-          fileSize={uploadedFiles[currentIndex].size}
-          duration={uploadedFiles[currentIndex].duration}
-          onClose={closeMediaPlayer}
-          onNextTrack={handleNextTrack}
-          onPrevTrack={handlePrevTrack}
+      {isViewerOpen && selectedIndex !== null && (
+        <ViewerModal
+          uploadedFiles={uploadedFiles}
+          initialIndex={selectedIndex}
+          mediaType={currentMediaType}
+          onClose={closeViewer}
         />
       )}
     </DashboardContainer>

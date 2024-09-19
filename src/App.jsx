@@ -7,6 +7,8 @@ import Layout from './components/common/Layout';
 import { Routes, Route } from 'react-router-dom';
 import Loader from './components/common/Loader';
 import routes from './routes'; // Updated import statement
+import './fontAwesome'; // Import FontAwesome library
+
 
 const AppContainer = styled.div`
   max-width: 100%;
