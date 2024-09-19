@@ -142,8 +142,8 @@ def make_celery():
     """
     celery = Celery(
         'stt_main',
-        broker='redis://localhost:6379/0',
-        backend='redis://localhost:6379/0',
+        broker=os.getenv('CELERY_BROKER_URL', 'redis://localhost:6379/0'),
+        backend=os.getenv('CELERY_RESULT_BACKEND', 'redis://localhost:6379/0'),
         include=['tasks']
     )
     BASE_DIR = os.path.abspath(os.path.dirname(__file__))
@@ -750,7 +750,7 @@ app.config.update(
     CELERY_BROKER_URL='redis://localhost:6379/0',
     CELERY_RESULT_BACKEND='redis://localhost:6379/0',
     UPLOAD_FOLDER=UPLOAD_FOLDER,
-    MAX_CONTENT_LENGTH=300 * 1024 * 1024  
+    MAX_CONTENT_LENGTH=1024 * 1024 * 1024  
 )
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 celery.conf.update(
@@ -994,6 +994,11 @@ const routes = [
     breadcrumb: 'Dashboard',
   },
   {
+    path: '/dashboard',
+    element: <Dashboard />,
+    breadcrumb: 'Dashboard',
+  },
+  {
     path: '/upload',
     element: <Upload />,
     breadcrumb: 'Upload',
@@ -1057,9 +1062,8 @@ import { Routes, Route } from 'react-router-dom';
 import Loader from './components/common/Loader';
 import routes from './routes'; 
 const AppContainer = styled.div`
-  max-width: 900px;
+  max-width: 100%;
   margin: 0 auto;
-  padding: 20px;
   background-color: ${({ theme }) => theme.colors.background};
   border-radius: 10px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
@@ -1396,8 +1400,8 @@ const LayoutContainer = styled.div`
   display: flex;
 `;
 const Content = styled.main`
-  margin-left: ${({ sidebarCollapsed }) =>
-    sidebarCollapsed ? "60px" : "240px"};
+  margin-left: ${({ $sidebarCollapsed }) =>
+    $sidebarCollapsed ? "60px" : "23.5%"};
   padding: 20px;
   width: 100%;
   transition: margin-left 0.3s ease-in-out;
@@ -1952,6 +1956,7 @@ import styled from 'styled-components';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 const ButtonStyled = styled.button`
   padding: 10px 20px;
+  min-width: 100px;
   border: none;
   border-radius: 4px;
   font-size: ${({ theme }) => theme.fontSizes.body || '16px'};
@@ -1970,6 +1975,7 @@ const ButtonStyled = styled.button`
   align-items: center;
   justify-content: center;
   transition: opacity 0.2s ease, background-color 0.2s ease;
+  flex: 1 0 auto;
   &:hover {
     opacity: 0.9;
   }
@@ -1981,6 +1987,11 @@ const ButtonStyled = styled.button`
     outline: 2px solid ${({ theme }) => theme.colors.primary};
     outline-offset: 2px;
   }
+  @media (max-width: 768px) {
+    padding: 8px 12px;
+    min-width: 80px;
+  font-size: ${({ theme }) => theme.fontSizes.small || '12px'};
+    }
 `;
 const Button = ({
   variant = 'primary',
@@ -2189,23 +2200,32 @@ import {
 import { CSS } from "@dnd-kit/utilities";
 const ToolbarContainer = styled.div`
   display: flex;
+  flex-wrap: wrap;
   padding: 10px 20px;
   background-color: #bdc3c7;
   align-items: center;
+  @media (max-width: 768px) {
+    padding: 10px 10px;
+  }
 `;
 const DraggableArea = styled.div`
   display: flex;
   align-items: center;
   flex-grow: 1;
+  flex-wrap: wrap;
+  @media (max-width: 768px) {
+    justify-content: center;
+  }
 `;
 const SortableItemContainer = styled.div`
   display: flex;
   align-items: center;
-  margin-right: 15px;
+  margin: 5px;
   padding: 5px;
   background-color: ${(props) =>
     props.isDragging ? "#f0f0f0" : "transparent"};
   border-radius: 4px;
+  flex-shrink: 0;
 `;
 const DragHandleStyled = styled.div`
   cursor: grab;
@@ -2759,8 +2779,8 @@ const Sidebar = styled.nav`
   @media (max-width: 768px) {
     transform: ${({ isMobileOpen }) =>
       isMobileOpen ? "translateX(0)" : "translateX(-100%)"};
-    width: 200px;
-    transition: transform 0.3s ease-in-out;
+    width: ${({ collapsed }) => (collapsed ? "60px" : "200px")}; 
+    transition: transform 0.3s ease-in-out, width 0.3s ease-in-out;
   }
 `;
 const Logo = styled.div`
@@ -2798,6 +2818,11 @@ const NavItem = styled.li`
     display: ${({ collapsed }) => (collapsed ? "none" : "inline")};
     white-space: nowrap;
   }
+  @media (max-width: 768px) {
+    padding: 10px 15px;
+    svg {
+      font-size: 1em;
+    }
 `;
 const ToggleButton = styled.button`
   background: none;
@@ -3178,6 +3203,12 @@ const BreadcrumbContainer = styled.nav`
   background-color: ${({ theme }) => theme.colors.background};
   font-size: 0.9em;
   overflow: hidden;
+  z-index: 1101;
+  @media (max-width: 768px) {
+  margin-top: 40px;
+  padding: 10px 20px;
+  font-size: 0.8em;
+}
 `;
 const BreadcrumbList = styled.ol`
   list-style: none;
