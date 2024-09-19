@@ -13,8 +13,8 @@ const LayoutContainer = styled.div`
 `;
 
 const Content = styled.main`
-  margin-left: ${({ sidebarCollapsed }) =>
-    sidebarCollapsed ? "60px" : "240px"};
+  margin-left: ${({ $sidebarCollapsed }) =>
+    $sidebarCollapsed ? "60px" : "23.5%"};
   padding: 20px;
   width: 100%;
   transition: margin-left 0.3s ease-in-out;

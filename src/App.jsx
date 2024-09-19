@@ -9,7 +9,7 @@ import Loader from './components/common/Loader';
 import routes from './routes'; // Updated import statement
 
 const AppContainer = styled.div`
-  max-width: 900px;
+  max-width: 100%;
   margin: 0 auto;
   // padding: 20px;
   background-color: ${({ theme }) => theme.colors.background};
