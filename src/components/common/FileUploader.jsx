@@ -92,14 +92,14 @@ function FileUploader({ setUploadedFiles, setNotification }) {
       file => !allowedMimeTypes.includes(file.type)
     );
     const oversizedFiles = Array.from(files).filter(
-      file => file.size > 200 * 1024 * 1024 
+      file => file.size > 300 * 1024 * 1024 
     );
     let newErrorMessages = [];
     if (invalidTypeFiles.length > 0) {
       newErrorMessages.push(`Unsupported file types: ${invalidTypeFiles.map(f => f.name).join(', ')}`);
     }
     if (oversizedFiles.length > 0) {
-      newErrorMessages.push(`Files too large (max 200MB): ${oversizedFiles.map(f => f.name).join(', ')}`);
+      newErrorMessages.push(`Files too large (max 300MB): ${oversizedFiles.map(f => f.name).join(', ')}`);
     }
     if (newErrorMessages.length > 0) {
       setErrorMessages(newErrorMessages);
@@ -205,7 +205,7 @@ function FileUploader({ setUploadedFiles, setNotification }) {
         className={isUploading ? 'disabled' : ''}
       >
         <i className="fas fa-cloud-upload-alt"></i>
-        <p>Click here or drag and drop audio or video files (max 200MB)</p>
+        <p>Click here or drag and drop audio or video files (max 300MB)</p>
         <input
           type="file"
           id="file-input"
