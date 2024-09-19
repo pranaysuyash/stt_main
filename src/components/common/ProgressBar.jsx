@@ -20,7 +20,7 @@ const ProgressBarStyled = styled.div`
   background: linear-gradient(90deg, ${({ theme }) => theme.colors.primary}, #00c6ff);
   border-radius: 3px;
   width: ${({ $progress }) => `${$progress}%`};
-  transition: width 0.3s ease-in-out;
+  transition: width 1s ease-in-out;
   display: flex;
   align-items: center;
   justify-content: center;

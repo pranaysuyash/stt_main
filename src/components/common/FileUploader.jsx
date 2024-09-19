@@ -1,12 +1,13 @@
 // src/components/common/FileUploader.jsx
-import React, { useState, useRef } from 'react';
-import styled from 'styled-components';
-import PreviewSection from './PreviewSection';
-import ProgressBar from './ProgressBar';
-import Button from './Button'; 
-import { faUpload } from '@fortawesome/free-solid-svg-icons';
-import PropTypes from 'prop-types';
-import { ErrorMessage } from './Messages'; 
+import React, { useState, useRef } from "react";
+import styled from "styled-components";
+import PreviewSection from "./PreviewSection";
+import ProgressBar from "./ProgressBar";
+import Button from "./Button";
+import { faUpload } from "@fortawesome/free-solid-svg-icons";
+import PropTypes from "prop-types";
+import { ErrorMessage } from "./Messages";
+import axios from "axios"; // Import axios
 
 const UploadSection = styled.div`
   margin-top: 20px;
@@ -28,9 +29,9 @@ const OverwritePrompt = styled.div`
 const OverwriteButtons = styled.div`
   display: flex;
   justify-content: center;
-  gap: 10px; 
+  gap: 10px;
   button {
-    flex: 1; 
+    flex: 1;
   }
 `;
 
@@ -42,7 +43,8 @@ const DropZone = styled.div`
   text-align: center;
   transition: background-color 0.3s ease, box-shadow 0.2s ease;
   cursor: pointer;
-  &:hover, &.drag-over {
+  &:hover,
+  &.drag-over {
     background-color: ${({ theme }) => theme.colors.background};
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
   }
@@ -60,7 +62,7 @@ const DropZone = styled.div`
 function FileUploader({ setUploadedFiles, setNotification }) {
   const [selectedFiles, setSelectedFiles] = useState([]);
   const [uploadProgress, setUploadProgress] = useState(0);
-  const [errorMessages, setErrorMessages] = useState([]); 
+  const [errorMessages, setErrorMessages] = useState([]);
   const [isUploading, setIsUploading] = useState(false);
   const [overwritePrompt, setOverwritePrompt] = useState(false);
   const [overwriteFile, setOverwriteFile] = useState(null);
@@ -70,36 +72,44 @@ function FileUploader({ setUploadedFiles, setNotification }) {
     event.preventDefault();
     event.stopPropagation();
     setErrorMessages([]);
-    setNotification({ message: '', type: '' });
+    setNotification({ message: "", type: "" });
     let files;
-    if (event.type === 'drop') {
+    if (event.type === "drop") {
       files = event.dataTransfer.files;
     } else {
       files = event.target.files;
     }
     if (files.length === 0) {
-      setErrorMessages(['No files selected.']);
+      setErrorMessages(["No files selected."]);
       return;
     }
     const allowedMimeTypes = [
-      'audio/mpeg',
-      'audio/wav',
-      'video/mp4',
-      'video/x-msvideo',
-      'video/quicktime' 
+      "audio/mpeg",
+      "audio/wav",
+      "video/mp4",
+      "video/x-msvideo",
+      "video/quicktime",
     ];
     const invalidTypeFiles = Array.from(files).filter(
-      file => !allowedMimeTypes.includes(file.type)
+      (file) => !allowedMimeTypes.includes(file.type)
     );
     const oversizedFiles = Array.from(files).filter(
-      file => file.size > 300 * 1024 * 1024 
+      (file) => file.size > 300 * 1024 * 1024
     );
     let newErrorMessages = [];
     if (invalidTypeFiles.length > 0) {
-      newErrorMessages.push(`Unsupported file types: ${invalidTypeFiles.map(f => f.name).join(', ')}`);
+      newErrorMessages.push(
+        `Unsupported file types: ${invalidTypeFiles
+          .map((f) => f.name)
+          .join(", ")}`
+      );
     }
     if (oversizedFiles.length > 0) {
-      newErrorMessages.push(`Files too large (max 300MB): ${oversizedFiles.map(f => f.name).join(', ')}`);
+      newErrorMessages.push(
+        `Files too large (max 300MB): ${oversizedFiles
+          .map((f) => f.name)
+          .join(", ")}`
+      );
     }
     if (newErrorMessages.length > 0) {
       setErrorMessages(newErrorMessages);
@@ -121,18 +131,20 @@ function FileUploader({ setUploadedFiles, setNotification }) {
 
   const checkFileExists = async (fileName) => {
     try {
-      const response = await fetch(`/api/file_exists?filename=${encodeURIComponent(fileName)}`);
-      const data = await response.json();
+      const response = await axios.get(
+        `/api/file_exists?filename=${encodeURIComponent(fileName)}`
+      );
+      const data = response.data;
       return data.exists;
     } catch (error) {
-      console.error('Error checking file existence:', error);
+      console.error("Error checking file existence:", error);
       return false;
     }
   };
 
   const uploadFiles = async () => {
     if (selectedFiles.length === 0) {
-      setErrorMessages(['Please select files to upload.']);
+      setErrorMessages(["Please select files to upload."]);
       return;
     }
     const fileExists = await checkFileExists(selectedFiles[0].name);
@@ -144,47 +156,113 @@ function FileUploader({ setUploadedFiles, setNotification }) {
     handleUpload(selectedFiles);
   };
 
+  // const handleUpload = async (files) => {
+  //   setIsUploading(true);
+  //   setUploadProgress(0);
+  //   setErrorMessages([]);
+  //   const formData = new FormData();
+  //   files.forEach((file) => {
+  //     formData.append('file', file);
+  //   });
+  //   try {
+  //     const response = await fetch('/api/upload', {
+  //       method: 'POST',
+  //       body: formData,
+  //     });
+  //     const data = await response.json();
+  //     if (response.ok || response.status === 207) {
+  //       if (data.uploaded_files) {
+  //         setNotification({ message: 'Files uploaded successfully!', type: 'success' });
+  //       }
+  //       if (data.errors) {
+  //         const newErrors = data.errors.map(err => `${err.filename}: ${err.error}`);
+  //         setErrorMessages(newErrors);
+  //       }
+  //       setSelectedFiles([]);
+  //       const historyResponse = await fetch('/api/file_history');
+  //       const historyData = await historyResponse.json();
+  //       if (historyData.files) {
+  //         setUploadedFiles(historyData.files);
+  //       }
+  //     } else if (response.status === 413) {
+  //       const errorData = await response.json();
+  //       setErrorMessages([`${errorData.error}: ${errorData.message}`]);
+  //     } else {
+  //       setNotification({ message: 'Error uploading files. Please try again.', type: 'error' });
+  //       console.error('Error uploading files:', data);
+  //     }
+  //   } catch (error) {
+  //     setNotification({ message: 'Network error during file upload.', type: 'error' });
+  //     console.error('Network error:', error);
+  //   } finally {
+  //     setIsUploading(false);
+  //     setUploadProgress(0);
+  //   }
+  // };
   const handleUpload = async (files) => {
     setIsUploading(true);
     setUploadProgress(0);
     setErrorMessages([]);
     const formData = new FormData();
     files.forEach((file) => {
-      formData.append('file', file);
+      formData.append("file", file);
     });
     try {
-      const response = await fetch('/api/upload', { 
-        method: 'POST',
-        body: formData,
+      const response = await axios.post("/api/upload", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+        onUploadProgress: (progressEvent) => {
+          const total = progressEvent.total;
+          const current = progressEvent.loaded;
+          const percentCompleted = Math.round((current / total) * 100);
+          setUploadProgress(percentCompleted);
+        },
       });
-      const data = await response.json();
-      if (response.ok || response.status === 207) {
+      const data = response.data;
+      if (response.status === 200 || response.status === 207) {
         if (data.uploaded_files) {
-          setNotification({ message: 'Files uploaded successfully!', type: 'success' });
+          setNotification({
+            message: "Files uploaded successfully!",
+            type: "success",
+          });
         }
         if (data.errors) {
-          const newErrors = data.errors.map(err => `${err.filename}: ${err.error}`);
+          const newErrors = data.errors.map(
+            (err) => `${err.filename}: ${err.error}`
+          );
           setErrorMessages(newErrors);
         }
         setSelectedFiles([]);
-        const historyResponse = await fetch('/api/file_history'); 
-        const historyData = await historyResponse.json();
+        const historyResponse = await axios.get("/api/file_history");
+        const historyData = historyResponse.data;
         if (historyData.files) {
           setUploadedFiles(historyData.files);
         }
       } else if (response.status === 413) {
-        const errorData = await response.json();
+        const errorData = response.data;
         setErrorMessages([`${errorData.error}: ${errorData.message}`]);
       } else {
-        setNotification({ message: 'Error uploading files. Please try again.', type: 'error' });
-        console.error('Error uploading files:', data);
+        setNotification({
+          message: "Error uploading files. Please try again.",
+          type: "error",
+        });
+        console.error("Error uploading files:", data);
       }
     } catch (error) {
-      setNotification({ message: 'Network error during file upload.', type: 'error' });
-      console.error('Network error:', error);
+      if (error.response && error.response.status === 413) {
+        const errorData = error.response.data;
+        setErrorMessages([`${errorData.error}: ${errorData.message}`]);
+      } else {
+        setNotification({
+          message: "Network error during file upload.",
+          type: "error",
+        });
+        console.error("Network error:", error);
+      }
     } finally {
       setIsUploading(false);
-      setUploadProgress(0);
+      setUploadProgress(0); // Reset progress after upload
     }
   };
 
@@ -202,16 +280,16 @@ function FileUploader({ setUploadedFiles, setNotification }) {
         onDragLeave={handleDragOver}
         onDrop={handleDrop}
         onClick={() => fileInputRef.current.click()}
-        className={isUploading ? 'disabled' : ''}
+        className={isUploading ? "disabled" : ""}
       >
         <i className="fas fa-cloud-upload-alt"></i>
         <p>Click here or drag and drop audio or video files (max 300MB)</p>
         <input
           type="file"
           id="file-input"
-          accept="audio/*,video/*" 
+          accept="audio/*,video/*"
           multiple
-          style={{ display: 'none' }}
+          style={{ display: "none" }}
           ref={fileInputRef}
           onChange={handleFiles}
         />
@@ -227,11 +305,11 @@ function FileUploader({ setUploadedFiles, setNotification }) {
             icon={faUpload}
             onClick={uploadFiles}
             disabled={isUploading}
-            aria-label={isUploading ? 'Uploading files' : 'Upload Files'}
+            aria-label={isUploading ? "Uploading files" : "Upload Files"}
           >
-            {isUploading ? 'Uploading...' : 'Upload Files'}
+            {isUploading ? "Uploading..." : "Upload Files"}
           </Button>
-          <ProgressBar progress={uploadProgress} />
+          {isUploading && <ProgressBar progress={uploadProgress} />}{" "}
         </>
       )}
       {errorMessages.length > 0 && (
@@ -243,11 +321,13 @@ function FileUploader({ setUploadedFiles, setNotification }) {
       )}
       {overwritePrompt && (
         <OverwritePrompt>
-          <p>File "{overwriteFile}" already exists. Do you want to overwrite it?</p>
+          <p>
+            File "{overwriteFile}" already exists. Do you want to overwrite it?
+          </p>
           <OverwriteButtons>
             <Button
               variant="secondary"
-              customColor="#2ecc71" 
+              customColor="#2ecc71"
               onClick={() => {
                 handleUpload(selectedFiles);
                 setOverwritePrompt(false);

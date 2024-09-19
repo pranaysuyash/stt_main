@@ -16,6 +16,7 @@ import {
   DndContext,
   closestCenter,
   PointerSensor,
+  TouchSensor, // Import TouchSensor
   useSensor,
   useSensors,
 } from "@dnd-kit/core";
@@ -36,7 +37,8 @@ const ToolbarContainer = styled.div`
   align-items: center;
 
   @media (max-width: 768px) {
-    padding: 10px 10px;
+    // padding: 10px 10px;
+    display:none;
   }
 `;
 
@@ -44,10 +46,12 @@ const DraggableArea = styled.div`
   display: flex;
   align-items: center;
   flex-grow: 1;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+ -webkit-overflow-scrolling: touch;
 
   @media (max-width: 768px) {
-    justify-content: center;
+    justify-content: flex-start;
   }
 `;
 
@@ -60,6 +64,10 @@ const SortableItemContainer = styled.div`
     props.isDragging ? "#f0f0f0" : "transparent"};
   border-radius: 4px;
   flex-shrink: 0;
+  min-width: 100px;
+  @media(max-width: 768px) {
+    min-width:80px;
+  }
 `;
 
 const DragHandleStyled = styled.div`
@@ -149,6 +157,19 @@ function SortableItem({ id, item, removeItem }) {
 }
 
 function QuickAccessToolbar() {
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 5, 
+      },
+    }),
+    useSensor(TouchSensor, {
+      activationConstraint: {
+        delay: 250,
+        tolerance: 5,
+      },
+    })
+  );
   const [pinnedItems, setPinnedItems] = useState([]);
   const [overflowOpen, setOverflowOpen] = useState(false);
   const overflowRef = useRef(null);
@@ -209,14 +230,6 @@ function QuickAccessToolbar() {
   const removeItem = (id) => {
     setPinnedItems(pinnedItems.filter((item) => item.id !== id));
   };
-
-  const sensors = useSensors(
-    useSensor(PointerSensor, {
-      activationConstraint: {
-        distance: 5, 
-      },
-    })
-  );
 
   const handleDragEnd = (event) => {
     const { active, over } = event;

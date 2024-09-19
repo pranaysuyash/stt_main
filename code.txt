@@ -60,7 +60,41 @@ Directory Structure:
 ## File: test.jsx
 
 ```jsx
-
+const ToolbarContainer = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  padding: 10px 20px;
+  background-color: #bdc3c7;
+  align-items: center;
+  @media (max-width: 768px) {
+    padding: 10px 10px;
+  }
+`;
+const DraggableArea = styled.div`
+  display: flex;
+  align-items: center;
+  flex-grow: 1;
+  flex-wrap: nowrap; 
+  overflow-x: auto; 
+  -webkit-overflow-scrolling: touch;
+  @media (max-width: 768px) {
+    justify-content: flex-start;
+  }
+`;
+const SortableItemContainer = styled.div`
+  display: flex;
+  align-items: center;
+  margin: 5px;
+  padding: 5px;
+  background-color: ${(props) =>
+    props.isDragging ? "#f0f0f0" : "transparent"};
+  border-radius: 4px;
+  flex-shrink: 0;
+  min-width: 100px; 
+  @media (max-width: 768px) {
+    min-width: 80px; 
+  }
+`;
 ```
 
 ## File: index.html
@@ -1401,12 +1435,11 @@ const LayoutContainer = styled.div`
 `;
 const Content = styled.main`
   margin-left: ${({ $sidebarCollapsed }) =>
-    $sidebarCollapsed ? "60px" : "23.5%"};
+    $sidebarCollapsed ? "60px" : "240px"};
   padding: 20px;
   width: 100%;
   transition: margin-left 0.3s ease-in-out;
   @media (max-width: 768px) {
-    margin-left: 0;
   }
 `;
 const MobileHeader = styled.header`
@@ -2205,16 +2238,18 @@ const ToolbarContainer = styled.div`
   background-color: #bdc3c7;
   align-items: center;
   @media (max-width: 768px) {
-    padding: 10px 10px;
+    display:none;
   }
 `;
 const DraggableArea = styled.div`
   display: flex;
   align-items: center;
   flex-grow: 1;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+ -webkit-overflow-scrolling: touch;
   @media (max-width: 768px) {
-    justify-content: center;
+    justify-content: flex-start;
   }
 `;
 const SortableItemContainer = styled.div`
@@ -2226,6 +2261,10 @@ const SortableItemContainer = styled.div`
     props.isDragging ? "#f0f0f0" : "transparent"};
   border-radius: 4px;
   flex-shrink: 0;
+  min-width: 100px;
+  @media(max-width: 768px) {
+    min-width:80px;
+  }
 `;
 const DragHandleStyled = styled.div`
   cursor: grab;
@@ -2784,7 +2823,7 @@ const Sidebar = styled.nav`
   }
 `;
 const Logo = styled.div`
-  padding: 20px;
+  padding: ${({ collapsed }) => (collapsed ? "0" : "20px 5px")};
   font-size: 1.5em;
   text-align: center;
   background-color: #1a252f;

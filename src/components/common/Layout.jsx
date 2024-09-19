@@ -19,7 +19,7 @@ const Content = styled.main`
   width: 100%;
   transition: margin-left 0.3s ease-in-out;
   @media (max-width: 768px) {
-    margin-left: 0;
+    // margin-left: 0;
   }
 `;
 
