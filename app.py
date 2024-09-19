@@ -21,7 +21,7 @@ app.config.update(
     CELERY_BROKER_URL='redis://localhost:6379/0',
     CELERY_RESULT_BACKEND='redis://localhost:6379/0',
     UPLOAD_FOLDER=UPLOAD_FOLDER,
-    MAX_CONTENT_LENGTH=300 * 1024 * 1024  # 250MB
+    MAX_CONTENT_LENGTH=1024 * 1024 * 1024  # 1024 MB max total file size
 )
 
 # Ensure upload folder exists

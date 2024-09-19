@@ -331,6 +331,11 @@ const routes = [
     breadcrumb: 'Dashboard',
   },
   {
+    path: '/dashboard',
+    element: <Dashboard />,
+    breadcrumb: 'Dashboard',
+  },
+  {
     path: '/upload',
     element: <Upload />,
     breadcrumb: 'Upload',
