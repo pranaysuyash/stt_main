@@ -112,6 +112,7 @@ function AudioPlayer({
 
   useEffect(() => {
     if (waveformRef.current) {
+      // Initialize WaveSurfer
       wavesurferRef.current = WaveSurfer.create({
         container: waveformRef.current,
         waveColor: '#D9DCFF',
@@ -124,16 +125,20 @@ function AudioPlayer({
         backend: 'WebAudio',
       });
 
+      // Load the audio file
       wavesurferRef.current.load(fileUrl);
 
+      // Handle WaveSurfer events
       wavesurferRef.current.on('ready', () => {
         // Audio is ready to play
+        console.log('WaveSurfer is ready.');
         if (isPlaying) {
           wavesurferRef.current.play();
         }
       });
 
       wavesurferRef.current.on('finish', () => {
+        console.log('Audio playback finished.');
         if (loop) {
           wavesurferRef.current.play();
         } else {
@@ -147,10 +152,12 @@ function AudioPlayer({
         // Do not call onClose here to prevent unmounting during destroy
       });
 
+      // Cleanup on unmount
       return () => {
         if (wavesurferRef.current) {
           try {
             wavesurferRef.current.destroy();
+            console.log('WaveSurfer destroyed.');
           } catch (err) {
             console.error('WaveSurfer destroy error:', err);
           }

@@ -112,6 +112,7 @@ function ViewerModal({
   const currentFile = uploadedFiles[currentIndex];
   const mimeType = currentFile.type;
 
+  // Determine media type dynamically
   const mediaType = 
     isAudioFile(mimeType) ? 'audio' :
     isVideoFile(mimeType) ? 'video' :
@@ -171,12 +172,21 @@ function ViewerModal({
           }
           fileName={currentFile.filename}
           onClose={onClose}
+          goToNext={goToNext}
+          goToPrevious={goToPrevious}
         />
       );
     } else {
       return <div role="alert">Unsupported media type selected.</div>;
     }
   };
+
+  // Debugging: Log current media type and file details
+  useEffect(() => {
+    console.log(`Current Index: ${currentIndex}`);
+    console.log(`Current File: ${currentFile.filename}, Type: ${mimeType}`);
+    console.log(`Determined Media Type: ${mediaType}`);
+  }, [currentIndex, currentFile, mimeType, mediaType]);
 
   return (
     <ModalOverlay onClick={onClose} aria-modal="true" role="dialog">
