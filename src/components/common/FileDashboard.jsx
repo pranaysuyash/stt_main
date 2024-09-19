@@ -68,7 +68,6 @@ const FileCard = styled.div`
 function FileDashboard({ uploadedFiles }) {
   const [isViewerOpen, setIsViewerOpen] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(null);
-  const [currentMediaType, setCurrentMediaType] = useState(null);
   const triggerRef = useRef(null);
 
   const selectFile = (index, event) => {
@@ -76,23 +75,18 @@ function FileDashboard({ uploadedFiles }) {
     const file = uploadedFiles[index];
     const mimeType = file.type;
 
-    if (isAudioFile(mimeType) || isVideoFile(mimeType)) {
-      setCurrentMediaType(isAudioFile(mimeType) ? 'audio' : 'video');
-      setSelectedIndex(index);
-      setIsViewerOpen(true);
-    } else if (isImageFile(mimeType)) {
-      setCurrentMediaType('image');
+    if (isAudioFile(mimeType) || isVideoFile(mimeType) || isImageFile(mimeType)) {
       setSelectedIndex(index);
       setIsViewerOpen(true);
     } else {
       console.error('Unsupported media type:', mimeType);
+      // Optionally, display a user-friendly message here
     }
   };
 
   const closeViewer = () => {
     setIsViewerOpen(false);
     setSelectedIndex(null);
-    setCurrentMediaType(null);
     if (triggerRef.current) {
       triggerRef.current.focus();
     }
@@ -129,7 +123,6 @@ function FileDashboard({ uploadedFiles }) {
         <ViewerModal
           uploadedFiles={uploadedFiles}
           initialIndex={selectedIndex}
-          mediaType={currentMediaType}
           onClose={closeViewer}
         />
       )}

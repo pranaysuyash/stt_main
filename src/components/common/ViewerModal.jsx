@@ -8,6 +8,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTimes, faForward, faBackward } from '@fortawesome/free-solid-svg-icons';
 import FocusTrap from 'focus-trap-react';
 import PropTypes from 'prop-types';
+import { isAudioFile, isVideoFile, isImageFile } from "../../utils/mediaUtils"; // Ensure correct import
 
 const ModalOverlay = styled.div`
   position: fixed;
@@ -103,13 +104,19 @@ const NavigationControls = styled.div`
 function ViewerModal({ 
   uploadedFiles, 
   initialIndex, 
-  mediaType,
   onClose 
 }) {
   const [currentIndex, setCurrentIndex] = useState(initialIndex);
   const [isPlaying, setIsPlaying] = useState(false); // Manage play state here
 
   const currentFile = uploadedFiles[currentIndex];
+  const mimeType = currentFile.type;
+
+  const mediaType = 
+    isAudioFile(mimeType) ? 'audio' :
+    isVideoFile(mimeType) ? 'video' :
+    isImageFile(mimeType) ? 'image' :
+    'unsupported';
 
   const goToNext = () => {
     if (currentIndex < uploadedFiles.length - 1) {
@@ -133,8 +140,6 @@ function ViewerModal({
     // Reset isPlaying when file changes
     setIsPlaying(false);
   }, [currentIndex]);
-
-  const mimeType = currentFile.type;
 
   const renderViewer = () => {
     if (mediaType === 'audio' || mediaType === 'video') {
@@ -218,7 +223,6 @@ ViewerModal.propTypes = {
     })
   ).isRequired,
   initialIndex: PropTypes.number.isRequired,
-  mediaType: PropTypes.oneOf(['audio', 'video', 'image']).isRequired,
   onClose: PropTypes.func.isRequired,
 };
 

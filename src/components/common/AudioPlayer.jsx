@@ -157,7 +157,7 @@ function AudioPlayer({
         }
       };
     }
-  }, [fileUrl, loop, onClose, togglePlayPause, isPlaying]);
+  }, [fileUrl, loop, togglePlayPause, isPlaying]);
 
   useEffect(() => {
     if (wavesurferRef.current) {
