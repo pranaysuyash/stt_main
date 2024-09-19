@@ -38,7 +38,7 @@ const Sidebar = styled.nav`
 `;
 
 const Logo = styled.div`
-  padding: 20px;
+  padding: ${({ collapsed }) => (collapsed ? "0" : "20px 5px")};
   font-size: 1.5em;
   text-align: center;
   background-color: #1a252f;
