@@ -19,8 +19,13 @@ const Content = styled.main`
   width: 100%;
   transition: margin-left 0.3s ease-in-out;
   @media (max-width: 768px) {
-    // margin-left: 0;
-  }
+  padding: 15px;
+  width: 100%;
+  border-radius: 0;
+  height: 100vh;
+  max-height: 100vh;
+}
+
 `;
 
 const MobileHeader = styled.header`
@@ -61,10 +66,11 @@ const ToolbarPlaceholder = styled.div`
 
 function Layout({ children }) {
   const [isMobileOpen, setIsMobileOpen] = useState(false);
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(window.innerWidth <= 768);
 
   const toggleMobile = () => {
     setIsMobileOpen(!isMobileOpen);
+    setSidebarCollapsed(isMobileOpen); // Synchronize sidebarCollapsed on mobile
   };
 
   const toggleSidebar = () => {
@@ -87,6 +93,7 @@ function Layout({ children }) {
         <h2 style={{ marginLeft: "20px" }}>WaveAnalyzer</h2>
       </MobileHeader>
       <LayoutContainer>
+      {/* <Content data-sidebar-collapsed={sidebarCollapsed.toString()} $sidebarCollapsed={sidebarCollapsed}> */}
         <Content $sidebarCollapsed={sidebarCollapsed}>
           <Breadcrumbs />
           <QuickAccessToolbar />

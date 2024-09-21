@@ -21,9 +21,11 @@ const FileGrid = styled.div`
   }
   
   @media (max-width: 767px) {
-    grid-template-columns: 1fr;
-    gap: 15px;
-  }
+  grid-template-columns: 1fr;
+  gap: 15px;
+  padding: 10px;
+}
+
 `;
 
 const FileCard = styled.div`

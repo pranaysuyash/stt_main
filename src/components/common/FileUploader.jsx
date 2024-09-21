@@ -34,20 +34,71 @@ const DashboardContainer = styled.div`
 `;
 
 // Styled component for the grid layout
+// const FileGrid = styled.div`
+//   display: grid;
+//   grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+//   gap: 20px;
+//   @media (max-width: 1199px) {
+//     grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+//   }
+//   @media (max-width: 767px) {
+//     grid-template-columns: 1fr;
+//     gap: 15px;
+//   }
+// `;
+
 const FileGrid = styled.div`
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
   gap: 20px;
+
   @media (max-width: 1199px) {
     grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
   }
+
   @media (max-width: 767px) {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
     gap: 15px;
+    padding: 10px;
   }
 `;
 
 // Styled component for each file card
+// const FileCard = styled.div`
+//   background-color: ${({ theme }) => theme.colors.neutral};
+//   padding: 20px;
+//   border-radius: 10px;
+//   box-sizing: border-box;
+//   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+//   text-align: center;
+//   transition: transform 0.2s ease, box-shadow 0.3s ease;
+//   cursor: pointer;
+//   display: flex;
+//   flex-direction: column;
+//   justify-content: center;
+//   height: 150px; 
+//   &:hover {
+//     transform: translateY(-5px);
+//     box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+//   }
+//   p {
+//     margin-bottom: 10px;
+//     color: ${({ theme }) => theme.colors.text};
+//     font-size: 1rem; 
+//     font-weight: ${({ theme }) => theme.fontWeights.medium};
+//     overflow: hidden;
+//     text-overflow: ellipsis;
+//     white-space: nowrap;
+//   }
+//   @media (max-width: 767px) {
+//     padding: 15px;
+//     height: auto;
+//     p {
+//       font-size: 0.875rem; 
+//     }
+//   }
+// `;
+
 const FileCard = styled.div`
   background-color: ${({ theme }) => theme.colors.neutral};
   padding: 20px;
@@ -60,25 +111,37 @@ const FileCard = styled.div`
   display: flex;
   flex-direction: column;
   justify-content: center;
-  height: 150px; 
+  height: 150px;
+
   &:hover {
     transform: translateY(-5px);
     box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
   }
+
   p {
     margin-bottom: 10px;
     color: ${({ theme }) => theme.colors.text};
-    font-size: 1rem; 
+    font-size: 1rem;
     font-weight: ${({ theme }) => theme.fontWeights.medium};
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
   }
+
   @media (max-width: 767px) {
     padding: 15px;
     height: auto;
+
     p {
-      font-size: 0.875rem; 
+      font-size: 0.875rem;
+    }
+  }
+
+  @media (max-width: 480px) {
+    height: auto;
+
+    p {
+      font-size: 0.8125rem;
     }
   }
 `;
