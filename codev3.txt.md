@@ -1,0 +1,943 @@
+# Code Collection Report
+
+## Directory Structure:
+```
+├── auth/
+│   ├── __init__.py
+│   └── routes.py
+├── migrations/
+│   ├── versions/
+│   │   ├── 70235c25a567_initial_migration.py
+│   │   └── a3259da4e160_insert_default_roles.py
+│   ├── alembic.ini
+│   ├── env.py
+│   ├── README
+│   └── script.py.mako
+├── public/
+│   ├── favicon.ico
+│   └── vite.svg
+├── src/
+│   ├── assets/
+│   │   ├── fonts/
+│   │   ├── icons/
+│   │   ├── images/
+│   │   └── react.svg
+│   ├── components/
+│   │   ├── auth/
+│   │   │   ├── ForgotPassword.jsx
+│   │   │   ├── Login.jsx
+│   │   │   ├── Register.jsx
+│   │   │   └── ResetPassword.jsx
+│   │   ├── common/
+│   │   │   ├── AudioPlayer.jsx
+│   │   │   ├── Breadcrumbs.jsx
+│   │   │   ├── Button.jsx
+│   │   │   ├── ErrorBoundary.jsx
+│   │   │   ├── FileDashboard.jsx
+│   │   │   ├── FileDashboardStyles.jsx
+│   │   │   ├── FileUploader.jsx
+│   │   │   ├── ImageViewer.jsx
+│   │   │   ├── Layout.jsx
+│   │   │   ├── Loader.jsx
+│   │   │   ├── MediaPlayer.jsx
+│   │   │   ├── Messages.jsx
+│   │   │   ├── Notification.jsx
+│   │   │   ├── PreviewSection.jsx
+│   │   │   ├── ProgressBar.jsx
+│   │   │   ├── ProtectedRoute.jsx
+│   │   │   ├── QuickAccessToolbar.jsx
+│   │   │   ├── SideNav.jsx
+│   │   │   ├── Tooltip.jsx
+│   │   │   ├── VideoPlayer.jsx
+│   │   │   ├── ViewerModal.jsx
+│   │   │   └── WaveformViewer.jsx
+│   │   └── pages/
+│   │       ├── Analysis.jsx
+│   │       ├── ConfirmEmail.jsx
+│   │       ├── Dashboard.jsx
+│   │       ├── Help.jsx
+│   │       ├── LandingPage.jsx
+│   │       ├── Library.jsx
+│   │       ├── NotFound.jsx
+│   │       ├── Settings.jsx
+│   │       └── Upload.jsx
+│   ├── context/
+│   │   └── AuthContext.jsx
+│   ├── styles/
+│   │   ├── GlobalStyle.js
+│   │   └── theme.js
+│   ├── utils/
+│   │   ├── api.js
+│   │   └── mediaUtils.js
+│   ├── App.jsx
+│   ├── AppRoutes.jsx
+│   ├── config.js
+│   ├── fontAwesome.js
+│   ├── main.jsx
+│   └── routes.jsx
+├── static/
+│   ├── css/
+│   ├── js/
+│   └── uploads/
+│       ├── Chiranjeevi_Video_Dec_21.mp4
+│       ├── Chiranjeevi_Video_Dec_21_audio.wav
+│       ├── chunk_1.wav
+│       ├── chunk_1_waveform.png
+│       ├── chunk_2.wav
+│       ├── chunk_3.wav
+│       ├── chunk_3_waveform.png
+│       ├── chunk_4.wav
+│       ├── chunk_4_waveform.png
+│       ├── chunk_5.wav
+│       ├── chunk_5_waveform.png
+│       ├── claude_chat_exporter_demo_v1.2.0_1080.mp4
+│       ├── Screen_Recording_2024-09-14_at_4.58.36_PM.mov
+│       ├── temp_audio.wav
+│       └── WhatsApp_Image_2024-09-30_at_14.42.05.jpeg
+├── templates/
+├── .env
+├── .gitignore
+├── app.py
+├── audio_processing.py
+├── celery_app.py
+├── code.txt
+├── codev3.txt.md
+├── eslint.config.js
+├── extensions.py
+├── index.html
+├── logic.py
+├── models.py
+├── package-lock.json
+├── package.json
+├── README.md
+├── seed_admin.py
+├── seed_roles.py
+├── seed_subscription_tiers.py
+├── tasks.py
+├── test.jsx
+├── test.py
+├── utils.py
+└── vite.config.js
+
+```
+
+### File: `test.jsx`
+
+**Language:** jsx
+
+**File Size:** 603 bytes
+**Created:** 2024-10-01T00:26:05.276595
+**Modified:** 2024-10-01T00:26:05.276595
+
+```jsx
+import React from 'react'; import { Navigate, useLocation } from 'react-router-dom'; import { useAuth } from '../../context/AuthContext'; import Loader from './Loader'; const ProtectedRoute = ({ children }) => { const { isAuthenticated, loading } = useAuth(); const location = useLocation(); if (loading) { return <Loader />; } if (!isAuthenticated) { console.log('ProtectedRoute - Redirecting to login'); return <Navigate to="/login" state={{ from: location }} replace />; } return children; }; export default ProtectedRoute;
+```
+
+### File: `index.html`
+
+**Language:** html
+
+**File Size:** 686 bytes
+**Created:** 2024-09-16T22:35:06.666191
+**Modified:** 2024-09-16T22:35:06.666100
+
+```html
+<!doctype html><html lang=en><head><meta charset=UTF-8><link rel=icon type=image/svg+xml href=/vite.svg><meta name=viewport content="width=device-width, initial-scale=1.0"><title>Audio/Video Waveform Analyzer</title><link rel=preconnect href=https://fonts.googleapis.com><link rel=preconnect href=https://fonts.gstatic.com crossorigin><link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600&family=Roboto:wght@400;500;700&display=swap" rel=stylesheet></head><body><div id=root></div><script type=module src=./src/main.jsx></script></body></html>
+```
+
+### File: `tasks.py`
+
+**Language:** py
+
+**File Size:** 2686 bytes
+**Created:** 2024-09-19T15:32:37.581152
+**Modified:** 2024-09-19T15:32:37.581152
+
+```py
+from celery_app import celery;import os;import logging;from audio_processing import extract_audio_from_video, generate_waveform;logging.basicConfig(level=logging.INFO);logger = logging.getLogger(__name__);@celery.task(bind=True, name='tasks.process_uploaded_file');def process_uploaded_file(self, file_path, filename):;""";Celery task to process the uploaded file.;Steps:;1. Extract audio if it's a video.;2. Generate waveform.;""";try:;upload_folder = celery.conf.get('UPLOAD_FOLDER', 'static/uploads');logger.info(f"Starting processing for file: {filename}");if filename.lower().endswith(('.mp4', '.avi', '.mov', '.mkv')):;base_name = os.path.splitext(filename)[0];audio_output_path = os.path.join(upload_folder, f"{base_name}_audio.wav");waveform_image_path = os.path.join(upload_folder, f"{base_name}_waveform.png");extracted_audio = extract_audio_from_video(file_path, audio_output_path);if not extracted_audio:;logger.error(f"Audio extraction failed for file: {filename}");return {'status': 'failed', 'message': 'Audio extraction failed.'};generated_waveform = generate_waveform(extracted_audio, waveform_image_path);if not generated_waveform:;logger.error(f"Waveform generation failed for file: {filename}");return {'status': 'failed', 'message': 'Waveform generation failed.'};logger.info(f"Processing completed for file: {filename}");else:;base_name = os.path.splitext(filename)[0];waveform_image_path = os.path.join(upload_folder, f"{base_name}_waveform.png");generated_waveform = generate_waveform(file_path, waveform_image_path);if not generated_waveform:;logger.error(f"Waveform generation failed for file: {filename}");return {'status': 'failed', 'message': 'Waveform generation failed.'};logger.info(f"Processing completed for file: {filename}");return {'status': 'success', 'message': 'File processed successfully.'};except Exception as e:;logger.exception(f"Unexpected error processing file {filename}: {e}");raise
+```
+
+### File: `models.py`
+
+**Language:** py
+
+**File Size:** 70136 bytes
+**Created:** 2024-10-01T01:07:44.510200
+**Modified:** 2024-10-01T01:07:44.510200
+
+```py
+from extensions import db, bcrypt;from datetime import datetime, timedelta;from flask import current_app;from enum import Enum;from sqlalchemy import Enum as SQLAlchemyEnum;import jwt;class RoleEnum(str, Enum):;ADMIN = 'ADMIN';USER = 'USER';MANAGER = 'MANAGER';class UserRole(db.Model):;__tablename__ = 'user_roles';user_id = db.Column(db.Integer, db.ForeignKey('users.id'), primary_key=True);role_id = db.Column(db.Integer, db.ForeignKey('roles.id'), primary_key=True);assigned_at = db.Column(db.DateTime, default=datetime.utcnow);user = db.relationship('User', back_populates='user_roles', overlaps="roles,user_roles");role = db.relationship('Role', back_populates='user_roles', overlaps="users,user_roles");class User(db.Model):;__tablename__ = 'users';id = db.Column(db.Integer, primary_key=True);email = db.Column(db.String(120), unique=True, nullable=False, index=True);password_hash = db.Column(db.String(128), nullable=False);first_name = db.Column(db.String(30));last_name = db.Column(db.String(30));is_active = db.Column(db.Boolean, default=False);confirmed_at = db.Column(db.DateTime);created_at = db.Column(db.DateTime, default=datetime.utcnow);updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow);is_deleted = db.Column(db.Boolean, default=False);user_roles = db.relationship(;'UserRole',;back_populates='user',;cascade="all, delete-orphan",;overlaps="roles,user_roles";);roles = db.relationship(;'Role',;secondary='user_roles',;back_populates='users',;overlaps="user_roles,roles";);memberships = db.relationship('OrganizationMember', back_populates='user', cascade="all, delete-orphan");workspace_memberships = db.relationship('WorkspaceMember', back_populates='user', cascade="all, delete-orphan");subscriptions = db.relationship('Subscription', back_populates='user', cascade="all, delete-orphan");def __init__(self, email, password, first_name='', last_name=''):;self.email = email;self.password_hash = bcrypt.generate_password_hash(password).decode('utf-8');self.first_name = first_name;self.last_name = last_name;def check_password(self, password):;return bcrypt.check_password_hash(self.password_hash, password);def get_confirmation_token(self, expires_in=3600):;payload = {;'confirm': self.id,;'exp': datetime.utcnow() + timedelta(seconds=expires_in);};token = jwt.encode(;payload,;current_app.config['SECRET_KEY'],;algorithm='HS256';);return token;@staticmethod;def verify_confirmation_token(token):;try:;payload = jwt.decode(;token,;current_app.config['SECRET_KEY'],;algorithms=['HS256'];);user_id = payload.get('confirm');if user_id is None:;return None;return User.query.get(user_id);except jwt.ExpiredSignatureError:;return None;except jwt.InvalidTokenError:;return None;def __repr__(self):;return f"<User {self.email}>";class Role(db.Model):;__tablename__ = 'roles';id = db.Column(db.Integer, primary_key=True);name = db.Column(SQLAlchemyEnum(RoleEnum), unique=True, nullable=False);description = db.Column(db.String(255));user_roles = db.relationship(;'UserRole',;back_populates='role',;cascade="all, delete-orphan",;overlaps="users,user_roles";);users = db.relationship(;'User',;secondary='user_roles',;back_populates='roles',;overlaps="user_roles,users";);def __init__(self, name: RoleEnum, description=''):;self.name = name;self.description = description;def to_dict(self):;return {;'id': self.id,;'name': self.name.value,;'description': self.description;};class Organization(db.Model):;__tablename__ = 'organizations';id = db.Column(db.Integer, primary_key=True);name = db.Column(db.String(150), unique=True, nullable=False);created_at = db.Column(db.DateTime, default=datetime.utcnow);updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow);is_deleted = db.Column(db.Boolean, default=False);members = db.relationship('OrganizationMember', back_populates='organization', cascade="all, delete-orphan");workspaces = db.relationship('Workspace', back_populates='organization', cascade="all, delete-orphan");class Workspace(db.Model):;__tablename__ = 'workspaces';id = db.Column(db.Integer, primary_key=True);name = db.Column(db.String(150), nullable=False);organization_id = db.Column(db.Integer, db.ForeignKey('organizations.id'), nullable=False);created_at = db.Column(db.DateTime, default=datetime.utcnow);updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow);is_deleted = db.Column(db.Boolean, default=False);organization = db.relationship('Organization', back_populates='workspaces');members = db.relationship('WorkspaceMember', back_populates='workspace', cascade="all, delete-orphan");class WorkspaceMember(db.Model):;__tablename__ = 'workspace_members';user_id = db.Column(db.Integer, db.ForeignKey('users.id'), primary_key=True);workspace_id = db.Column(db.Integer, db.ForeignKey('workspaces.id'), primary_key=True);role_id = db.Column(db.Integer, db.ForeignKey('roles.id'), nullable=False);joined_at = db.Column(db.DateTime, default=datetime.utcnow);user = db.relationship('User', back_populates='workspace_memberships');workspace = db.relationship('Workspace', back_populates='members');role = db.relationship('Role');class OrganizationMember(db.Model):;__tablename__ = 'organization_members';user_id = db.Column(db.Integer, db.ForeignKey('users.id'), primary_key=True);organization_id = db.Column(db.Integer, db.ForeignKey('organizations.id'), primary_key=True);role_id = db.Column(db.Integer, db.ForeignKey('roles.id'), nullable=False);joined_at = db.Column(db.DateTime, default=datetime.utcnow);user = db.relationship('User', back_populates='memberships');organization = db.relationship('Organization', back_populates='members');role = db.relationship('Role');class SubscriptionTier(db.Model):;__tablename__ = 'subscription_tiers';id = db.Column(db.Integer, primary_key=True);name = db.Column(db.String(50), unique=True, nullable=False);price = db.Column(db.Float, nullable=False);features = db.Column(db.JSON);created_at = db.Column(db.DateTime, default=datetime.utcnow);updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow);subscriptions = db.relationship('Subscription', back_populates='tier', cascade="all, delete-orphan");class Subscription(db.Model):;__tablename__ = 'subscriptions';id = db.Column(db.Integer, primary_key=True);user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False);tier_id = db.Column(db.Integer, db.ForeignKey('subscription_tiers.id'), nullable=False);start_date = db.Column(db.DateTime, default=datetime.utcnow);end_date = db.Column(db.DateTime, nullable=True);is_active = db.Column(db.Boolean, default=True);is_deleted = db.Column(db.Boolean, default=False);user = db.relationship('User', back_populates='subscriptions');tier = db.relationship('SubscriptionTier', back_populates='subscriptions')
+```
+
+### File: `celery_app.py`
+
+**Language:** py
+
+**File Size:** 749 bytes
+**Created:** 2024-09-19T16:36:44.551569
+**Modified:** 2024-09-19T16:36:44.551569
+
+```py
+from celery import Celery;import os;def make_celery():;""";Initialize Celery with Flask app's configuration.;""";celery = Celery(;'stt_main',;broker=os.getenv('CELERY_BROKER_URL', 'redis://localhost:6379/0'),;backend=os.getenv('CELERY_RESULT_BACKEND', 'redis://localhost:6379/0'),;include=['tasks'];);BASE_DIR = os.path.abspath(os.path.dirname(__file__));UPLOAD_FOLDER = os.path.join(BASE_DIR, 'static', 'uploads');celery.conf.update(;task_serializer='json',;accept_content=['json'],;result_serializer='json',;timezone='UTC',;enable_utc=True,;UPLOAD_FOLDER=UPLOAD_FOLDER;);return celery;celery = make_celery()
+```
+
+### File: `audio_processing.py`
+
+**Language:** py
+
+**File Size:** 3670 bytes
+**Created:** 2024-09-19T15:32:50.046348
+**Modified:** 2024-09-19T15:32:50.046348
+
+```py
+from moviepy.editor import VideoFileClip;import matplotlib.pyplot as plt;from pydub import AudioSegment;import numpy as np;import subprocess;import logging;import os;logging.basicConfig(level=logging.INFO);logger = logging.getLogger(__name__);plt.switch_backend('Agg');def extract_audio_from_video(video_path, output_audio_path):;""";Extracts the audio track from a video file and saves it as a separate audio file.;Args:;- video_path: Path to the video file.;- output_audio_path: Path where the extracted audio file will be saved.;Returns:;- Path to the extracted audio file or None if the video has no audio or extraction failed.;""";try:;logger.info(f"Attempting to extract audio from video: {video_path}");if not os.path.exists(video_path):;logger.error(f"Video file does not exist: {video_path}");return None;video = VideoFileClip(video_path);if video.audio is None:;logger.warning(f"No audio track found in the video: {video_path}");video.close();return None;logger.info(f"Extracting audio to: {output_audio_path}");video.audio.write_audiofile(output_audio_path, logger=None);video.close();if os.path.exists(output_audio_path):;logger.info(f"Audio extraction successful: {output_audio_path}");return output_audio_path;else:;logger.error(f"Audio extraction failed, file not found: {output_audio_path}");return None;except Exception as e:;logger.exception(f"Exception occurred during audio extraction: {e}");return None;def generate_waveform(audio_file, output_image_path):;""";Generates a waveform image from an audio file and saves it as an image.;Args:;- audio_file: Path to the audio file.;- output_image_path: Path where the waveform image will be saved.;Returns:;- Path to the generated waveform image or None if generation failed.;""";try:;logger.info(f"Generating waveform for audio file: {audio_file}");if not os.path.exists(audio_file):;logger.error(f"Audio file does not exist: {audio_file}");return None;audio = AudioSegment.from_file(audio_file);data = np.array(audio.get_array_of_samples());if audio.channels == 2:;data = data.reshape((-1, 2));data = data.mean(axis=1);plt.figure(figsize=(10, 4));plt.plot(data, color='blue');plt.fill_between(range(len(data)), data, color='skyblue', alpha=0.4);plt.title('Waveform');plt.xlabel('Time (samples)');plt.ylabel('Amplitude');plt.savefig(output_image_path);plt.close();logger.info(f"Waveform image saved at: {output_image_path}");return output_image_path;except Exception as e:;logger.exception(f"Exception occurred during waveform generation: {e}");return None
+```
+
+### File: `vite.config.js`
+
+**Language:** js
+
+**File Size:** 2954 bytes
+**Created:** 2024-09-30T17:30:45.569612
+**Modified:** 2024-09-30T17:30:45.569612
+
+```js
+import { defineConfig } from 'vite'; import react from '@vitejs/plugin-react'; import path from 'path'; export default defineConfig({ plugins: [react()], resolve: { alias: { '@': path.resolve(__dirname, './src'), }, }, server: { port: 5173, open: true, proxy: { '/api': { target: 'http: changeOrigin: true, secure: false, }, '/static': { target: 'http: changeOrigin: true, secure: false, }, }, historyApiFallback: true, }, build: { outDir: 'dist', assetsDir: 'assets', manifest: true, rollupOptions: { input: 'src/main.jsx', }, }, });
+```
+
+### File: `test.py`
+
+**Language:** py
+
+**File Size:** 2804 bytes
+**Created:** 2024-09-30T13:43:29.139740
+**Modified:** 2024-09-30T13:43:29.139740
+
+```py
+from flask import Blueprint, request, jsonify, url_for;from extensions import db, mail;from models import User;from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity;from flask_mail import Message;auth_bp = Blueprint('auth', __name__);@auth_bp.route('/signup', methods=['POST']);def signup():;data = request.get_json();email = data.get('email');password = data.get('password');if not email or not password:;return jsonify({"error": "Email and password are required."}), 400;existing_user = User.query.filter_by(email=email).first();if existing_user:;return jsonify({"error": "User already exists."}), 409;new_user = User(email=email, password=password);db.session.add(new_user);db.session.commit();user_role = Role.query.filter_by(name='User').first();if user_role:;new_user.roles.append(user_role);db.session.commit();token = new_user.get_confirmation_token();confirm_url = url_for('auth.confirm_email', token=token, _external=True);html = f""";<p>Hi {new_user.first_name or 'User'},</p>;<p>Thanks for signing up! Please confirm your email by clicking on the link below:</p>;<p><a href="{confirm_url}">Confirm Email</a></p>;""";msg = Message('Confirm Your Email', recipients=[new_user.email], html=html);mail.send(msg);return jsonify({"message": "User created successfully. Please check your email to confirm your account."}), 201;@auth_bp.route('/confirm/<token>', methods=['GET']);def confirm_email(token):;user = User.verify_confirmation_token(token);if not user:;return jsonify({"error": "Invalid or expired token."}), 400;if user.is_active:;return jsonify({"message": "Account already confirmed."}), 200;user.is_active = True;user.confirmed_at = datetime.utcnow();db.session.commit();return jsonify({"message": "Email confirmed successfully."}), 200;@auth_bp.route('/login', methods=['POST']);def login():;data = request.get_json();email = data.get('email');password = data.get('password');if not email or not password:;return jsonify({"error": "Email and password are required."}), 400;user = User.query.filter_by(email=email).first();if not user or not user.check_password(password):;return jsonify({"error": "Invalid email or password."}), 401;if not user.is_active:;return jsonify({"error": "Account is not active. Please confirm your email."}), 403;access_token = create_access_token(identity=user.id, expires_delta=timedelta(hours=1));return jsonify({"access_token": access_token}), 200
+```
+
+### File: `seed_subscription_tiers.py`
+
+**Language:** py
+
+**File Size:** 1035 bytes
+**Created:** 2024-09-23T15:57:51.898323
+**Modified:** 2024-09-23T15:57:51.898323
+
+```py
+from extensions import db;from models import SubscriptionTier;from app import app;def seed_subscription_tiers():;with app.app_context():;tiers = [;SubscriptionTier(;name='Free',;price=0.0,;features={"feature1": True, "feature2": False},;),;SubscriptionTier(;name='Pro',;price=29.99,;features={"feature1": True, "feature2": True, "feature3": False},;),;SubscriptionTier(;name='Enterprise',;price=99.99,;features={"feature1": True, "feature2": True, "feature3": True},;),;];for tier in tiers:;existing_tier = SubscriptionTier.query.filter_by(name=tier.name).first();if not existing_tier:;db.session.add(tier);db.session.commit();print("Subscription tiers seeded successfully.");if __name__ == '__main__':;seed_subscription_tiers()
+```
+
+### File: `seed_roles.py`
+
+**Language:** py
+
+**File Size:** 1480 bytes
+**Created:** 2024-09-30T23:02:09.183014
+**Modified:** 2024-09-30T23:02:09.183014
+
+```py
+from app import app;from extensions import db;from models import Role, RoleEnum;def seed_roles():;with app.app_context():;roles = [;Role(name=RoleEnum.ADMIN, description='Administrator'),;Role(name=RoleEnum.USER, description='Regular User'),;Role(name=RoleEnum.MANAGER, description='Manager'),;];for role in roles:;existing_role = Role.query.filter_by(name=role.name).first();if not existing_role:;db.session.add(role);db.session.commit();print("Roles seeded successfully.");if __name__ == '__main__':;seed_roles()
+```
+
+### File: `logic.py`
+
+**Language:** py
+
+**File Size:** 51539 bytes
+**Created:** 2024-09-19T11:31:02.126156
+**Modified:** 2024-09-19T11:31:02.126156
+
+```py
+import os;from moviepy.editor import VideoFileClip;from pydub import AudioSegment, silence;import logging;import numpy as np;import noisereduce as nr;from dotenv import load_dotenv;import whisperx;import torch;from tqdm import tqdm;import json;import pandas as pd;from openai import OpenAI;import matplotlib.pyplot as plt;from scipy.io import wavfile;from jsonschema import validate, ValidationError;import time;import random;from sklearn.metrics.pairwise import cosine_similarity;import tiktoken;import re;try:;import ffmpeg as ffmpeg_lib;except ModuleNotFoundError:;logging.error("ffmpeg-python is not installed or not found in the current environment.");logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s');logger = logging.getLogger(__name__);load_dotenv(dotenv_path='/Users/pranay/Projects/LLM/video/proj1/scripts/.env');api_key = os.getenv("OPENAI_API_KEY");if not api_key:;raise ValueError("OPENAI_API_KEY not found in environment variables");client = OpenAI();SEED = 12345;if torch.backends.mps.is_available():;device = "mps";compute_type = "float32";logger.info(f"Running on MPS with {compute_type} compute type.");else:;device = "cpu";compute_type = "int8";logger.info(f"Running on {device} with {compute_type} compute type.");if device == "mps":;try:;whisper_model = whisperx.load_model("large-v2", device="mps", compute_type=compute_type);except ValueError as e:;logger.warning(f"MPS device is not supported by ctranslate2. Falling back to CPU. Error: {str(e)}");device = "cpu";whisper_model = whisperx.load_model("large-v2", device=device, compute_type="int8");else:;whisper_model = whisperx.load_model("large-v2", device=device, compute_type=compute_type);EMBEDDING_MODEL_SMALL = "text-embedding-3-small";EMBEDDING_MODEL_LARGE = "text-embedding-3-large";def get_embedding_for_text(text, model=EMBEDDING_MODEL_SMALL):;""";Get embeddings for a given text using OpenAI's API.;""";try:;if not text.strip():;logger.error("Text input is empty or only contains whitespace.");return None;text = text.replace("\n", " ");response = client.embeddings.create(;input=[text],;model=model;);embedding = response.data[0].embedding;return embedding;except Exception as e:;logger.error(f"Error fetching embeddings: {str(e)}");return None;def save_embeddings_to_file(embedding, aligned_embedding, filepath):;""";Save both transcription and aligned embeddings to a JSON file.;""";try:;if not embedding or not aligned_embedding:;logger.error("One or both embeddings are missing. Cannot save to file.");return;embeddings_data = {;"transcription_embedding": embedding,;"aligned_embedding": aligned_embedding;};with open(filepath, "w") as f:;json.dump(embeddings_data, f, indent=4);logger.info(f"Embeddings successfully saved to {filepath}");except Exception as e:;logger.error(f"Error saving embeddings to file: {str(e)}");transcript_schema= {;"metadata": {;"location": "",;"setting": "",;"duration": "",;"visit_type": "",;"technology_used": "",;"healthcare_providers": [;{;"name": "",;"role": "",;"qualifications": "",;"specializations": "",;"years_of_experience": "";};],;"call_quality": "",;"connection_issues": "",;"background_noise": "",;"language_of_consultation": "";};};system_prompt=""";You are an advanced medical transcription analysis assistant. Your task is to analyze a provided medical transcription and return a structured output based on a predefined JSON schema.;You must utilize the semantic meaning from the text to produce the most accurate and insightful analysis.;Here is the JSON schema you should use for your output:;{transcript_schema_category};Please follow these instructions to complete your task:;1. Carefully read and analyze the provided transcript.;2. Based on your analysis, fill out the JSON schema provided earlier. Ensure that your output is a valid JSON and comprehensively covers all sections of the schema.;3. For each section of the schema:;a. Extract relevant information from the transcript.;b. Summarize and structure the information according to the schema.;c. If a particular field is not applicable or the information is not available in the transcript, denote it as a "N/A".;d. If you encounter multiple relevant pieces of information for a single field, create an array to contain all the information, even if the schema shows the field as a single value.;4. If you encounter any insights or findings that fall outside the provided schema, include them in the "additional_information" section of the schema.;5. If you are unsure about any information or if the transcript is unclear, indicate this in the relevant field of the schema. Do not make assumptions or fill in information that is not present in the transcript.;6. Ensure your analysis is:;a. Precise: Cover all key aspects derived from the text.;b. Thorough: Capture any subtle nuances, context, or patterns that the data presents.;c. Structured: Ensure the output is clean and ready for further processing.;7. After completing your analysis, review your output to ensure it adheres to the provided schema and contains all relevant information from the transcript.;8. Present your final output as a valid JSON object, structured according to the provided schema. Enclose your entire output within the JSON Schema.;9. For any field where multiple values are appropriate (such as symptoms, medications, or procedures), use an array even if the schema shows a single value. This allows for more comprehensive data capture without modifying the base schema.;Remember, your goal is to provide a comprehensive, accurate, and structured analysis of the medical transcription that can be easily processed and understood by other systems or healthcare professionals. Prioritize capturing all relevant information, even if it means adapting single-value fields into arrays when necessary.;""";def save_json_to_file(data, filepath):;""";Save data as a JSON file to the specified filepath.;Args:;- data: The data to save, expected to be a dictionary or JSON-serializable object.;- filepath: The location where the file will be saved.;""";try:;json.dumps(data);with open(filepath, 'w') as f:;json.dump(data, f, indent=4);logger.info(f"Results successfully saved at: {filepath}");except (TypeError, ValueError) as e:;logger.error(f"Failed to serialize data as JSON: {str(e)}");except Exception as e:;logger.error(f"Error saving JSON to file: {str(e)}");def segment_large_video(video_path, segment_duration=1800):;try:;if not os.path.exists(video_path):;logger.error(f"File not found: {video_path}");raise FileNotFoundError(f"File not found: {video_path}");logger.info(f"Processing video file: {video_path}");probe = ffmpeg_lib.probe(video_path);duration = float(probe['format']['duration']);segments = [];logger.info(f"Segmenting video into {segment_duration} second segments...");for start in tqdm(range(0, int(duration), segment_duration), desc="Segmenting video"):;end = min(start + segment_duration, duration);segment_folder = f"{os.path.splitext(video_path)[0]}_segment_{start}_{end}";os.makedirs(segment_folder, exist_ok=True);segment_path = os.path.join(segment_folder, f"segment_{start}_{end}.mp4");try:;ffmpeg_lib.input(video_path, ss=start, t=segment_duration).output(segment_path, c='copy').run();segments.append(segment_path);logger.info(f"Segment saved: {segment_path}");except ffmpeg_lib.Error as e:;logger.error(f"Error writing segment {start}-{end}: {str(e)}");raise e;return segments;except Exception as e:;logger.error(f"Error during video segmentation: {str(e)}");raise e;def extract_audio_from_segment(video_path):;logger.info(f"Extracting audio from {video_path}...");audio_output = "temp_audio.wav";clip = VideoFileClip(video_path);clip.audio.write_audiofile(audio_output);logger.info(f"Audio extracted and saved as {audio_output}");return audio_output;def remove_silence(audio_path, silence_thresh=-40, min_silence_len=500, padding=300):;logger.info(f"Removing silence from audio file: {audio_path}...");sound = AudioSegment.from_file(audio_path, format="wav");non_silent_segments = silence.detect_nonsilent(sound, min_silence_len=min_silence_len, silence_thresh=silence_thresh);cleaned_audio = AudioSegment.silent(duration=0);for start, end in non_silent_segments:;cleaned_audio += sound[start-padding:end+padding];cleaned_audio_path = os.path.splitext(audio_path)[0] + "_cleaned.wav";cleaned_audio.export(cleaned_audio_path, format="wav");logger.info(f"Silence removed and audio saved as {cleaned_audio_path}");return cleaned_audio_path;def chunk_audio(cleaned_audio_path, chunk_length_ms=1800_000):;logger.info(f"Chunking audio file: {cleaned_audio_path} into {chunk_length_ms // 1000 // 60} minute chunks...");sound = AudioSegment.from_file(cleaned_audio_path);chunks = [sound[i:i + chunk_length_ms] for i in range(0, len(sound), chunk_length_ms)];chunk_paths = [];for i, chunk in enumerate(tqdm(chunks, desc="Chunking audio")):;chunk_path = f"chunk_{i}.wav";chunk.export(chunk_path, format="wav");chunk_paths.append(chunk_path);logger.info(f"Created chunk {i+1} with duration {chunk.duration_seconds} seconds");return chunk_paths;def normalize_and_reduce_noise(chunk, noise_reduction_level=0.5):;logger.info(f"Normalizing and reducing noise for audio chunk with noise_reduction_level={noise_reduction_level}...");try:;target_dBFS = -20.0;change_in_dBFS = target_dBFS - chunk.dBFS;normalized_chunk = chunk.apply_gain(change_in_dBFS);samples = np.array(normalized_chunk.get_array_of_samples());reduced_noise_samples = nr.reduce_noise(y=samples, sr=normalized_chunk.frame_rate, prop_decrease=noise_reduction_level);reduced_noise_chunk = AudioSegment(;reduced_noise_samples.tobytes(),;frame_rate=normalized_chunk.frame_rate,;sample_width=normalized_chunk.sample_width,;channels=normalized_chunk.channels;);logger.info(f"Noise reduced for chunk with level {noise_reduction_level}.");return reduced_noise_chunk;except Exception as e:;logger.error(f"Error during normalization or noise reduction: {str(e)}");return chunk;def save_cleaned_chunks(cleaned_chunks, segment_folder):;logger.info(f"Saving cleaned audio chunks to {segment_folder}...");try:;output_dir = os.path.join(segment_folder, "cleaned_chunks");os.makedirs(output_dir, exist_ok=True);chunk_paths = [];for i, chunk in enumerate(cleaned_chunks):;output_file = os.path.join(output_dir, f"cleaned_chunk_{i + 1}.wav");chunk.export(output_file, format="wav");logger.info(f"Cleaned chunk {i + 1} saved as {output_file}");chunk_paths.append(output_file);return chunk_paths;except Exception as e:;logger.error(f"Error saving cleaned chunks: {str(e)}");raise e;def visualize_audio_waveform(audio_file_path, save_path=None):;logger.info(f"Visualizing audio waveform for: {audio_file_path}");sample_rate, audio_data = wavfile.read(audio_file_path);if len(audio_data.shape) == 2:;audio_data = np.mean(audio_data, axis=1);time_axis = np.linspace(0, len(audio_data) / sample_rate, num=len(audio_data));plt.figure(figsize=(10, 4));plt.plot(time_axis, audio_data, color='blue');plt.title(f"Waveform of {os.path.basename(audio_file_path)}");plt.xlabel('Time (s)');plt.ylabel('Amplitude');plt.grid();if save_path:;plt.savefig(save_path);logger.info(f"Waveform saved as {save_path}");else:;plt.show();plt.close();def transcribe_with_whisperx(audio_file_path, whisper_model, batch_size=16):;logger.info(f"Transcribing audio chunk: {audio_file_path} using WhisperX...");try:;audio = whisperx.load_audio(audio_file_path);result = whisper_model.transcribe(audio, batch_size=batch_size);if "segments" not in result or not result["segments"]:;logger.error(f"No valid segments found in transcription result for {audio_file_path}.");return None;if not all("text" in segment for segment in result["segments"]):;logger.error(f"Missing 'text' in one or more transcription segments for {audio_file_path}.");return None;logger.info(f"Initial transcription result for {audio_file_path}: {result['segments']}");return result;except Exception as e:;logger.error(f"Error during transcription for {audio_file_path}: {str(e)}");return None;def align_with_whisperx(result, audio_file_path, whisper_model, device="cpu"):;logger.info(f"Aligning transcription for {audio_file_path}...");try:;model_a, metadata = whisperx.load_align_model(language_code=result["language"], device=device);aligned_result = whisperx.align(result["segments"], model_a, metadata, audio_file_path, device);if "segments" not in aligned_result or not aligned_result["segments"]:;logger.error(f"No valid segments found in alignment result for {audio_file_path}.");return None;if not all("text" in segment for segment in aligned_result["segments"]):;logger.error(f"Missing 'text' in one or more aligned segments for {audio_file_path}.");return None;logger.info(f"Alignment completed for {audio_file_path}: {aligned_result}.");return aligned_result;except Exception as e:;logger.error(f"Error during alignment for {audio_file_path}: {str(e)}");return None;def diarize_with_whisperx(audio_file_path, hf_token, retries=3, min_speakers=None, max_speakers=None):;""";Perform speaker diarization using WhisperX, with optional retries and speaker count limits.;""";logger.info(f"Performing speaker diarization for {audio_file_path}...");try:;diarization_model = whisperx.DiarizationPipeline(use_auth_token=hf_token, device=device);for attempt in range(retries):;try:;if min_speakers and max_speakers:;diarization_result = diarization_model(audio_file_path, min_speakers=min_speakers, max_speakers=max_speakers);else:;diarization_result = diarization_model(audio_file_path);logger.info(f"Diarization completed for {audio_file_path}.");if isinstance(diarization_result, pd.DataFrame):;diarization_segments = diarization_result.to_dict('records');else:;diarization_segments = [];return diarization_segments;except Exception as e:;logger.error(f"Attempt {attempt + 1}: Error during diarization: {str(e)}");if attempt == retries - 1:;logger.error("Max retries reached for diarization.");return None;except Exception as e:;logger.error(f"Error during diarization: {str(e)}");return None;def assign_speakers_to_transcription(diarization_segments, aligned_transcription):;logger.info(f"Assigning speaker labels to transcription segments...");try:;diarization_df = pd.DataFrame(diarization_segments);if "segments" not in aligned_transcription:;raise KeyError("Aligned transcription does not contain 'segments' key.");logger.info(f"Matching diarization segments with transcription...");final_result = whisperx.assign_word_speakers(diarization_df, aligned_transcription);for segment in final_result['segments']:;if 'speaker' not in segment:;logger.warning(f"No speaker label found for segment starting at {segment['start']}");logger.info(f"Speaker labels assigned successfully.");return final_result;except KeyError as e:;logger.error(f"Missing key during speaker assignment: {str(e)}");return aligned_transcription;except Exception as e:;logger.error(f"Error during speaker assignment: {str(e)}");return aligned_transcription;def analyze_with_openai(client, aligned_data, category, schema, system_prompt, seed=None):;""";This function sends the aligned transcription data to the OpenAI API for analysis of a specific category.;""";logger.info(f"Starting analysis with OpenAI for category: {category}");try:;category_system_prompt = system_prompt.format(transcript_schema_category=json.dumps({category: schema[category]}, indent=2));user_prompt = f""";Analyze the following aligned transcription data for the '{category}' category.;Guidelines:;1. Extract relevant information based on the provided schema.;2. Consider semantic meaning, alignment info, and pertinent metadata.;3. Include important information not fitting the schema in 'additional_information'.;4. Mark unavailable or unclear info as 'N/A' or explain uncertainty.;5. Ensure output is a valid JSON object adhering to the given schema.;Aligned Transcription Data:;{json.dumps(aligned_data, indent=2)};Provide your analysis as a structured JSON output.;""";response = client.chat.completions.create(;model="gpt-4o-mini",;messages=[;{"role": "system", "content": category_system_prompt},;{"role": "user", "content": user_prompt};],;seed=SEED,;temperature=0.3,;top_p=1,;stop=None;);full_response = response.choices[0].message.content;logger.info(f"Full raw response from OpenAI for {category}: {full_response}");try:;json_string = re.sub(r'```json\s*|\s*```', '', full_response).strip();category_result = json.loads(json_string);if isinstance(category_result, dict) and category in category_result:;return category_result[category];else:;logger.warning(f"Unexpected format for {category}. Using raw result.");return category_result;except json.JSONDecodeError as e:;logger.error(f"Failed to decode JSON for {category}: {str(e)}");logger.error(f"Raw response from OpenAI: {full_response}");return None;except Exception as e:;logger.error(f"Error during OpenAI API call for {category}: {str(e)}", exc_info=True);return None;def main(video_file_path, hf_token, whisper_model):;logger.info(f"Starting processing for video: {video_file_path}");try:;segments = segment_large_video(video_file_path);if not segments:;logger.error(f"No segments created from video: {video_file_path}");return;for segment_file_path in segments:;segment_folder = os.path.splitext(segment_file_path)[0];os.makedirs(segment_folder, exist_ok=True);try:;audio_file_path = extract_audio_from_segment(segment_file_path);logger.info(f"Audio extracted from segment: {segment_file_path}");cleaned_audio_path = remove_silence(audio_file_path);logger.info(f"Silence removed from audio: {audio_file_path}");chunks = chunk_audio(cleaned_audio_path);if not chunks:;logger.error(f"No chunks created for cleaned audio: {cleaned_audio_path}");continue;logger.info(f"Created {len(chunks)} chunks for cleaned audio: {cleaned_audio_path}");cleaned_chunks = [];for chunk in chunks:;cleaned_chunk = normalize_and_reduce_noise(AudioSegment.from_file(chunk));cleaned_chunks.append(cleaned_chunk);logger.info(f"Normalized and noise-reduced chunks: {len(cleaned_chunks)}");cleaned_chunk_paths = save_cleaned_chunks(cleaned_chunks, segment_folder);for cleaned_chunk_path in tqdm(cleaned_chunk_paths, desc="Processing cleaned chunks"):;logger.info(f"Processing chunk: {cleaned_chunk_path}");transcription_result = transcribe_with_whisperx(cleaned_chunk_path, whisper_model);if not transcription_result:;logger.error(f"Skipping chunk {cleaned_chunk_path} due to transcription failure.");continue;transcription_file = os.path.join(segment_folder, f"transcription_chunk_{os.path.basename(cleaned_chunk_path)}.json");save_json_to_file(transcription_result, transcription_file);logger.info(f"Transcription saved at: {transcription_file}");aligned_result = align_with_whisperx(transcription_result, cleaned_chunk_path, whisper_model);if not aligned_result:;logger.error(f"Skipping chunk {cleaned_chunk_path} due to alignment failure.");continue;aligned_file = os.path.join(segment_folder, f"aligned_transcription_chunk_{os.path.basename(cleaned_chunk_path)}.json");save_json_to_file(aligned_result, aligned_file);logger.info(f"Aligned transcription saved at: {aligned_file}");analysis_results = {};for category in transcript_schema.keys():;category_result = analyze_with_openai(client, aligned_result, category, transcript_schema, system_prompt);if category_result:;analysis_results[category] = category_result;print(f"\n{category.upper()}:");print(json.dumps(category_result, indent=2));else:;logger.error(f"Failed to generate analysis for category {category} in chunk {os.path.basename(cleaned_chunk_path)}");if analysis_results:;final_output_file = os.path.join(segment_folder, f"final_analysis_cleaned_chunk_{os.path.basename(cleaned_chunk_path)}.json");save_json_to_file(analysis_results, final_output_file);logger.info(f"Final analysis saved as {final_output_file}");else:;logger.error(f"No analysis results generated for chunk {os.path.basename(cleaned_chunk_path)}");except Exception as e:;logger.error(f"Error processing segment {segment_file_path}: {str(e)}");continue;except Exception as e:;logger.error(f"Error during video processing: {str(e)}");if __name__ == "__main__":;video_file_path = '/Users/pranay/Projects/LLM/video/proj1/data/Chiranjeevi_Video_Dec_21.mp4';hf_token = os.getenv("HUGGINGFACE_TOKEN");main(video_file_path, hf_token, whisper_model)
+```
+
+### File: `extensions.py`
+
+**Language:** py
+
+**File Size:** 438 bytes
+**Created:** 2024-09-30T13:55:17.803500
+**Modified:** 2024-09-30T13:55:17.803500
+
+```py
+from flask_sqlalchemy import SQLAlchemy;from flask_mail import Mail;from flask_bcrypt import Bcrypt;from flask_jwt_extended import JWTManager;from flask_migrate import Migrate;from flask_limiter import Limiter;from flask_limiter.util import get_remote_address;db = SQLAlchemy();mail = Mail();bcrypt = Bcrypt();jwt = JWTManager();migrate = Migrate();limiter = Limiter(key_func=get_remote_address)
+```
+
+### File: `utils.py`
+
+**Language:** py
+
+**File Size:** 1486 bytes
+**Created:** 2024-09-30T17:11:51.516749
+**Modified:** 2024-09-30T17:11:51.516749
+
+```py
+import os;from werkzeug.utils import secure_filename;from moviepy.editor import VideoFileClip;ALLOWED_EXTENSIONS = {;'audio': {'mp3', 'wav', 'aac', 'flac', 'ogg', 'm4a'},;'video': {'mp4', 'avi', 'mov', 'mkv', 'flv', 'wmv'},;'image': {'jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp'};};def allowed_file(filename):;""";Check if the file has an allowed extension.;""";if '.' not in filename:;return False;ext = filename.rsplit('.', 1)[1].lower();for category in ALLOWED_EXTENSIONS:;if ext in ALLOWED_EXTENSIONS[category]:;return True;return False;def get_file_category(filename):;""";Determine the category of the file based on its extension.;Returns 'audio', 'video', 'image', or None.;""";if '.' not in filename:;return None;ext = filename.rsplit('.', 1)[1].lower();for category, extensions in ALLOWED_EXTENSIONS.items():;if ext in extensions:;return category;return None;def extract_audio(video_path, audio_path):;""";Extract audio from a video file and save it.;""";try:;with VideoFileClip(video_path) as video:;audio = video.audio;if audio:;audio.write_audiofile(audio_path);return True, "";else:;return False, "No audio track found in the video.";except Exception as e:;return False, str(e)
+```
+
+### File: `app.py`
+
+**Language:** py
+
+**File Size:** 20623 bytes
+**Created:** 2024-09-30T23:54:51.541600
+**Modified:** 2024-09-30T23:54:51.541600
+
+```py
+import os;import mimetypes;from flask import Flask, request, jsonify, send_from_directory, abort;from flask_mail import Mail;from flask_cors import CORS;from datetime import datetime;from dotenv import load_dotenv;from werkzeug.utils import secure_filename;from extensions import db, mail, bcrypt, jwt, migrate, limiter;from auth.routes import auth_bp;from models import (;User,;Role,;UserRole,;Organization,;Workspace,;SubscriptionTier,;Subscription,;OrganizationMember,;WorkspaceMember;);import logging;from utils import allowed_file, get_file_category, extract_audio;load_dotenv();app = Flask(__name__);logging.basicConfig(level=logging.DEBUG);ALLOWED_ORIGINS = os.getenv('ALLOWED_ORIGINS', 'http://localhost:5173').split(',');cors_config = {;"origins": ALLOWED_ORIGINS,;"methods": ["GET", "HEAD", "POST", "OPTIONS", "PUT", "PATCH", "DELETE"],;"allow_headers": ["Content-Type", "Authorization"],;"expose_headers": ["Content-Type", "X-CSRFToken"],;"supports_credentials": True,;"max_age": 600,;"vary_header": True;};CORS(app, resources={r"/api/*": cors_config});app.config['SECRET_KEY'] = os.getenv('SECRET_KEY');app.config['JWT_SECRET_KEY'] = os.getenv('JWT_SECRET_KEY');app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL');app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False;app.config['MAIL_SERVER'] = os.getenv('MAIL_SERVER');app.config['MAIL_PORT'] = int(os.getenv('MAIL_PORT'));app.config['MAIL_USE_TLS'] = os.getenv('MAIL_USE_TLS') == 'True';app.config['MAIL_USE_SSL'] = os.getenv('MAIL_USE_SSL') == 'True';app.config['MAIL_USERNAME'] = os.getenv('MAIL_USERNAME');app.config['MAIL_PASSWORD'] = os.getenv('MAIL_PASSWORD');app.config['MAIL_DEFAULT_SENDER'] = os.getenv('MAIL_DEFAULT_SENDER');UPLOAD_FOLDER = 'static/uploads';MAX_CONTENT_LENGTH = 300 * 1024 * 1024;app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER;app.config['MAX_CONTENT_LENGTH'] = MAX_CONTENT_LENGTH;os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True);mimetypes.init();mimetypes.add_type('audio/mp3', '.mp3');mimetypes.add_type('audio/wav', '.wav');mimetypes.add_type('audio/aac', '.aac');mimetypes.add_type('audio/flac', '.flac');mimetypes.add_type('audio/ogg', '.ogg');mimetypes.add_type('audio/m4a', '.m4a');mimetypes.add_type('video/mp4', '.mp4');mimetypes.add_type('video/x-msvideo', '.avi');mimetypes.add_type('video/quicktime', '.mov');mimetypes.add_type('video/x-matroska', '.mkv');mimetypes.add_type('video/x-flv', '.flv');mimetypes.add_type('video/x-ms-wmv', '.wmv');mimetypes.add_type('image/jpeg', '.jpg');mimetypes.add_type('image/jpeg', '.jpeg');mimetypes.add_type('image/png', '.png');mimetypes.add_type('image/gif', '.gif');mimetypes.add_type('image/bmp', '.bmp');mimetypes.add_type('image/webp', '.webp');db.init_app(app);mail.init_app(app);bcrypt.init_app(app);jwt.init_app(app);migrate.init_app(app, db);limiter.init_app(app);app.register_blueprint(auth_bp, url_prefix='/api/auth');@app.route('/api/upload', methods=['POST']);@limiter.limit("10 per minute");def upload_file():;""";Handle file uploads.;""";if 'file' not in request.files:;return jsonify({'error': 'No file part in the request.'}), 400;files = request.files.getlist('file');if not files:;return jsonify({'error': 'No files selected for uploading.'}), 400;response = {;'uploaded_files': [],;'errors': [];};for file in files:;if file.filename == '':;response['errors'].append({'filename': '', 'error': 'No selected file.'});continue;if file and allowed_file(file.filename):;filename = secure_filename(file.filename);file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename);if os.path.exists(file_path):;response['errors'].append({'filename': filename, 'error': 'File already exists.'});continue;try:;file.save(file_path);file_mime_type = mimetypes.guess_type(file_path)[0] or 'application/octet-stream';print(f"Uploaded File: {filename}, MIME Type: {file_mime_type}");file_info = {;'filename': filename,;'path': f'/static/uploads/{filename}',;'size': os.path.getsize(file_path),;'type': file_mime_type,;'duration': '';};category = get_file_category(filename);if category == 'video':;audio_filename = f"{os.path.splitext(filename)[0]}_audio.wav";audio_path = os.path.join(app.config['UPLOAD_FOLDER'], audio_filename);success, message = extract_audio(file_path, audio_path);if success:;file_info['extracted_audio'] = {;'filename': audio_filename,;'path': f'/static/uploads/{audio_filename}',;'size': os.path.getsize(audio_path),;'type': mimetypes.guess_type(audio_path)[0] or 'application/octet-stream',;'duration': '';};response['uploaded_files'].append(file_info);else:;response['errors'].append({'filename': filename, 'error': f'Audio extraction failed: {message}'});else:;response['uploaded_files'].append(file_info);except Exception as e:;response['errors'].append({'filename': filename, 'error': str(e)});else:;response['errors'].append({'filename': file.filename, 'error': 'File type not allowed.'});return jsonify(response), 200;@app.route('/api/file_exists', methods=['GET']);@limiter.limit("20 per minute");def file_exists():;""";Check if a file with the given filename exists.;""";filename = request.args.get('filename', '');if not filename:;return jsonify({'error': 'Filename parameter is missing.'}), 400;filename = secure_filename(filename);file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename);exists = os.path.exists(file_path);return jsonify({'exists': exists}), 200;@app.route('/api/file_history', methods=['GET']);@limiter.limit("30 per minute");def file_history():;""";Retrieve the list of uploaded files with their metadata.;""";files = os.listdir(app.config['UPLOAD_FOLDER']);file_list = [];for f in files:;file_path = os.path.join(app.config['UPLOAD_FOLDER'], f);if os.path.isfile(file_path):;mime_type, _ = mimetypes.guess_type(file_path);category = get_file_category(f);duration = '';if category in ['audio', 'video']:;try:;if category == 'audio':;from moviepy.editor import AudioFileClip;with AudioFileClip(file_path) as clip:;duration = str(int(clip.duration // 60)).zfill(2) + ":" + str(int(clip.duration % 60)).zfill(2);elif category == 'video':;from moviepy.editor import VideoFileClip;with VideoFileClip(file_path) as clip:;duration = str(int(clip.duration // 60)).zfill(2) + ":" + str(int(clip.duration % 60)).zfill(2);except Exception as e:;duration = '';file_info = {;'filename': f,;'path': f'/static/uploads/{f}',;'size': os.path.getsize(file_path),;'type': mime_type or 'application/octet-stream',;'duration': duration;};file_list.append(file_info);return jsonify({'files': file_list}), 200;@app.route('/static/uploads/<path:filename>', methods=['GET']);def serve_file(filename):;""";Serve uploaded files.;""";return send_from_directory(app.config['UPLOAD_FOLDER'], filename);@app.errorhandler(413);def request_entity_too_large(error):;""";Handle file size limit error.;""";return jsonify({'error': 'File is too large. Maximum upload size is 300MB.'}), 413;@app.errorhandler(404);def not_found(error):;""";Handle 404 errors.;""";return jsonify({'error': 'Resource not found.'}), 404;@app.errorhandler(405);def method_not_allowed(error):;""";Handle 405 errors.;""";return jsonify({'error': 'Method not allowed.'}), 405;@app.errorhandler(Exception);def handle_exception(e):;""";Handle generic exceptions by logging them and returning a generic error message.;""";app.logger.error('Unhandled Exception: %s', e, exc_info=True);return jsonify({'error': 'An unexpected error occurred.'}), 500;if __name__ == '__main__':;app.run(host='0.0.0.0', port=5555, debug=True)
+```
+
+### File: `eslint.config.js`
+
+**Language:** js
+
+**File Size:** 1003 bytes
+**Created:** 2024-09-16T22:35:06.663378
+**Modified:** 2024-09-16T22:35:06.663302
+
+```js
+import js from '@eslint/js' import globals from 'globals' import react from 'eslint-plugin-react' import reactHooks from 'eslint-plugin-react-hooks' import reactRefresh from 'eslint-plugin-react-refresh' export default [ { ignores: ['dist'] }, { files: ['**/*.{js,jsx}'], languageOptions: { ecmaVersion: 2020, globals: globals.browser, parserOptions: { ecmaVersion: 'latest', ecmaFeatures: { jsx: true }, sourceType: 'module', }, }, settings: { react: { version: '18.3' } }, plugins: { react, 'react-hooks': reactHooks, 'react-refresh': reactRefresh, }, rules: { ...js.configs.recommended.rules, ...react.configs.recommended.rules, ...react.configs['jsx-runtime'].rules, ...reactHooks.configs.recommended.rules, 'react/jsx-no-target-blank': 'off', 'react-refresh/only-export-components': [ 'warn', { allowConstantExport: true }, ], }, }, ]
+```
+
+### File: `seed_admin.py`
+
+**Language:** py
+
+**File Size:** 1852 bytes
+**Created:** 2024-09-30T13:26:35.429613
+**Modified:** 2024-09-30T13:26:35.429613
+
+```py
+from flask import Flask;from extensions import db, bcrypt;from models import User, Role, UserRole, RoleEnum;from dotenv import load_dotenv;from datetime import datetime;import os;load_dotenv();app = Flask(__name__);app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL');app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False;db.init_app(app);def seed_admin():;with app.app_context():;admin_email = 'admin@example.com';admin_password = 'SecureAdminPass123';admin_user = User.query.filter_by(email=admin_email).first();if not admin_user:;admin_user = User(;email=admin_email,;password=admin_password,;first_name='Admin',;last_name='User',;is_active=True,;confirmed_at=datetime.utcnow(););db.session.add(admin_user);db.session.commit();print("Admin user created.");else:;print("Admin user already exists.");admin_role = Role.query.filter_by(name=RoleEnum.ADMIN.value).first();if admin_role:;admin_user_role = UserRole.query.filter_by(user_id=admin_user.id, role_id=admin_role.id).first();if not admin_user_role:;user_role = UserRole(user_id=admin_user.id, role_id=admin_role.id);db.session.add(user_role);db.session.commit();print("Admin role assigned to admin user.");else:;print("Admin user already has Admin role.");else:;print("Admin role not found. Please seed roles first.");if __name__ == '__main__':;seed_admin()
+```
+
+### File: `migrations/env.py`
+
+**Language:** py
+
+**File Size:** 11531 bytes
+**Created:** 2024-09-30T22:46:14.560371
+**Modified:** 2024-09-30T22:46:14.560371
+
+```py
+import logging;from logging.config import fileConfig;from flask import current_app;from alembic import context;import sys;import os;from sqlalchemy import engine_from_config;from sqlalchemy import pool;sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')));from app import app;config = context.config;fileConfig(config.config_file_name);logger = logging.getLogger('alembic.env');def get_engine():;try:;return current_app.extensions['migrate'].db.get_engine();except (TypeError, AttributeError):;return current_app.extensions['migrate'].db.engine;def get_engine_url():;try:;return get_engine().url.render_as_string(hide_password=False).replace('%', '%%');except AttributeError:;return str(get_engine().url).replace('%', '%%');target_metadata = app.extensions['migrate'].db.metadata;config.set_main_option('sqlalchemy.url', app.config['SQLALCHEMY_DATABASE_URI']);target_db = current_app.extensions['migrate'].db;def get_metadata():;if hasattr(target_db, 'metadatas'):;return target_db.metadatas[None];return target_db.metadata;def process_revision_directives(context, revision, directives):;if getattr(config.cmd_opts, 'autogenerate', False):;script = directives[0];if hasattr(script, 'upgrade_ops_list'):;empty = all(upgrade_ops.is_empty() for upgrade_ops in script.upgrade_ops_list);else:;empty = script.upgrade_ops.is_empty();if empty:;directives[:] = [];logger.info('No changes in schema detected.');def run_migrations_offline():;"""Run migrations in 'offline' mode.""";url = config.get_main_option("sqlalchemy.url");context.configure(;url=url,;target_metadata=get_metadata(),;literal_binds=True,;**current_app.extensions['migrate'].configure_args;);with context.begin_transaction():;context.run_migrations();def run_migrations_online():;"""Run migrations in 'online' mode.""";connectable = get_engine();with connectable.connect() as connection:;configure_args = current_app.extensions['migrate'].configure_args.copy();configure_args.setdefault('compare_type', True);configure_args.setdefault('process_revision_directives', process_revision_directives);context.configure(;connection=connection,;target_metadata=get_metadata(),;**configure_args;);with context.begin_transaction():;context.run_migrations();if context.is_offline_mode():;run_migrations_offline();else:;run_migrations_online()
+```
+
+### File: `migrations/alembic.ini`
+
+**Language:** ini
+
+**File Size:** 951 bytes
+**Created:** 2024-09-30T22:35:07.096182
+**Modified:** 2024-09-30T22:35:07.096182
+
+```ini
+# A generic, single database configuration. [alembic] script_location = migrations sqlalchemy.url = postgresql://pranay:pranay@localhost:5432/avia # template used to generate migration files # file_template = %%(rev)s_%%(slug)s # set to 'true' to run the environment during # the 'revision' command, regardless of autogenerate # revision_environment = false # Logging configuration [loggers] keys = root,sqlalchemy,alembic,flask_migrate [handlers] keys = console [formatters] keys = generic [logger_root] level = WARN handlers = console qualname = [logger_sqlalchemy] level = WARN handlers = qualname = sqlalchemy.engine [logger_alembic] level = INFO handlers = qualname = alembic [logger_flask_migrate] level = INFO handlers = qualname = flask_migrate [handler_console] class = StreamHandler args = (sys.stderr,) level = NOTSET formatter = generic [formatter_generic] format = %(levelname)-5.5s [%(name)s] %(message)s datefmt = %H:%M:%S
+```
+
+### File: `migrations/versions/70235c25a567_initial_migration.py`
+
+**Language:** py
+
+**File Size:** 5471 bytes
+**Created:** 2024-09-30T22:46:24.395071
+**Modified:** 2024-09-30T22:46:24.395071
+
+```py
+"""Initial migration;Revision ID: 70235c25a567;Revises:;Create Date: 2024-09-30 22:46:24.391859;""";from alembic import op;import sqlalchemy as sa;revision = '70235c25a567';down_revision = None;branch_labels = None;depends_on = None;def upgrade():;op.create_table('organizations',;sa.Column('id', sa.Integer(), nullable=False),;sa.Column('name', sa.String(length=150), nullable=False),;sa.Column('created_at', sa.DateTime(), nullable=True),;sa.Column('updated_at', sa.DateTime(), nullable=True),;sa.Column('is_deleted', sa.Boolean(), nullable=True),;sa.PrimaryKeyConstraint('id'),;sa.UniqueConstraint('name'););op.create_table('roles',;sa.Column('id', sa.Integer(), nullable=False),;sa.Column('name', sa.Enum('ADMIN', 'USER', 'MANAGER', name='role_enum'), nullable=False),;sa.Column('description', sa.String(length=255), nullable=True),;sa.PrimaryKeyConstraint('id'),;sa.UniqueConstraint('name'););op.create_table('subscription_tiers',;sa.Column('id', sa.Integer(), nullable=False),;sa.Column('name', sa.String(length=50), nullable=False),;sa.Column('price', sa.Float(), nullable=False),;sa.Column('features', sa.JSON(), nullable=True),;sa.Column('created_at', sa.DateTime(), nullable=True),;sa.Column('updated_at', sa.DateTime(), nullable=True),;sa.PrimaryKeyConstraint('id'),;sa.UniqueConstraint('name'););op.create_table('users',;sa.Column('id', sa.Integer(), nullable=False),;sa.Column('email', sa.String(length=120), nullable=False),;sa.Column('password_hash', sa.String(length=128), nullable=False),;sa.Column('first_name', sa.String(length=30), nullable=True),;sa.Column('last_name', sa.String(length=30), nullable=True),;sa.Column('is_active', sa.Boolean(), nullable=True),;sa.Column('confirmed_at', sa.DateTime(), nullable=True),;sa.Column('created_at', sa.DateTime(), nullable=True),;sa.Column('updated_at', sa.DateTime(), nullable=True),;sa.Column('is_deleted', sa.Boolean(), nullable=True),;sa.PrimaryKeyConstraint('id'););with op.batch_alter_table('users', schema=None) as batch_op:;batch_op.create_index(batch_op.f('ix_users_email'), ['email'], unique=True);op.create_table('organization_members',;sa.Column('user_id', sa.Integer(), nullable=False),;sa.Column('organization_id', sa.Integer(), nullable=False),;sa.Column('role_id', sa.Integer(), nullable=False),;sa.Column('joined_at', sa.DateTime(), nullable=True),;sa.ForeignKeyConstraint(['organization_id'], ['organizations.id'], ),;sa.ForeignKeyConstraint(['role_id'], ['roles.id'], ),;sa.ForeignKeyConstraint(['user_id'], ['users.id'], ),;sa.PrimaryKeyConstraint('user_id', 'organization_id'););op.create_table('subscriptions',;sa.Column('id', sa.Integer(), nullable=False),;sa.Column('user_id', sa.Integer(), nullable=False),;sa.Column('tier_id', sa.Integer(), nullable=False),;sa.Column('start_date', sa.DateTime(), nullable=True),;sa.Column('end_date', sa.DateTime(), nullable=True),;sa.Column('is_active', sa.Boolean(), nullable=True),;sa.Column('is_deleted', sa.Boolean(), nullable=True),;sa.ForeignKeyConstraint(['tier_id'], ['subscription_tiers.id'], ),;sa.ForeignKeyConstraint(['user_id'], ['users.id'], ),;sa.PrimaryKeyConstraint('id'););op.create_table('user_roles',;sa.Column('user_id', sa.Integer(), nullable=False),;sa.Column('role_id', sa.Integer(), nullable=False),;sa.Column('assigned_at', sa.DateTime(), nullable=True),;sa.ForeignKeyConstraint(['role_id'], ['roles.id'], ),;sa.ForeignKeyConstraint(['user_id'], ['users.id'], ),;sa.PrimaryKeyConstraint('user_id', 'role_id'););op.create_table('workspaces',;sa.Column('id', sa.Integer(), nullable=False),;sa.Column('name', sa.String(length=150), nullable=False),;sa.Column('organization_id', sa.Integer(), nullable=False),;sa.Column('created_at', sa.DateTime(), nullable=True),;sa.Column('updated_at', sa.DateTime(), nullable=True),;sa.Column('is_deleted', sa.Boolean(), nullable=True),;sa.ForeignKeyConstraint(['organization_id'], ['organizations.id'], ),;sa.PrimaryKeyConstraint('id'););op.create_table('workspace_members',;sa.Column('user_id', sa.Integer(), nullable=False),;sa.Column('workspace_id', sa.Integer(), nullable=False),;sa.Column('role_id', sa.Integer(), nullable=False),;sa.Column('joined_at', sa.DateTime(), nullable=True),;sa.ForeignKeyConstraint(['role_id'], ['roles.id'], ),;sa.ForeignKeyConstraint(['user_id'], ['users.id'], ),;sa.ForeignKeyConstraint(['workspace_id'], ['workspaces.id'], ),;sa.PrimaryKeyConstraint('user_id', 'workspace_id'););def downgrade():;op.drop_table('workspace_members');op.drop_table('workspaces');op.drop_table('user_roles');op.drop_table('subscriptions');op.drop_table('organization_members');with op.batch_alter_table('users', schema=None) as batch_op:;batch_op.drop_index(batch_op.f('ix_users_email'));op.drop_table('users');op.drop_table('subscription_tiers');op.drop_table('roles');op.drop_table('organizations')
+```
+
+### File: `migrations/versions/a3259da4e160_insert_default_roles.py`
+
+**Language:** py
+
+**File Size:** 1124 bytes
+**Created:** 2024-09-30T23:01:28.407580
+**Modified:** 2024-09-30T23:01:28.407580
+
+**Security Misconfigurations:**
+
+- Potential security risk: Use of exec detected
+
+```py
+"""Insert default roles;Revision ID: a3259da4e160;Revises: 70235c25a567;Create Date: 2024-09-30 23:00:06.780615;""";from alembic import op;import sqlalchemy as sa;from sqlalchemy.sql import table, column;from sqlalchemy import String, Integer, Enum as SQLEnum;from models import RoleEnum;revision = 'a3259da4e160';down_revision = '70235c25a567';branch_labels = None;depends_on = None;def upgrade():;roles_table = table(;'roles',;column('id', Integer),;column('name', SQLEnum(RoleEnum, name='role_enum')),;column('description', String););op.bulk_insert(roles_table,;[;{'id': 1, 'name': RoleEnum.ADMIN.value, 'description': 'Administrator'},;{'id': 2, 'name': RoleEnum.USER.value, 'description': 'Regular User'},;{'id': 3, 'name': RoleEnum.MANAGER.value, 'description': 'Manager'},;];);def downgrade():;op.execute("DELETE FROM roles WHERE name IN ('ADMIN', 'USER', 'MANAGER');")
+```
+
+### File: `auth/__init__.py`
+
+**Language:** py
+
+**File Size:** 0 bytes
+**Created:** 2024-09-23T15:34:08.734690
+**Modified:** 2024-09-23T15:34:08.734690
+
+```py
+
+```
+
+### File: `auth/routes.py`
+
+**Language:** py
+
+**File Size:** 33489 bytes
+**Created:** 2024-09-30T23:28:41.804456
+**Modified:** 2024-09-30T23:28:41.804456
+
+```py
+from flask import Blueprint, request, jsonify, url_for;from extensions import db, mail, bcrypt, limiter;from models import User, Role, UserRole, RoleEnum;from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity;from flask_mail import Message;from datetime import datetime, timedelta;from sqlalchemy.exc import SQLAlchemyError;import re;import logging;auth_bp = Blueprint('auth', __name__);logger = logging.getLogger('auth');handler = logging.StreamHandler();formatter = logging.Formatter(;'%(asctime)s %(levelname)s: %(message)s [in %(pathname)s:%(lineno)d]';);handler.setFormatter(formatter);logger.addHandler(handler);logger.setLevel(logging.INFO);def is_strong_password(password):;""";Validate the strength of the password.;Requirements:;- At least 8 characters;- Contains both uppercase and lowercase characters;- Contains digits;- Contains special characters;""";if len(password) < 8:;return False;if not re.search(r'[A-Z]', password):;return False;if not re.search(r'[a-z]', password):;return False;if not re.search(r'\d', password):;return False;if not re.search(r'[!@;return False;return True;@auth_bp.route('/signup', methods=['POST']);def signup():;logger.info("Signup request received");logger.info(f"Request method: {request.method}");logger.info(f"Request headers: {request.headers}");logger.info(f"Request body: {request.get_data(as_text=True)}");data = request.get_json();logger.info(f"Parsed JSON data: {data}");first_name = data.get('first_name', '').strip();last_name = data.get('last_name', '').strip();email = data.get('email');password = data.get('password');logger.info(f"First Name: {first_name}");logger.info(f"Last Name: {last_name}");logger.info(f"Email: {email}");logger.info(f"Password length: {len(password) if password else 0}");if not email or not password:;logger.warning("Signup attempt with missing email or password.");return jsonify({"error": "Email and password are required."}), 400;if not re.match(r"[^@]+@[^@]+\.[^@]+", email):;logger.warning(f"Signup attempt with invalid email format: {email}");return jsonify({"error": "Invalid email format."}), 400;if not is_strong_password(password):;logger.warning(f"Signup attempt with weak password for email: {email}");return jsonify({"error": "Password does not meet strength requirements."}), 400;existing_user = User.query.filter_by(email=email).first();if existing_user:;logger.warning(f"Signup attempt with existing email: {email}");return jsonify({"error": "User already exists."}), 409;try:;logger.info("Starting database transaction");new_user = User(email=email, password=password, first_name=first_name, last_name=last_name);db.session.add(new_user);db.session.flush();logger.info(f"New user created with ID: {new_user.id}");user_role = Role.query.filter_by(name=RoleEnum.USER.value).first();if user_role:;new_user.roles.append(user_role);logger.info(f"Assigned 'User' role to new user");else:;logger.error("Default 'User' role not found in the database.");db.session.rollback();return jsonify({"error": "Internal server error."}), 500;db.session.commit();logger.info(f"Database transaction committed successfully");except SQLAlchemyError as e:;db.session.rollback();logger.error(f"Database error during signup for {email}: {str(e)}");return jsonify({"error": "Internal server error."}), 500;try:;logger.info("Generating confirmation token");token = new_user.get_confirmation_token();logger.info(f"Confirmation token generated: {token}");confirm_url = url_for('auth.confirm_email', token=token, _external=True);logger.info(f"Confirmation URL generated: {confirm_url}");html = f""";<p>Hi {new_user.first_name or 'User'},</p>;<p>Thanks for signing up! Please confirm your email by clicking on the link below:</p>;<p><a href="{confirm_url}">Confirm Email</a></p>;""";msg = Message('Confirm Your Email', recipients=[new_user.email], html=html);mail.send(msg);logger.info(f"Confirmation email sent to: {email}");except Exception as e:;logger.error(f"Failed to send confirmation email to {email}: {str(e)}");return jsonify({"error": "Failed to send confirmation email. Please try again later."}), 500;logger.info(f"Signup successful for email: {email}");return jsonify({"message": "User created successfully. Please check your email to confirm your account."}), 201;@auth_bp.route('/confirm/<token>', methods=['GET']);@limiter.limit("10 per minute");def confirm_email(token):;user = User.verify_confirmation_token(token);if not user:;logger.warning(f"Email confirmation failed. Invalid or expired token: {token}");return jsonify({"error": "Invalid or expired token."}), 400;if user.is_active:;logger.info(f"Email confirmation attempted for already active account: {user.email}");return jsonify({"message": "Account already confirmed."}), 200;try:;user.is_active = True;user.confirmed_at = datetime.utcnow();db.session.commit();logger.info(f"Email confirmed for user: {user.email}");return jsonify({"message": "Email confirmed successfully."}), 200;except SQLAlchemyError as e:;db.session.rollback();logger.error(f"Database error during email confirmation for {user.email}: {str(e)}");return jsonify({"error": "Internal server error."}), 500;@auth_bp.route('/login', methods=['POST']);@limiter.limit("10 per minute");def login():;data = request.get_json();email = data.get('email');password = data.get('password');if not email or not password:;logger.warning("Login attempt with missing email or password.");return jsonify({"error": "Email and password are required."}), 400;user = User.query.filter_by(email=email).first();if not user or not user.check_password(password):;logger.warning(f"Failed login attempt for email: {email}");return jsonify({"error": "Invalid email or password."}), 401;if not user.is_active:;logger.warning(f"Login attempt for inactive account: {email}");return jsonify({"error": "Account is not active. Please confirm your email."}), 403;access_token = create_access_token(identity=user.id, expires_delta=timedelta(hours=1));logger.info(f"User logged in: {email}");return jsonify({"access_token": access_token}), 200;@auth_bp.route('/me', methods=['GET']);@jwt_required();def me():;user_id = get_jwt_identity();user = User.query.get(user_id);if not user:;logger.warning(f"Authenticated user not found: ID {user_id}");return jsonify({"error": "User not found."}), 404;user_data = {;"id": user.id,;"email": user.email,;"first_name": user.first_name,;"last_name": user.last_name,;"is_active": user.is_active,;"roles": [role.name for role in user.roles],;"created_at": user.created_at.isoformat(),;"updated_at": user.updated_at.isoformat();};logger.info(f"User data fetched for: {user.email}");return jsonify({"user": user_data}), 200
+```
+
+### File: `src/AppRoutes.jsx`
+
+**Language:** jsx
+
+**File Size:** 1210 bytes
+**Created:** 2024-10-01T01:00:18.697152
+**Modified:** 2024-10-01T01:00:18.697152
+
+```jsx
+import React, { useEffect } from 'react'; import { Routes, Route, useLocation } from 'react-router-dom'; import { useAuth } from './context/AuthContext'; import routes from './routes'; import Loader from './components/common/Loader'; function AppRoutes() { const location = useLocation(); const { auth, loading } = useAuth(); useEffect(() => { console.log('Current route:', location.pathname); console.log('Auth state:', auth); console.log('Loading state:', loading); }, [location.pathname, auth, loading]); if (loading) { return <Loader />; } return ( <Routes> {routes.map((route, index) => { if (route.children) { return ( <Route key={index} path={route.path} element={route.element}> {route.children.map((child, childIndex) => ( <Route key={`${index}-${childIndex}`} path={child.path} element={child.element} /> ))} </Route> ); } return ( <Route key={index} path={route.path} element={route.element} /> ); })} </Routes> ); } export default AppRoutes;
+```
+
+### File: `src/routes.jsx`
+
+**Language:** jsx
+
+**File Size:** 11530 bytes
+**Created:** 2024-10-01T01:00:37.411108
+**Modified:** 2024-10-01T01:00:37.411108
+
+```jsx
+import React, { lazy } from 'react'; import { Navigate } from 'react-router-dom'; import ProtectedRoute from './components/common/ProtectedRoute'; import Layout from './components/common/Layout'; const Dashboard = lazy(() => import('./components/pages/Dashboard')); const Upload = lazy(() => import('./components/pages/Upload')); const Library = lazy(() => import('./components/pages/Library')); const Settings = lazy(() => import('./components/pages/Settings')); const Help = lazy(() => import('./components/pages/Help')); const NotFound = lazy(() => import('./components/pages/NotFound')); const Analysis = lazy(() => import('./components/pages/Analysis')); const Login = lazy(() => import('./components/auth/Login')); const Register = lazy(() => import('./components/auth/Register')); const ForgotPassword = lazy(() => import('./components/auth/ForgotPassword')); const LandingPage = lazy(() => import('./components/pages/LandingPage')); const routes = [ { path: '/', element: <Navigate to="/home" replace />, }, { path: '/home', element: <LandingPage />, breadcrumb: 'Home', }, { path: '/login', element: <Login />, breadcrumb: 'Login', }, { path: '/register', element: <Register />, breadcrumb: 'Register', }, { path: '/forgot-password', element: <ForgotPassword />, breadcrumb: 'Forgot Password', }, { path: '/app', element: ( <ProtectedRoute> <Layout /> </ProtectedRoute> ), children: [ { path: 'dashboard', element: <Dashboard />, breadcrumb: 'Dashboard' }, { path: 'upload', element: <Upload />, breadcrumb: 'Upload' }, { path: 'library', element: <Library />, breadcrumb: 'Library' }, { path: 'analysis', element: <Analysis />, breadcrumb: 'Analysis' }, { path: 'settings', element: <Settings />, breadcrumb: 'Settings' }, { path: 'help', element: <Help />, breadcrumb: 'Help' }, ], }, { path: '*', element: <NotFound />, breadcrumb: 'Not Found', }, ]; export default routes;
+```
+
+### File: `src/config.js`
+
+**Language:** js
+
+**File Size:** 75 bytes
+**Created:** 2024-10-01T00:45:43.322240
+**Modified:** 2024-10-01T00:45:43.322240
+
+```js
+export const API_BASE_URL = 'http:
+```
+
+### File: `src/fontAwesome.js`
+
+**Language:** js
+
+**File Size:** 502 bytes
+**Created:** 2024-09-19T23:51:36.587128
+**Modified:** 2024-09-19T23:51:36.587128
+
+```js
+import { library } from '@fortawesome/fontawesome-svg-core'; import { faPlay, faPause, faStop, faRedo, faExpand, faCompress, faVolumeUp, faVolumeMute, faTimes, faForward, faBackward, faSearchPlus, faSearchMinus } from '@fortawesome/free-solid-svg-icons'; library.add( faPlay, faPause, faStop, faRedo, faExpand, faCompress, faVolumeUp, faVolumeMute, faTimes, faForward, faBackward, faSearchPlus, faSearchMinus );
+```
+
+### File: `src/main.jsx`
+
+**Language:** jsx
+
+**File Size:** 1195 bytes
+**Created:** 2024-10-01T00:58:44.628544
+**Modified:** 2024-10-01T00:58:44.628544
+
+```jsx
+import React from 'react'; import ReactDOM from 'react-dom/client'; import App from './App'; import { BrowserRouter } from 'react-router-dom'; import { AuthProvider } from './context/AuthContext'; import { ThemeProvider } from 'styled-components'; import { theme } from './styles/theme'; ReactDOM.createRoot(document.getElementById('root')).render( <React.StrictMode> <BrowserRouter> <ThemeProvider theme={theme}> <AuthProvider> <App /> </AuthProvider> </ThemeProvider> </BrowserRouter> </React.StrictMode> );
+```
+
+### File: `src/App.jsx`
+
+**Language:** jsx
+
+**File Size:** 11598 bytes
+**Created:** 2024-10-01T00:59:18.843518
+**Modified:** 2024-10-01T00:59:18.843518
+
+```jsx
+import React, { Suspense } from 'react'; import styled from 'styled-components'; import GlobalStyle from './styles/GlobalStyle'; import ErrorBoundary from './components/common/ErrorBoundary'; import Loader from './components/common/Loader'; import AppRoutes from './AppRoutes'; import './fontAwesome'; const AppContainer = styled.div` max-width: 100%; margin: 0 auto; background-color: ${({ theme }) => theme.colors.background}; `; function App() { return ( <ErrorBoundary> <AppContainer> <GlobalStyle /> <Suspense fallback={<Loader />}> <AppRoutes /> </Suspense> </AppContainer> </ErrorBoundary> ); } export default App;
+```
+
+### File: `src/context/AuthContext.jsx`
+
+**Language:** jsx
+
+**File Size:** 5383 bytes
+**Created:** 2024-10-01T01:11:14.682325
+**Modified:** 2024-10-01T01:11:14.682325
+
+```jsx
+import React, { createContext, useState, useEffect, useContext } from 'react'; import api from '../utils/api'; export const AuthContext = createContext(); export const useAuth = () => { const context = useContext(AuthContext); if (!context) { throw new Error('useAuth must be used within an AuthProvider'); } return context; }; export const AuthProvider = ({ children }) => { const [auth, setAuth] = useState({ isAuthenticated: false, user: null }); const [loading, setLoading] = useState(true); useEffect(() => { const initializeAuth = async () => { const token = localStorage.getItem('token'); if (token) { try { api.defaults.headers.common['Authorization'] = `Bearer ${token}`; const response = await api.get('/auth/me'); setAuth({ isAuthenticated: true, user: response.data.user }); } catch (error) { console.error('Failed to fetch user:', error); localStorage.removeItem('token'); delete api.defaults.headers.common['Authorization']; setAuth({ isAuthenticated: false, user: null }); } } setLoading(false); }; initializeAuth(); }, []); const login = (token, user) => { localStorage.setItem('token', token); api.defaults.headers.common['Authorization'] = `Bearer ${token}`; setAuth({ isAuthenticated: true, user }); }; const logout = () => { localStorage.removeItem('token'); delete api.defaults.headers.common['Authorization']; setAuth({ isAuthenticated: false, user: null }); }; return ( <AuthContext.Provider value={{ auth, login, logout, loading }}> {children} </AuthContext.Provider> ); };
+```
+
+### File: `src/utils/mediaUtils.js`
+
+**Language:** js
+
+**File Size:** 329 bytes
+**Created:** 2024-09-20T00:16:58.087990
+**Modified:** 2024-09-20T00:16:58.087990
+
+```js
+export const isAudioFile = (mimeType) => ['audio/mpeg', 'audio/wav', 'audio/ogg'].includes(mimeType); export const isVideoFile = (mimeType) => { return mimeType.startsWith('video/'); }; export const isImageFile = (mimeType) => { return mimeType.startsWith('image/'); };
+```
+
+### File: `src/utils/api.js`
+
+**Language:** js
+
+**File Size:** 2048 bytes
+**Created:** 2024-10-01T01:01:07.102547
+**Modified:** 2024-10-01T01:01:07.102547
+
+```js
+import axios from 'axios'; const api = axios.create({ baseURL: '/api', withCredentials: true, }); api.interceptors.request.use( (config) => { const token = localStorage.getItem('token'); if (token) { config.headers.Authorization = `Bearer ${token}`; } console.log('API Request:', config.method.toUpperCase(), config.url); return config; }, (error) => { console.error('API Request Error:', error); return Promise.reject(error); } ); api.interceptors.response.use( (response) => { console.log('API Response:', response.status, response.data); return response; }, (error) => { console.error('API Response Error:', error.response?.status, error.response?.data); return Promise.reject(error); } ); export default api;
+```
+
+### File: `src/styles/theme.js`
+
+**Language:** js
+
+**File Size:** 861 bytes
+**Created:** 2024-09-18T22:54:06.446702
+**Modified:** 2024-09-18T22:54:06.446702
+
+```js
+export const theme = { colors: { primary: '#008080', secondary: '#6A0DAD', accent: '#32CD32', neutral: '#FFFFFF', background: '#F5F5F5', text: '#2F4F4F', success: '#32CD32', error: '#DC143C', warning: '#DAA520', }, fonts: { primary: 'Roboto, sans-serif', secondary: 'Montserrat, sans-serif', }, fontSizes: { h1: '2.5rem', h2: '2rem', h3: '1.75rem', body: '1rem', small: '0.875rem', }, fontWeights: { light: 300, normal: 400, medium: 500, semiBold: 600, bold: 700, }, };
+```
+
+### File: `src/styles/GlobalStyle.js`
+
+**Language:** js
+
+**File Size:** 6998 bytes
+**Created:** 2024-09-21T21:25:33.246425
+**Modified:** 2024-09-21T21:25:33.246425
+
+```js
+import { createGlobalStyle } from 'styled-components'; const GlobalStyle = createGlobalStyle` html { font-size: 100%; @media (max-width: 1200px) { font-size: 95%; } @media (max-width: 768px) { font-size: 90%; } } body { margin: 0; padding: 0; background-color: ${({ theme }) => theme.colors.background}; color: ${({ theme }) => theme.colors.text}; font-family: ${({ theme }) => theme.fonts.primary}; font-size: ${({ theme }) => theme.fontSizes.body}; line-height: 1.5; } h1 { font-size: ${({ theme }) => theme.fontSizes.h1}; font-weight: ${({ theme }) => theme.fontWeights.bold}; color: ${({ theme }) => theme.colors.primary}; } h2 { font-size: ${({ theme }) => theme.fontSizes.h2}; font-weight: ${({ theme }) => theme.fontWeights.semiBold}; color: ${({ theme }) => theme.colors.secondary}; } h3 { font-size: ${({ theme }) => theme.fontSizes.h3}; font-weight: ${({ theme }) => theme.fontWeights.medium}; color: ${({ theme }) => theme.colors.primary}; } h4 { font-size: ${({ theme }) => theme.fontSizes.h4}; font-weight: ${({ theme }) => theme.fontWeights.medium}; color: ${({ theme }) => theme.colors.secondary}; } h5 { font-size: ${({ theme }) => theme.fontSizes.h5}; font-weight: ${({ theme }) => theme.fontWeights.medium}; color: ${({ theme }) => theme.colors.primary}; } h6 { font-size: ${({ theme }) => theme.fontSizes.h6}; font-weight: ${({ theme }) => theme.fontWeights.medium}; color: ${({ theme }) => theme.colors.secondary}; } p { font-size: ${({ theme }) => theme.fontSizes.body}; font-weight: ${({ theme }) => theme.fontWeights.regular}; color: ${({ theme }) => theme.colors.text}; } a { color: ${({ theme }) => theme.colors.primary}; text-decoration: none; transition: color 0.3s ease; &:hover { color: ${({ theme }) => theme.colors.primaryDark}; } } button { background-color: ${({ theme }) => theme.colors.primary}; color: ${({ theme }) => theme.colors.background}; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; transition: background-color 0.3s ease; &:hover { background-color: ${({ theme }) => theme.colors.primaryDark}; } } input, textarea { width: 100%; padding: 10px; border: 1px solid ${({ theme }) => theme.colors.border}; border-radius: 5px; font-size: ${({ theme }) => theme.fontSizes.body}; color: ${({ theme }) => theme.colors.text}; background-color: ${({ theme }) => theme.colors.neutral}; transition: border-color 0.3s ease; &:focus { border-color: ${({ theme }) => theme.colors.primary}; outline: none; } } .file-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 20px; @media (max-width: 1199px) { grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); } @media (max-width: 767px) { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 15px; padding: 10px; } } .file-card { background-color: ${({ theme }) => theme.colors.neutral}; padding: 20px; border-radius: 10px; box-sizing: border-box; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); text-align: center; transition: transform 0.2s ease, box-shadow 0.3s ease; cursor: pointer; display: flex; flex-direction: column; justify-content: center; height: 150px; &:hover { transform: translateY(-5px); box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2); } p { margin-bottom: 10px; color: ${({ theme }) => theme.colors.text}; font-size: 1rem; font-weight: ${({ theme }) => theme.fontWeights.medium}; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; } @media (max-width: 767px) { padding: 15px; height: auto; p { font-size: 0.875rem; } } @media (max-width: 480px) { height: auto; p { font-size: 0.8125rem; } } } `; export default GlobalStyle;
+```
+
+### File: `src/components/auth/ResetPassword.jsx`
+
+**Language:** jsx
+
+**File Size:** 0 bytes
+**Created:** 2024-09-30T14:18:21.243981
+**Modified:** 2024-09-30T14:18:21.243981
+
+```jsx
+
+```
+
+### File: `src/components/auth/ForgotPassword.jsx`
+
+**Language:** jsx
+
+**File Size:** 0 bytes
+**Created:** 2024-09-20T16:41:59.076655
+**Modified:** 2024-09-20T16:41:59.076655
+
+```jsx
+
+```
+
+### File: `src/components/auth/Login.jsx`
+
+**Language:** jsx
+
+**File Size:** 8681 bytes
+**Created:** 2024-10-01T01:11:53.363901
+**Modified:** 2024-10-01T01:11:53.363901
+
+```jsx
+import React, { useState } from 'react'; import { Link, useNavigate } from 'react-router-dom'; import styled from 'styled-components'; import api from '../../utils/api'; import { useAuth } from '../../context/AuthContext'; import Button from '../common/Button'; import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'; import { faEnvelope, faLock } from '@fortawesome/free-solid-svg-icons'; const LoginContainer = styled.div` display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; padding: 1rem; background-color: ${({ theme }) => theme.colors.background}; `; const LoginForm = styled.form` background-color: ${({ theme }) => theme.colors.neutral}; padding: 2rem; border-radius: 8px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); width: 100%; max-width: 400px; `; const Title = styled.h2` text-align: center; color: ${({ theme }) => theme.colors.primary}; margin-bottom: 1.5rem; `; const InputGroup = styled.div` margin-bottom: 1rem; position: relative; `; const Input = styled.input` width: 100%; padding: 0.75rem 1rem 0.75rem 2.5rem; border: 1px solid ${({ theme }) => theme.colors.border}; border-radius: 4px; font-size: ${({ theme }) => theme.fontSizes.body}; box-sizing: border-box; &:focus { outline: none; border-color: ${({ theme }) => theme.colors.primary}; } `; const InputIcon = styled(FontAwesomeIcon)` position: absolute; left: 0.75rem; top: 50%; transform: translateY(-50%); color: ${({ theme }) => theme.colors.text}; `; const ErrorMessage = styled.p` color: ${({ theme }) => theme.colors.error}; text-align: center; margin-top: 1rem; `; const ForgotPasswordLink = styled(Link)` display: block; text-align: right; color: ${({ theme }) => theme.colors.primary}; text-decoration: none; margin-bottom: 1rem; font-size: 0.9rem; &:hover { text-decoration: underline; } `; const RegisterPrompt = styled.p` text-align: center; margin-top: 1rem; font-size: 0.9rem; `; const RegisterLink = styled(Link)` color: ${({ theme }) => theme.colors.primary}; text-decoration: none; font-weight: bold; &:hover { text-decoration: underline; } `; const Login = () => { const [email, setEmail] = useState(''); const [password, setPassword] = useState(''); const [error, setError] = useState(''); const navigate = useNavigate(); const { login } = useAuth(); const handleSubmit = async (e) => { e.preventDefault(); setError(''); try { const response = await api.post('/auth/login', { email, password }); const { access_token } = response.data; localStorage.setItem('token', access_token); const userResponse = await api.get('/auth/me'); const user = userResponse.data.user; login(access_token, user); navigate('/app/dashboard'); } catch (err) { console.error('Login error:', err); setError(err.response?.data?.error || 'An error occurred during login'); } }; return ( <LoginContainer> <LoginForm onSubmit={handleSubmit}> <Title>Login</Title> <InputGroup> <InputIcon icon={faEnvelope} /> <Input type="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} required autoComplete="email" /> </InputGroup> <InputGroup> <InputIcon icon={faLock} /> <Input type="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} required autoComplete="current-password" /> </InputGroup> <ForgotPasswordLink to="/forgot-password">Forgot password?</ForgotPasswordLink> <Button type="submit" fullWidth> Log In </Button> {error && <ErrorMessage>{error}</ErrorMessage>} <RegisterPrompt> Don't have an account? <RegisterLink to="/register">Sign up</RegisterLink> </RegisterPrompt> </LoginForm> </LoginContainer> ); }; export default Login;
+```
+
+### File: `src/components/auth/Register.jsx`
+
+**Language:** jsx
+
+**File Size:** 21328 bytes
+**Created:** 2024-09-30T17:47:38.150547
+**Modified:** 2024-09-30T17:47:38.150547
+
+```jsx
+import React, { useState } from 'react'; import { Link, useNavigate } from 'react-router-dom'; import styled from 'styled-components'; import api from '../../utils/api'; import Button from '../common/Button'; import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'; import { faEnvelope, faLock, faUser } from '@fortawesome/free-solid-svg-icons'; const RegisterContainer = styled.div` display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; padding: 1rem; background-color: ${({ theme }) => theme.colors.background}; `; const RegisterForm = styled.form` background-color: ${({ theme }) => theme.colors.neutral}; padding: 2rem; border-radius: 8px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); width: 100%; max-width: 400px; `; const Title = styled.h2` text-align: center; color: ${({ theme }) => theme.colors.primary}; margin-bottom: 1.5rem; `; const InputGroup = styled.div` margin-bottom: 1rem; position: relative; `; const Input = styled.input` width: 100%; padding: 0.75rem 1rem 0.75rem 2.5rem; border: 1px solid ${({ theme }) => theme.colors.border}; border-radius: 4px; font-size: ${({ theme }) => theme.fontSizes.body}; box-sizing: border-box; &:focus { outline: none; border-color: ${({ theme }) => theme.colors.primary}; } `; const InputIcon = styled(FontAwesomeIcon)` position: absolute; left: 0.75rem; top: 50%; transform: translateY(-50%); color: ${({ theme }) => theme.colors.text}; `; const ErrorMessage = styled.p` color: ${({ theme }) => theme.colors.error}; text-align: center; margin-top: 1rem; `; const SuccessMessage = styled.p` color: ${({ theme }) => theme.colors.success}; text-align: center; margin-top: 1rem; `; const LoginPrompt = styled.p` text-align: center; margin-top: 1rem; font-size: 0.9rem; `; const LoginLink = styled(Link)` color: ${({ theme }) => theme.colors.primary}; text-decoration: none; font-weight: bold; &:hover { text-decoration: underline; } `; const Register = () => { const [firstName, setFirstName] = useState(''); const [lastName, setLastName] = useState(''); const [email, setEmail] = useState(''); const [password, setPassword] = useState(''); const [error, setError] = useState(''); const [success, setSuccess] = useState(''); const navigate = useNavigate(); const handleSubmit = async (e) => { e.preventDefault(); setError(''); setSuccess(''); if (!firstName.trim() || !lastName.trim()) { setError('First Name and Last Name are required.'); return; } if (password.length < 8) { setError('Password must be at least 8 characters long.'); return; } try { const response = await api.post('/auth/signup', { first_name: firstName.trim(), last_name: lastName.trim(), email: email.trim(), password }); console.log('Signup response:', response.data); setSuccess('Registration successful! Please log in.'); setTimeout(() => navigate('/login'), 3000); setFirstName(''); setLastName(''); setEmail(''); setPassword(''); } catch (err) { console.error('Signup error:', err.response?.data || err.message); if (err.response && err.response.data && err.response.data.message) { setError(err.response.data.message); } else { setError('An error occurred during registration.'); } } }; return ( <RegisterContainer> <RegisterForm onSubmit={handleSubmit}> <Title>Create an Account</Title> {} <InputGroup> <InputIcon icon={faUser} /> <Input type="text" placeholder="First Name" value={firstName} onChange={(e) => setFirstName(e.target.value)} required autoComplete="given-name" /> </InputGroup> {} <InputGroup> <InputIcon icon={faUser} /> <Input type="text" placeholder="Last Name" value={lastName} onChange={(e) => setLastName(e.target.value)} required autoComplete="family-name" /> </InputGroup> {} <InputGroup> <InputIcon icon={faEnvelope} /> <Input type="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} required autoComplete="email" /> </InputGroup> {} <InputGroup> <InputIcon icon={faLock} /> <Input type="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} required autoComplete="new-password" /> </InputGroup> {} <Button type="submit" fullWidth> Sign Up </Button> {} {error && <ErrorMessage>{error}</ErrorMessage>} {success && <SuccessMessage>{success}</SuccessMessage>} {} <LoginPrompt> Already have an account? <LoginLink to="/login">Log in</LoginLink> </LoginPrompt> </RegisterForm> </RegisterContainer> ); }; export default Register;
+```
+
+### File: `src/components/common/VideoPlayer.jsx`
+
+**Language:** jsx
+
+**File Size:** 6776 bytes
+**Created:** 2024-09-20T00:01:21.333005
+**Modified:** 2024-09-20T00:01:21.333005
+
+```jsx
+import React, { useRef, useEffect } from 'react'; import styled from 'styled-components'; import PropTypes from 'prop-types'; import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'; import { faPlay, faPause, faStop, faRedo, faExpand, faCompress, faVolumeUp, faVolumeMute } from '@fortawesome/free-solid-svg-icons'; const VideoPlayerContainer = styled.div` margin-top: 20px; text-align: center; background-color: ${({ theme }) => theme.colors.background}; padding: 20px; border-radius: 10px; outline: none; `; const Video = styled.video` width: 100%; max-width: 800px; border-radius: 5px; `; const Controls = styled.div` display: flex; justify-content: center; align-items: center; margin-top: 15px; flex-wrap: wrap; gap: 10px; button { margin: 5px; padding: 10px; border: none; border-radius: 4px; cursor: pointer; background-color: ${({ theme }) => theme.colors.primary}; color: white; transition: background-color 0.2s ease; display: flex; align-items: center; gap: 5px; &:hover { background-color: ${({ theme }) => theme.colors.secondary}; } &:focus { outline: 2px solid ${({ theme }) => theme.colors.primary}; outline-offset: 2px; } } label { display: flex; align-items: center; margin: 5px; color: ${({ theme }) => theme.colors.text}; font-size: 14px; } input[type="range"] { width: 100px; margin-left: 5px; } `; const CloseButton = styled.button` margin-top: 15px; background-color: ${({ theme }) => theme.colors.error}; border: none; color: white; padding: 8px 15px; border-radius: 4px; cursor: pointer; transition: background-color 0.2s ease; &:hover { background-color: #c0392b; } &:focus { outline: 2px solid ${({ theme }) => theme.colors.error}; outline-offset: 2px; } `; const ErrorMessage = styled.div` color: red; margin-bottom: 10px; `; function VideoPlayer({ fileUrl, fileName, fileType, fileSize, duration = '', onClose, isPlaying, togglePlayPause, }) { const videoRef = useRef(null); const [loop, setLoop] = React.useState(false); const [volume, setVolume] = React.useState(1); const [playbackRate, setPlaybackRate] = React.useState(1); const [error, setError] = React.useState(''); useEffect(() => { const video = videoRef.current; if (video) { video.loop = loop; video.volume = volume; video.playbackRate = playbackRate; if (isPlaying) { video.play().catch((e) => { console.error('Video play error:', e); setError('Failed to play the video.'); onClose(); }); } else { video.pause(); } video.addEventListener('ended', () => { if (!loop) { togglePlayPause(); } }); video.addEventListener('error', (e) => { console.error('Video playback error:', e); setError('Failed to play the video. It might be corrupted or unsupported.'); }); return () => { video.removeEventListener('ended', () => {}); video.removeEventListener('error', () => {}); }; } }, [isPlaying, loop, volume, playbackRate, onClose, togglePlayPause]); const toggleLoop = () => { setLoop(!loop); }; const stop = () => { const video = videoRef.current; if (video) { video.pause(); video.currentTime = 0; togglePlayPause(); } }; const toggleFullscreen = () => { const video = videoRef.current; if (video) { if (video.requestFullscreen) { video.requestFullscreen(); } else if (video.webkitRequestFullscreen) { video.webkitRequestFullscreen(); } else if (video.msRequestFullscreen) { video.msRequestFullscreen(); } } }; const handleVolumeChange = (e) => { const newVolume = parseFloat(e.target.value); setVolume(newVolume); }; const handlePlaybackRateChange = (e) => { const newRate = parseFloat(e.target.value); setPlaybackRate(newRate); }; const closePlayer = () => { onClose(); }; return ( <VideoPlayerContainer tabIndex="-1" aria-label="Video Player"> <h3>Now Playing: {fileName}</h3> {fileSize && ( <p>File Size: {(fileSize / (1024 * 1024)).toFixed(2)} MB</p> )} {duration && <p>Duration: {duration}</p>} {error && ( <ErrorMessage role="alert"> {error} </ErrorMessage> )} <Video ref={videoRef} src={fileUrl} controls={true} aria-label={`Video player for ${fileName}`} > Your browser does not support the video tag. </Video> <Controls> <button onClick={togglePlayPause} aria-label={isPlaying ? 'Pause' : 'Play'}> <FontAwesomeIcon icon={isPlaying ? 'pause' : 'play'} /> </button> <button onClick={stop} aria-label="Stop"> <FontAwesomeIcon icon="stop" /> </button> <button onClick={toggleLoop} aria-label={loop ? 'Disable Loop' : 'Enable Loop'} className={loop ? 'loop-active' : ''} > {loop ? 'Looping' : 'Loop'} </button> <button onClick={toggleFullscreen} aria-label="Fullscreen"> <FontAwesomeIcon icon="expand" /> {} </button> <label> <FontAwesomeIcon icon={volume > 0 ? 'volume-up' : 'volume-mute'} /> <input type="range" min="0" max="1" step="0.01" value={volume} onChange={handleVolumeChange} aria-label="Volume Control" /> </label> <label> Speed: <input type="range" min="0.5" max="2" step="0.1" value={playbackRate} onChange={handlePlaybackRateChange} aria-label="Playback Speed Control" /> </label> </Controls> <CloseButton onClick={closePlayer} aria-label="Close Video Player"> Close </CloseButton> </VideoPlayerContainer> ); } VideoPlayer.propTypes = { fileUrl: PropTypes.string.isRequired, fileName: PropTypes.string.isRequired, fileType: PropTypes.string.isRequired, fileSize: PropTypes.number.isRequired, duration: PropTypes.string, onClose: PropTypes.func.isRequired, isPlaying: PropTypes.bool.isRequired, togglePlayPause: PropTypes.func.isRequired, }; export default VideoPlayer;
+```
+
+### File: `src/components/common/FileDashboardStyles.jsx`
+
+**Language:** jsx
+
+**File Size:** 2080 bytes
+**Created:** 2024-09-19T22:53:35.358594
+**Modified:** 2024-09-19T22:53:35.358594
+
+```jsx
+import styled from 'styled-components'; import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'; export const FileItem = styled.div` display: flex; align-items: center; padding: 10px; background-color: ${({ theme }) => theme.colors.neutral}; border: 1px solid #ddd; border-radius: 5px; margin-bottom: 10px; cursor: pointer; transition: background-color 0.2s ease; &:hover { background-color: ${({ theme }) => theme.colors.background}; } `; export const FileName = styled.span` flex: 1; font-weight: 500; color: ${({ theme }) => theme.colors.text}; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; `; export const FileTypeIcon = styled(FontAwesomeIcon)` margin-right: 10px; color: ${({ theme }) => theme.colors.primary}; `; export const FileActions = styled.div` display: flex; align-items: center; `; export const ActionButton = styled.button` background: none; border: none; color: ${({ theme }) => theme.colors.text}; margin-left: 10px; cursor: pointer; font-size: 1rem; transition: color 0.2s ease; &:hover { color: ${({ theme }) => theme.colors.primary}; } &:focus { outline: 2px solid ${({ theme }) => theme.colors.primary}; outline-offset: 2px; } `; export const ActionIcon = styled(FontAwesomeIcon)` pointer-events: none; `; export const ActionLabel = styled.span` display: none; `; export const FilePreview = styled.div` margin-top: 10px; width: 100%; height: 100px; background-color: #f9f9f9; border: 1px dashed #ccc; border-radius: 5px; display: flex; align-items: center; justify-content: center; color: #999; font-size: 0.9rem; `;
+```
+
+### File: `src/components/common/PreviewSection.jsx`
+
+**Language:** jsx
+
+**File Size:** 1475 bytes
+**Created:** 2024-09-16T22:35:06.536273
+**Modified:** 2024-09-16T22:35:06.536212
+
+```jsx
+import React from 'react'; import styled from 'styled-components'; import PropTypes from 'prop-types'; const PreviewContainer = styled.div` margin-top: 20px; `; const PreviewItem = styled.div` display: flex; align-items: center; justify-content: space-between; background-color: ${({ theme }) => theme.colors.background}; padding: 10px; border: 1px solid #ddd; border-radius: 5px; margin-bottom: 10px; `; const FileInfo = styled.div` display: flex; flex-direction: column; `; const RemoveButton = styled.button` background-color: ${({ theme }) => theme.colors.error}; border: none; color: white; padding: 5px 10px; border-radius: 3px; cursor: pointer; &:hover { background-color: #c0392b; } `; function PreviewSection({ selectedFiles, removeFile }) { return ( <PreviewContainer> <h3>Selected Files</h3> {selectedFiles.map((file, index) => ( <PreviewItem key={index}> <FileInfo> <span><strong>{file.name}</strong></span> <span>{(file.size / (1024 * 1024)).toFixed(2)} MB</span> </FileInfo> <RemoveButton onClick={() => removeFile(index)}>Remove</RemoveButton> </PreviewItem> ))} </PreviewContainer> ); } PreviewSection.propTypes = { selectedFiles: PropTypes.arrayOf(PropTypes.object).isRequired, removeFile: PropTypes.func.isRequired, }; export default PreviewSection;
+```
+
+### File: `src/components/common/Layout.jsx`
+
+**Language:** jsx
+
+**File Size:** 2766 bytes
+**Created:** 2024-09-30T14:35:15.174476
+**Modified:** 2024-09-30T14:35:15.174476
+
+```jsx
+import React, { useState } from "react"; import styled from "styled-components"; import SideNav from "./SideNav"; import Breadcrumbs from "./Breadcrumbs"; import QuickAccessToolbar from "./QuickAccessToolbar"; import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"; import { faBars } from "@fortawesome/free-solid-svg-icons"; import PropTypes from "prop-types"; import { Outlet } from "react-router-dom"; const LayoutContainer = styled.div` display: flex; `; const Content = styled.main` margin-left: ${({ $sidebarCollapsed }) => $sidebarCollapsed ? "60px" : "240px"}; padding: 20px; width: 100%; transition: margin-left 0.3s ease-in-out; @media (max-width: 768px) { padding: 15px; width: 100%; border-radius: 0; height: 100vh; max-height: 100vh; } `; const MobileHeader = styled.header` position: fixed; top: 0; left: 0; width: 100%; height: 60px; background-color: #2c3e50; color: #ecf0f1; display: none; align-items: center; padding: 0 20px; z-index: 1100; @media (max-width: 768px) { display: flex; } `; const MenuButton = styled.button` background: none; border: none; color: inherit; font-size: 1.5em; cursor: pointer; outline: none; &:hover { color: #3498db; } &:focus { outline: 2px solid #3498db; outline-offset: 2px; } `; const ToolbarPlaceholder = styled.div` margin-top: 60px; @media (min-width: 769px) { margin-top: 0; } `; function Layout() { const [isMobileOpen, setIsMobileOpen] = useState(false); const [sidebarCollapsed, setSidebarCollapsed] = useState(window.innerWidth <= 768); const toggleMobile = () => { setIsMobileOpen(!isMobileOpen); setSidebarCollapsed(!isMobileOpen); }; const toggleSidebar = () => { setSidebarCollapsed(!sidebarCollapsed); }; return ( <> <SideNav isMobile={true} isMobileOpen={isMobileOpen} toggleMobile={toggleMobile} collapsed={sidebarCollapsed} toggleSidebar={toggleSidebar} /> <MobileHeader> <MenuButton onClick={toggleMobile} aria-label="Toggle Sidebar"> <FontAwesomeIcon icon={faBars} /> </MenuButton> <h2 style={{ marginLeft: "20px" }}>WaveAnalyzer</h2> </MobileHeader> <LayoutContainer> <Content $sidebarCollapsed={sidebarCollapsed}> <Breadcrumbs /> <QuickAccessToolbar /> <ToolbarPlaceholder /> <Outlet /> {} </Content> </LayoutContainer> </> ); } Layout.propTypes = { children: PropTypes.node, }; export default Layout;
+```
+
+### File: `src/components/common/FileUploader.jsx`
+
+**Language:** jsx
+
+**File Size:** 20991 bytes
+**Created:** 2024-10-01T10:36:31.167137
+**Modified:** 2024-10-01T10:36:31.167137
+
+```jsx
+import React, { useState, useRef } from "react"; import styled from "styled-components"; import PreviewSection from "./PreviewSection"; import ProgressBar from "./ProgressBar"; import Button from "./Button"; import { faUpload } from "@fortawesome/free-solid-svg-icons"; import PropTypes from "prop-types"; import { ErrorMessage } from "./Messages"; import axios from "axios"; const UploadSection = styled.div` margin-top: 20px; `; const OverwritePrompt = styled.div` background-color: ${({ theme }) => theme.colors.background}; padding: 15px; border: 1px solid ${({ theme }) => theme.colors.warning}; border-radius: 5px; margin-top: 20px; p { margin-bottom: 15px; color: ${({ theme }) => theme.colors.text}; font-size: ${({ theme }) => theme.fontSizes.body}; } `; const OverwriteButtons = styled.div` display: flex; justify-content: center; gap: 10px; button { flex: 1; } `; const DropZone = styled.div` border: 2px dashed #bbb; border-radius: 12px; padding: 40px; text-align: center; transition: background-color 0.3s ease, box-shadow 0.2s ease; cursor: pointer; &:hover, &.drag-over { background-color: ${({ theme }) => theme.colors.background}; box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1); } i { font-size: 50px; color: ${({ theme }) => theme.colors.primary}; margin-bottom: 10px; } `; function FileUploader({ setUploadedFiles, setNotification }) { const [selectedFiles, setSelectedFiles] = useState([]); const [uploadProgress, setUploadProgress] = useState(0); const [errorMessages, setErrorMessages] = useState([]); const [isUploading, setIsUploading] = useState(false); const [overwritePrompt, setOverwritePrompt] = useState(false); const [overwriteFile, setOverwriteFile] = useState(null); const fileInputRef = useRef(null); const handleFiles = (event) => { event.preventDefault(); event.stopPropagation(); setErrorMessages([]); setNotification({ message: "", type: "" }); let files; if (event.type === "drop") { files = event.dataTransfer.files; } else { files = event.target.files; } if (files.length === 0) { setErrorMessages(["No files selected."]); return; } const allowedMimeTypes = [ "audio/mpeg", "audio/wav", "audio/aac", "audio/flac", "audio/ogg", "audio/x-m4a", "video/mp4", "video/x-msvideo", "video/quicktime", "video/x-matroska", "video/x-flv", "video/x-ms-wmv", "image/jpeg", "image/png", "image/gif", "image/bmp", "image/webp" ]; const invalidTypeFiles = Array.from(files).filter( (file) => !allowedMimeTypes.includes(file.type) ); const oversizedFiles = Array.from(files).filter( (file) => file.size > 300 * 1024 * 1024 ); let newErrorMessages = []; if (invalidTypeFiles.length > 0) { newErrorMessages.push( `Unsupported file types: ${invalidTypeFiles .map((f) => f.name) .join(", ")}` ); } if (oversizedFiles.length > 0) { newErrorMessages.push( `Files too large (max 300MB): ${oversizedFiles .map((f) => f.name) .join(", ")}` ); } if (newErrorMessages.length > 0) { setErrorMessages(newErrorMessages); return; } setSelectedFiles((prevFiles) => [...prevFiles, ...Array.from(files)]); }; const handleDragOver = (event) => { event.preventDefault(); event.stopPropagation(); }; const handleDrop = (event) => { event.preventDefault(); event.stopPropagation(); handleFiles(event); }; const checkFileExists = async (fileName) => { try { const response = await axios.get( `/api/file_exists?filename=${encodeURIComponent(fileName)}` ); const data = response.data; return data.exists; } catch (error) { console.error("Error checking file existence:", error); return false; } }; const uploadFiles = async () => { if (selectedFiles.length === 0) { setErrorMessages(["Please select files to upload."]); return; } const fileExists = await checkFileExists(selectedFiles[0].name); if (fileExists) { setOverwritePrompt(true); setOverwriteFile(selectedFiles[0].name); return; } handleUpload(selectedFiles); }; const handleUpload = async (files) => { setIsUploading(true); setUploadProgress(0); setErrorMessages([]); const formData = new FormData(); files.forEach((file) => { formData.append("file", file); }); try { const response = await axios.post("/api/upload", formData, { headers: { "Content-Type": "multipart/form-data", }, onUploadProgress: (progressEvent) => { const total = progressEvent.total; const current = progressEvent.loaded; const percentCompleted = Math.round((current / total) * 100); setUploadProgress(percentCompleted); }, }); const data = response.data; if (response.status === 200 || response.status === 207) { if (data.uploaded_files) { setNotification({ message: "Files uploaded successfully!", type: "success", }); } if (data.errors) { const newErrors = data.errors.map( (err) => `${err.filename}: ${err.error}` ); setErrorMessages(newErrors); } setSelectedFiles([]); const historyResponse = await axios.get("/api/file_history"); const historyData = historyResponse.data; if (historyData.files) { setUploadedFiles(historyData.files); } } else if (response.status === 413) { const errorData = response.data; setErrorMessages([`${errorData.error}: ${errorData.message}`]); } else { setNotification({ message: "Error uploading files. Please try again.", type: "error", }); console.error("Error uploading files:", data); } } catch (error) { if (error.response && error.response.status === 413) { const errorData = error.response.data; setErrorMessages([`${errorData.error}: ${errorData.message}`]); } else { setNotification({ message: "Network error during file upload.", type: "error", }); console.error("Network error:", error); } } finally { setIsUploading(false); setUploadProgress(0); } }; const removeFile = (index) => { setSelectedFiles((prevFiles) => prevFiles.filter((_, i) => i !== index)); }; return ( <UploadSection> <DropZone role="button" aria-label="File Upload Zone" onDragOver={handleDragOver} onDragEnter={handleDragOver} onDragLeave={handleDragOver} onDrop={handleDrop} onClick={() => fileInputRef.current.click()} className={isUploading ? "disabled" : ""} > <i className="fas fa-cloud-upload-alt"></i> <p>Click here or drag and drop audio or video files (max 300MB)</p> <input type="file" id="file-input" accept="audio/*,video/*" multiple style={{ display: "none" }} ref={fileInputRef} onChange={handleFiles} /> </DropZone> {selectedFiles.length > 0 && ( <> <PreviewSection selectedFiles={selectedFiles} removeFile={removeFile} /> <Button variant="primary" icon={faUpload} onClick={uploadFiles} disabled={isUploading} aria-label={isUploading ? "Uploading files" : "Upload Files"} > {isUploading ? "Uploading..." : "Upload Files"} </Button> {isUploading && <ProgressBar progress={uploadProgress} />} </> )} {errorMessages.length > 0 && ( <ErrorMessage> {errorMessages.map((msg, index) => ( <p key={index}>{msg}</p> ))} </ErrorMessage> )} {overwritePrompt && ( <OverwritePrompt> <p> File "{overwriteFile}" already exists. Do you want to overwrite it? </p> <OverwriteButtons> <Button variant="secondary" customColor="#2ecc71" onClick={() => { handleUpload(selectedFiles); setOverwritePrompt(false); }} aria-label="Yes, overwrite the existing file" > Yes </Button> <Button variant="secondary" customColor="#e74c3c" onClick={() => setOverwritePrompt(false)} aria-label="No, cancel the upload" > No </Button> </OverwriteButtons> </OverwritePrompt> )} </UploadSection> ); } FileUploader.propTypes = { setUploadedFiles: PropTypes.func.isRequired, setNotification: PropTypes.func.isRequired, }; export default FileUploader;
+```
+
+### File: `src/components/common/ErrorBoundary.jsx`
+
+**Language:** jsx
+
+**File Size:** 916 bytes
+**Created:** 2024-09-19T00:08:58.463973
+**Modified:** 2024-09-19T00:08:58.463973
+
+```jsx
+import React from 'react'; import PropTypes from 'prop-types'; import styled from 'styled-components'; const FallbackContainer = styled.div` padding: 20px; background-color: ${({ theme }) => theme.colors.error}; color: white; border-radius: 5px; text-align: center; `; class ErrorBoundary extends React.Component { constructor(props) { super(props); this.state = { hasError: false }; } static getDerivedStateFromError(error) { return { hasError: true }; } componentDidCatch(error, errorInfo) { console.error('Error Boundary Caught an error:', error, errorInfo); } render() { if (this.state.hasError) { return <FallbackContainer>Something went wrong.</FallbackContainer>; } return this.props.children; } } ErrorBoundary.propTypes = { children: PropTypes.node.isRequired, }; export default ErrorBoundary;
+```
+
+### File: `src/components/common/MediaPlayer.jsx`
+
+**Language:** jsx
+
+**File Size:** 1567 bytes
+**Created:** 2024-09-19T23:59:04.888962
+**Modified:** 2024-09-19T23:59:04.888962
+
+```jsx
+import React from 'react'; import AudioPlayer from './AudioPlayer'; import VideoPlayer from './VideoPlayer'; import PropTypes from 'prop-types'; function MediaPlayer({ fileUrl, fileName, fileType, fileSize, duration = '', onClose, isPlaying, togglePlayPause }) { const mimeType = fileType; if (mimeType.startsWith('audio/')) { return ( <AudioPlayer key={fileName} fileUrl={fileUrl} fileName={fileName} fileType={fileType} fileSize={fileSize} duration={duration} onClose={onClose} isPlaying={isPlaying} togglePlayPause={togglePlayPause} /> ); } else if (mimeType.startsWith('video/')) { return ( <VideoPlayer key={fileName} fileUrl={fileUrl} fileName={fileName} fileType={fileType} fileSize={fileSize} duration={duration} onClose={onClose} isPlaying={isPlaying} togglePlayPause={togglePlayPause} /> ); } else { return <div role="alert">Unsupported media type selected.</div>; } } MediaPlayer.propTypes = { fileUrl: PropTypes.string.isRequired, fileName: PropTypes.string.isRequired, fileType: PropTypes.string.isRequired, fileSize: PropTypes.number.isRequired, duration: PropTypes.string, onClose: PropTypes.func.isRequired, isPlaying: PropTypes.bool.isRequired, togglePlayPause: PropTypes.func.isRequired, }; export default MediaPlayer;
+```
+
+### File: `src/components/common/Button.jsx`
+
+**Language:** jsx
+
+**File Size:** 2346 bytes
+**Created:** 2024-09-19T16:10:13.434897
+**Modified:** 2024-09-19T16:10:13.434897
+
+```jsx
+import React from 'react'; import PropTypes from 'prop-types'; import styled from 'styled-components'; import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'; const ButtonStyled = styled.button` padding: 10px 20px; min-width: 100px; border: none; border-radius: 4px; font-size: ${({ theme }) => theme.fontSizes.body || '16px'}; cursor: pointer; background-color: ${({ $variant, $customColor, theme }) => $customColor ? $customColor : $variant === 'primary' ? theme.colors.primary : $variant === 'secondary' ? theme.colors.secondary : theme.colors.neutral}; color: ${({ $variant, theme }) => $variant === 'tertiary' ? theme.colors.text : '#fff'}; display: flex; align-items: center; justify-content: center; transition: opacity 0.2s ease, background-color 0.2s ease; flex: 1 0 auto; &:hover { opacity: 0.9; } &:disabled { background-color: #ccc; cursor: not-allowed; } &:focus { outline: 2px solid ${({ theme }) => theme.colors.primary}; outline-offset: 2px; } @media (max-width: 768px) { padding: 8px 12px; min-width: 80px; font-size: ${({ theme }) => theme.fontSizes.small || '12px'}; } `; const Button = ({ variant = 'primary', children, onClick = () => {}, disabled = false, icon = null, type = 'button', customColor = null, }) => ( <ButtonStyled $variant={variant} onClick={onClick} disabled={disabled} type={type} $customColor={customColor} aria-label={typeof children === 'string' ? children : undefined} > {icon && ( <FontAwesomeIcon icon={icon} style={{ marginRight: children ? '8px' : '0' }} /> )} {children} </ButtonStyled> ); Button.propTypes = { variant: PropTypes.oneOf(['primary', 'secondary', 'tertiary']), children: PropTypes.node, onClick: PropTypes.func, disabled: PropTypes.bool, icon: PropTypes.object, type: PropTypes.oneOf(['button', 'submit', 'reset']), customColor: PropTypes.string, }; export default Button;
+```
+
+### File: `src/components/common/Notification.jsx`
+
+**Language:** jsx
+
+**File Size:** 1310 bytes
+**Created:** 2024-09-16T22:35:06.536039
+**Modified:** 2024-09-16T22:35:06.535970
+
+```jsx
+import React from 'react'; import styled from 'styled-components'; import PropTypes from 'prop-types'; import { faTimes } from '@fortawesome/free-solid-svg-icons'; import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'; const NotificationContainer = styled.div` background-color: ${({ $type, theme }) => $type === 'success' ? theme.colors.success : $type === 'error' ? theme.colors.error : theme.colors.warning}; color: white; padding: 15px 20px; border-radius: 5px; position: relative; margin-top: 20px; `; const CloseButton = styled.button` position: absolute; top: 10px; right: 10px; background: transparent; border: none; color: white; cursor: pointer; `; function Notification({ message, type = 'success', onClose }) { return ( <NotificationContainer $type={type} role="alert" aria-live="assertive"> <span>{message}</span> <CloseButton onClick={onClose} aria-label="Close Notification"> <FontAwesomeIcon icon={faTimes} /> </CloseButton> </NotificationContainer> ); } Notification.propTypes = { message: PropTypes.string.isRequired, type: PropTypes.oneOf(['success', 'error', 'warning']), onClose: PropTypes.func.isRequired, }; export default Notification;
+```
+
+### File: `src/components/common/WaveformViewer.jsx`
+
+**Language:** jsx
+
+**File Size:** 2084 bytes
+**Created:** 2024-09-17T11:13:42.760217
+**Modified:** 2024-09-17T11:13:42.760217
+
+```jsx
+import React, { useEffect, useRef } from 'react'; import WaveSurfer from 'wavesurfer.js'; import styled from 'styled-components'; const WaveformViewerContainer = styled.div` margin-top: 20px; background-color: ${({ theme }) => theme.colors.neutral}; padding: 20px; border-radius: 10px; `; const Waveform = styled.div` width: 100%; height: 150px; `; function WaveformViewer({ fileUrl }) { const waveformRef = useRef(null); const wavesurferRef = useRef(null); const resizeTimeout = useRef(null); useEffect(() => { if (waveformRef.current && fileUrl) { wavesurferRef.current = WaveSurfer.create({ container: waveformRef.current, waveColor: '#D9DCFF', progressColor: '#4353FF', cursorColor: '#4353FF', responsive: true, height: 150, barWidth: 2, barRadius: 3, backend: 'WebAudio', }); wavesurferRef.current.load(fileUrl); wavesurferRef.current.on('error', (error) => { console.error('WaveSurfer error:', error); }); const handleResize = () => { clearTimeout(resizeTimeout.current); resizeTimeout.current = setTimeout(() => { if (wavesurferRef.current) { wavesurferRef.current.empty(); wavesurferRef.current.drawBuffer(); } }, 300); }; window.addEventListener('resize', handleResize); return () => { window.removeEventListener('resize', handleResize); clearTimeout(resizeTimeout.current); if (wavesurferRef.current) { wavesurferRef.current.destroy(); } }; } }, [fileUrl]); return ( <WaveformViewerContainer> <h3>Waveform Preview</h3> <Waveform id="waveform-viewer" ref={waveformRef} aria-label="Audio waveform visualization"></Waveform> </WaveformViewerContainer> ); } WaveformViewer.propTypes = { fileUrl: PropTypes.string.isRequired, }; export default WaveformViewer;
+```
+
+### File: `src/components/common/Messages.jsx`
+
+**Language:** jsx
+
+**File Size:** 518 bytes
+**Created:** 2024-09-16T22:35:06.535817
+**Modified:** 2024-09-16T22:35:06.535741
+
+```jsx
+import styled from 'styled-components'; import PropTypes from 'prop-types'; export const ErrorMessage = styled.div.attrs({ role: 'alert', 'aria-live': 'assertive', })` color: ${({ theme }) => theme.colors.error}; background-color: #ffe6e6; padding: 10px 15px; border: 1px solid ${({ theme }) => theme.colors.error}; border-radius: 5px; margin-top: 10px; `; ErrorMessage.propTypes = { children: PropTypes.node.isRequired, };
+```
+
+### File: `src/components/common/QuickAccessToolbar.jsx`
+
+**Language:** jsx
+
+**File Size:** 7412 bytes
+**Created:** 2024-09-19T22:16:13.269535
+**Modified:** 2024-09-19T22:16:13.269535
+
+```jsx
+import React, { useState, useEffect, useRef } from "react"; import styled from "styled-components"; import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"; import { faFile, faChartLine, faUpload, faPlus, faTimes, faGripVertical, } from "@fortawesome/free-solid-svg-icons"; import Button from "./Button"; import Tooltip from "./Tooltip"; import { DndContext, closestCenter, PointerSensor, TouchSensor, useSensor, useSensors, } from "@dnd-kit/core"; import { arrayMove, SortableContext, useSortable, sortableKeyboardCoordinates, horizontalListSortingStrategy, } from "@dnd-kit/sortable"; import { CSS } from "@dnd-kit/utilities"; const ToolbarContainer = styled.div` display: flex; flex-wrap: wrap; padding: 10px 20px; background-color: #bdc3c7; align-items: center; @media (max-width: 768px) { display:none; } `; const DraggableArea = styled.div` display: flex; align-items: center; flex-grow: 1; flex-wrap: nowrap; overflow-x: auto; -webkit-overflow-scrolling: touch; @media (max-width: 768px) { justify-content: flex-start; } `; const SortableItemContainer = styled.div` display: flex; align-items: center; margin: 5px; padding: 5px; background-color: ${(props) => props.isDragging ? "#f0f0f0" : "transparent"}; border-radius: 4px; flex-shrink: 0; min-width: 100px; @media(max-width: 768px) { min-width:80px; } `; const DragHandleStyled = styled.div` cursor: grab; color: #888; margin-right: 8px; &:active { cursor: grabbing; } &:hover { color: #333; } `; const OverflowMenu = styled.div` position: relative; `; const OverflowButton = styled(Button)` `; const OverflowContent = styled.div` position: absolute; right: 0; top: 100%; background-color: #ecf0f1; min-width: 160px; box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.2); border-radius: 4px; display: ${({ $open }) => ($open ? "block" : "none")}; z-index: 1000; `; const OverflowItem = styled.button` color: black; padding: 12px 16px; text-decoration: none; display: flex; align-items: center; width: 100%; text-align: left; border: none; background: none; cursor: pointer; &:hover { background-color: #ddd; } `; function SortableItem({ id, item, removeItem }) { const { attributes, listeners, setNodeRef, transform, transition, isDragging, } = useSortable({ id }); const style = { transform: CSS.Transform.toString(transform), transition, zIndex: isDragging ? 2 : 1, }; return ( <SortableItemContainer ref={setNodeRef} style={style} isDragging={isDragging}> <DragHandleStyled {...attributes} {...listeners}> <FontAwesomeIcon icon={faGripVertical} /> </DragHandleStyled> <Tooltip $text={item.label}> <Button variant="secondary" icon={item.icon} onClick={item.action} aria-label={item.label} > {item.label} </Button> </Tooltip> <Button variant="tertiary" icon={faTimes} onClick={() => removeItem(item.id)} aria-label={`Remove ${item.label}`} /> </SortableItemContainer> ); } function QuickAccessToolbar() { const sensors = useSensors( useSensor(PointerSensor, { activationConstraint: { distance: 5, }, }), useSensor(TouchSensor, { activationConstraint: { delay: 250, tolerance: 5, }, }) ); const [pinnedItems, setPinnedItems] = useState([]); const [overflowOpen, setOverflowOpen] = useState(false); const overflowRef = useRef(null); const availableItems = [ { id: "1", icon: faFile, label: "Recent File", action: () => console.log("Recent File clicked"), }, { id: "2", icon: faChartLine, label: "Sentiment Analysis", action: () => console.log("Sentiment Analysis clicked"), }, { id: "3", icon: faUpload, label: "Upload New File", action: () => console.log("Upload New File clicked"), }, ]; useEffect(() => { const savedItems = localStorage.getItem("quickAccess"); if (savedItems) { setPinnedItems(JSON.parse(savedItems)); } else { setPinnedItems(availableItems.slice(0, 2)); } }, []); useEffect(() => { localStorage.setItem("quickAccess", JSON.stringify(pinnedItems)); }, [pinnedItems]); useEffect(() => { function handleClickOutside(event) { if ( overflowRef.current && !overflowRef.current.contains(event.target) ) { setOverflowOpen(false); } } document.addEventListener("mousedown", handleClickOutside); return () => document.removeEventListener("mousedown", handleClickOutside); }, []); const addItem = (item) => { if (pinnedItems.length < availableItems.length) { setPinnedItems([...pinnedItems, item]); } }; const removeItem = (id) => { setPinnedItems(pinnedItems.filter((item) => item.id !== id)); }; const handleDragEnd = (event) => { const { active, over } = event; if (over && active.id !== over.id) { const oldIndex = pinnedItems.findIndex((item) => item.id === active.id); const newIndex = pinnedItems.findIndex((item) => item.id === over.id); setPinnedItems((items) => arrayMove(items, oldIndex, newIndex)); } }; return ( <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd} > <ToolbarContainer> <SortableContext items={pinnedItems.map((item) => item.id)} strategy={horizontalListSortingStrategy} > <DraggableArea> {pinnedItems.map((item) => ( <SortableItem key={item.id} id={item.id} item={item} removeItem={removeItem} /> ))} </DraggableArea> </SortableContext> {pinnedItems.length < availableItems.length && ( <OverflowMenu ref={overflowRef}> <OverflowButton variant="primary" icon={faPlus} onClick={() => setOverflowOpen(!overflowOpen)} aria-label="More Quick Access Options" aria-expanded={overflowOpen} /> <OverflowContent $open={overflowOpen}> {availableItems .filter( (item) => !pinnedItems.some( (pinned) => pinned.id === item.id ) ) .map((item) => ( <OverflowItem key={item.id} onClick={() => { addItem(item); setOverflowOpen(false); }} > <FontAwesomeIcon icon={item.icon} style={{ marginRight: "8px" }} /> {item.label} </OverflowItem> ))} </OverflowContent> </OverflowMenu> )} </ToolbarContainer> </DndContext> ); } export default QuickAccessToolbar;
+```
+
+### File: `src/components/common/Loader.jsx`
+
+**Language:** jsx
+
+**File Size:** 531 bytes
+**Created:** 2024-09-30T14:51:41.055184
+**Modified:** 2024-09-30T14:51:41.055184
+
+```jsx
+import React from 'react'; import styled, { keyframes } from 'styled-components'; const spin = keyframes` to { transform: rotate(360deg); } `; const Spinner = styled.div` width: 50px; height: 50px; border: 5px solid ${({ theme }) => theme.colors?.primary || '#008080'}; border-top-color: transparent; border-radius: 50%; animation: ${spin} 1s linear infinite; margin: 100px auto; `; const Loader = () => { return <Spinner aria-label="Loading" />; }; export default Loader;
+```
+
+### File: `src/components/common/ProtectedRoute.jsx`
+
+**Language:** jsx
+
+**File Size:** 2407 bytes
+**Created:** 2024-10-01T01:10:40.098541
+**Modified:** 2024-10-01T01:10:40.098541
+
+```jsx
+import React from 'react'; import { Navigate, useLocation } from 'react-router-dom'; import { useAuth } from '../../context/AuthContext'; import Loader from './Loader'; const ProtectedRoute = ({ children }) => { const { auth, loading } = useAuth(); const location = useLocation(); console.log('ProtectedRoute - Current path:', location.pathname); console.log('ProtectedRoute - Authenticated:', auth.isAuthenticated); console.log('ProtectedRoute - Loading:', loading); if (loading) { return <Loader />; } if (!auth.isAuthenticated) { console.log('ProtectedRoute - Redirecting to login'); return <Navigate to="/login" state={{ from: location }} replace />; } return children; }; export default ProtectedRoute;
+```
+
+### File: `src/components/common/AudioPlayer.jsx`
+
+**Language:** jsx
+
+**File Size:** 7014 bytes
+**Created:** 2024-09-20T00:13:39.150165
+**Modified:** 2024-09-20T00:13:39.150165
+
+```jsx
+import React, { useEffect, useRef } from 'react'; import WaveSurfer from 'wavesurfer.js'; import styled from 'styled-components'; import PropTypes from 'prop-types'; import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'; import { faPlay, faPause, faStop, faRedo, faVolumeUp, faVolumeMute } from '@fortawesome/free-solid-svg-icons'; const AudioPlayerContainer = styled.div` margin-top: 20px; text-align: center; background-color: ${({ theme }) => theme.colors.background}; padding: 20px; border-radius: 10px; outline: none; `; const Controls = styled.div` display: flex; justify-content: center; align-items: center; margin-top: 15px; flex-wrap: wrap; gap: 10px; button { margin: 5px; padding: 10px; border: none; border-radius: 4px; cursor: pointer; background-color: ${({ theme }) => theme.colors.primary}; color: white; transition: background-color 0.2s ease; display: flex; align-items: center; gap: 5px; &:hover { background-color: ${({ theme }) => theme.colors.secondary}; } &:focus { outline: 2px solid ${({ theme }) => theme.colors.primary}; outline-offset: 2px; } } label { display: flex; align-items: center; margin: 5px; color: ${({ theme }) => theme.colors.text}; font-size: 14px; } input[type="range"] { width: 100px; margin-left: 5px; } `; const CloseButton = styled.button` margin-top: 15px; background-color: ${({ theme }) => theme.colors.error}; border: none; color: white; padding: 8px 15px; border-radius: 4px; cursor: pointer; transition: background-color 0.2s ease; &:hover { background-color: #c0392b; } &:focus { outline: 2px solid ${({ theme }) => theme.colors.error}; outline-offset: 2px; } `; const ErrorMessage = styled.div` color: red; margin-bottom: 10px; `; function AudioPlayer({ fileUrl, fileName, fileType, fileSize, duration = '', onClose, isPlaying, togglePlayPause, }) { const waveformRef = useRef(null); const wavesurferRef = useRef(null); const [volume, setVolume] = React.useState(1); const [playbackRate, setPlaybackRate] = React.useState(1); const [loop, setLoop] = React.useState(false); const [error, setError] = React.useState(''); useEffect(() => { if (waveformRef.current) { wavesurferRef.current = WaveSurfer.create({ container: waveformRef.current, waveColor: '#D9DCFF', progressColor: '#4353FF', cursorColor: '#4353FF', responsive: true, height: 100, barWidth: 2, barRadius: 3, backend: 'WebAudio', }); wavesurferRef.current.load(fileUrl); wavesurferRef.current.on('ready', () => { console.log('WaveSurfer is ready.'); if (isPlaying) { wavesurferRef.current.play(); } }); wavesurferRef.current.on('finish', () => { console.log('Audio playback finished.'); if (loop) { wavesurferRef.current.play(); } else { togglePlayPause(); } }); wavesurferRef.current.on('error', (e) => { console.error('WaveSurfer error:', e); setError('Failed to play the audio. It might be corrupted or unsupported.'); }); return () => { if (wavesurferRef.current) { try { wavesurferRef.current.destroy(); console.log('WaveSurfer destroyed.'); } catch (err) { console.error('WaveSurfer destroy error:', err); } } }; } }, [fileUrl, loop, togglePlayPause, isPlaying]); useEffect(() => { if (wavesurferRef.current) { wavesurferRef.current.setVolume(volume); wavesurferRef.current.setPlaybackRate(playbackRate); if (isPlaying) { wavesurferRef.current.play(); } else { wavesurferRef.current.pause(); } } }, [volume, playbackRate, isPlaying]); const handleVolumeChange = (e) => { const newVolume = parseFloat(e.target.value); setVolume(newVolume); }; const handlePlaybackRateChange = (e) => { const newRate = parseFloat(e.target.value); setPlaybackRate(newRate); }; const toggleLoop = () => { setLoop(!loop); }; const stop = () => { if (wavesurferRef.current) { wavesurferRef.current.stop(); togglePlayPause(); } }; const closePlayer = () => { onClose(); }; return ( <AudioPlayerContainer tabIndex="-1" aria-label="Audio Player"> <h3>Now Playing: {fileName}</h3> {fileSize && ( <p>File Size: {(fileSize / (1024 * 1024)).toFixed(2)} MB</p> )} {duration && <p>Duration: {duration}</p>} {error && ( <ErrorMessage role="alert"> {error} </ErrorMessage> )} <div id="waveform" ref={waveformRef} role="region" aria-label={`Waveform for ${fileName}`} tabIndex="0" > </div> <Controls> <button onClick={togglePlayPause} aria-label={isPlaying ? 'Pause' : 'Play'}> <FontAwesomeIcon icon={isPlaying ? 'pause' : 'play'} /> </button> <button onClick={stop} aria-label="Stop"> <FontAwesomeIcon icon="stop" /> </button> <button onClick={toggleLoop} aria-label={loop ? 'Disable Loop' : 'Enable Loop'} className={loop ? 'loop-active' : ''} > {loop ? 'Looping' : 'Loop'} </button> <label> <FontAwesomeIcon icon={volume > 0 ? 'volume-up' : 'volume-mute'} /> <input type="range" min="0" max="1" step="0.01" value={volume} onChange={handleVolumeChange} aria-label="Volume Control" /> </label> <label> Speed: <input type="range" min="0.5" max="2" step="0.1" value={playbackRate} onChange={handlePlaybackRateChange} aria-label="Playback Speed Control" /> </label> </Controls> <CloseButton onClick={closePlayer} aria-label="Close Audio Player"> Close </CloseButton> </AudioPlayerContainer> ); } AudioPlayer.propTypes = { fileUrl: PropTypes.string.isRequired, fileName: PropTypes.string.isRequired, fileType: PropTypes.string.isRequired, fileSize: PropTypes.number.isRequired, duration: PropTypes.string, onClose: PropTypes.func.isRequired, isPlaying: PropTypes.bool.isRequired, togglePlayPause: PropTypes.func.isRequired, }; export default AudioPlayer;
+```
+
+### File: `src/components/common/ViewerModal.jsx`
+
+**Language:** jsx
+
+**File Size:** 6242 bytes
+**Created:** 2024-09-20T00:21:25.376292
+**Modified:** 2024-09-20T00:21:25.376292
+
+```jsx
+import React, { useEffect, useState } from 'react'; import styled from 'styled-components'; import MediaPlayer from './MediaPlayer'; import ImageViewer from './ImageViewer'; import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'; import { faTimes, faForward, faBackward } from '@fortawesome/free-solid-svg-icons'; import FocusTrap from 'focus-trap-react'; import PropTypes from 'prop-types'; import { isAudioFile, isVideoFile, isImageFile } from "../../utils/mediaUtils"; const ModalOverlay = styled.div` position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.7); display: flex; justify-content: center; align-items: center; z-index: 3000; animation: fadeIn 0.3s ease-out; `; const ModalContent = styled.div` background-color: ${({ theme }) => theme.colors.background}; padding: 20px; border-radius: 10px; width: 95%; max-width: 900px; position: relative; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5); max-height: 90vh; overflow-y: auto; display: flex; flex-direction: column; align-items: center; @media (max-width: 768px) { padding: 15px; width: 100%; border-radius: 0; height: 100vh; max-height: 100vh; } `; const CloseIcon = styled(FontAwesomeIcon)` position: absolute; top: 15px; right: 15px; cursor: pointer; color: ${({ theme }) => theme.colors.error}; font-size: 1.5rem; &:hover { color: #c0392b; } @media (max-width: 768px) { top: 10px; right: 10px; font-size: 1.2rem; } `; const NavigationControls = styled.div` display: flex; justify-content: space-between; align-items: center; margin-top: 15px; width: 100%; button { background: none; border: none; color: ${({ theme }) => theme.colors.primary}; font-size: 1.2rem; cursor: pointer; transition: color 0.2s ease; display: flex; align-items: center; gap: 5px; &:hover { color: ${({ theme }) => theme.colors.secondary}; } &:disabled { color: #7f8c8d; cursor: not-allowed; } } @media (max-width: 768px) { button { font-size: 1rem; } } `; function ViewerModal({ uploadedFiles, initialIndex, onClose }) { const [currentIndex, setCurrentIndex] = useState(initialIndex); const [isPlaying, setIsPlaying] = useState(false); const currentFile = uploadedFiles[currentIndex]; const mimeType = currentFile.type; const mediaType = isAudioFile(mimeType) ? 'audio' : isVideoFile(mimeType) ? 'video' : isImageFile(mimeType) ? 'image' : 'unsupported'; const goToNext = () => { if (currentIndex < uploadedFiles.length - 1) { setCurrentIndex(currentIndex + 1); setIsPlaying(false); } }; const goToPrevious = () => { if (currentIndex > 0) { setCurrentIndex(currentIndex - 1); setIsPlaying(false); } }; const togglePlayPause = () => { setIsPlaying(!isPlaying); }; useEffect(() => { setIsPlaying(false); }, [currentIndex]); const renderViewer = () => { if (mediaType === 'audio' || mediaType === 'video') { return ( <MediaPlayer key={currentFile.filename} fileUrl={ currentFile.path.startsWith('/static/uploads') ? `${window.location.origin}${currentFile.path}` : currentFile.path } fileName={currentFile.filename} fileType={currentFile.type} fileSize={currentFile.size} duration={currentFile.duration} onClose={onClose} isPlaying={isPlaying} togglePlayPause={togglePlayPause} /> ); } else if (mediaType === 'image') { return ( <ImageViewer key={currentFile.filename} fileUrl={ currentFile.path.startsWith('/static/uploads') ? `${window.location.origin}${currentFile.path}` : currentFile.path } fileName={currentFile.filename} onClose={onClose} goToNext={goToNext} goToPrevious={goToPrevious} /> ); } else { return <div role="alert">Unsupported media type selected.</div>; } }; useEffect(() => { console.log(`Current Index: ${currentIndex}`); console.log(`Current File: ${currentFile.filename}, Type: ${mimeType}`); console.log(`Determined Media Type: ${mediaType}`); }, [currentIndex, currentFile, mimeType, mediaType]); return ( <ModalOverlay onClick={onClose} aria-modal="true" role="dialog"> <FocusTrap> <ModalContent onClick={(e) => e.stopPropagation()}> <CloseIcon icon="times" onClick={onClose} aria-label="Close Viewer" /> {renderViewer()} <NavigationControls> <button onClick={goToPrevious} disabled={currentIndex === 0} aria-label="Previous File" > <FontAwesomeIcon icon="backward" /> Previous </button> <button onClick={goToNext} disabled={currentIndex === uploadedFiles.length - 1} aria-label="Next File" > Next <FontAwesomeIcon icon="forward" /> </button> </NavigationControls> </ModalContent> </FocusTrap> </ModalOverlay> ); } ViewerModal.propTypes = { uploadedFiles: PropTypes.arrayOf( PropTypes.shape({ filename: PropTypes.string.isRequired, path: PropTypes.string.isRequired, size: PropTypes.number.isRequired, type: PropTypes.string.isRequired, duration: PropTypes.string, }) ).isRequired, initialIndex: PropTypes.number.isRequired, onClose: PropTypes.func.isRequired, }; export default ViewerModal;
+```
+
+### File: `src/components/common/SideNav.jsx`
+
+**Language:** jsx
+
+**File Size:** 12857 bytes
+**Created:** 2024-10-01T10:53:27.755537
+**Modified:** 2024-10-01T10:53:27.755537
+
+```jsx
+import React, { useContext } from "react"; import styled from "styled-components"; import { NavLink } from "react-router-dom"; import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"; import { faHome, faUpload, faFolder, faSearch, faCog, faQuestionCircle, faArrowLeft, faArrowRight, faSignOutAlt, } from "@fortawesome/free-solid-svg-icons"; import PropTypes from "prop-types"; import { AuthContext } from "../../context/AuthContext"; const Sidebar = styled.nav` position: fixed; left: 0; top: 0; height: 100vh; width: ${({ $collapsed }) => ($collapsed ? "60px" : "240px")}; background-color: #2c3e50; color: #ecf0f1; transition: width 0.3s ease-in-out; overflow: hidden; display: flex; flex-direction: column; justify-content: space-between; z-index: 1000; @media (max-width: 768px) { transform: ${({ $isMobileOpen }) => $isMobileOpen ? "translateX(0)" : "translateX(-100%)"}; width: ${({ $collapsed }) => ($collapsed ? "60px" : "200px")}; transition: transform 0.3s ease-in-out, width 0.3s ease-in-out; } `; const Logo = styled.div` padding: ${({ $collapsed }) => ($collapsed ? "10px 0" : "20px 5px")}; font-size: 1.5em; text-align: center; background-color: #1a252f; font-weight: bold; `; const NavItems = styled.ul` list-style: none; padding: 0; margin: 0; `; const NavItem = styled.li` padding: 15px 20px; display: flex; align-items: center; cursor: pointer; &.active, &:hover { background-color: #4353ff; } a { text-decoration: none; color: inherit; display: flex; align-items: center; width: 100%; } svg { margin-right: ${({ $collapsed }) => ($collapsed ? "0" : "10px")}; font-size: 1.2em; } span { display: ${({ $collapsed }) => ($collapsed ? "none" : "inline")}; white-space: nowrap; } @media (max-width: 768px) { padding: 10px 15px; svg { font-size: 1em; } } `; const ToggleButton = styled.button` background: none; border: none; color: inherit; padding: 15px; cursor: pointer; font-size: 1.2em; outline: none; display: flex; align-items: center; justify-content: center; &:hover { background-color: #1a252f; } &:focus { outline: 2px solid #3498db; outline-offset: 2px; } `; const LogoutButton = styled.button` background: none; border: none; color: inherit; padding: 15px 20px; cursor: pointer; text-align: left; width: 100%; display: flex; align-items: center; &:hover { background-color: #4353ff; } svg { margin-right: ${({ $collapsed }) => ($collapsed ? "0" : "10px")}; font-size: 1.2em; } span { display: ${({ $collapsed }) => ($collapsed ? "none" : "inline")}; white-space: nowrap; } @media (max-width: 768px) { padding: 10px 15px; svg { font-size: 1em; } } `; function SideNav({ isMobile = false, isMobileOpen = false, toggleMobile, collapsed = false, toggleSidebar, }) { const { logout } = useContext(AuthContext); const handleToggle = () => { if (isMobile) { toggleMobile(); } else { toggleSidebar(); } }; const handleLogout = () => { logout(); }; return ( <Sidebar $collapsed={collapsed} $isMobileOpen={isMobileOpen} aria-label="Sidebar Navigation" > <div> <Logo $collapsed={collapsed}>{!collapsed ? "WaveAnalyzer" : "WA"}</Logo> <NavItems> <NavItem $collapsed={collapsed}> <NavLink to="/app/dashboard" className={({ isActive }) => (isActive ? "active" : "")} > <FontAwesomeIcon icon={faHome} /> <span>Dashboard</span> </NavLink> </NavItem> <NavItem $collapsed={collapsed}> <NavLink to="/app/upload" className={({ isActive }) => (isActive ? "active" : "")} > <FontAwesomeIcon icon={faUpload} /> <span>Upload</span> </NavLink> </NavItem> <NavItem $collapsed={collapsed}> <NavLink to="/app/library" className={({ isActive }) => (isActive ? "active" : "")} > <FontAwesomeIcon icon={faFolder} /> <span>Library</span> </NavLink> </NavItem> <NavItem $collapsed={collapsed}> <NavLink to="/app/analysis" className={({ isActive }) => (isActive ? "active" : "")} > <FontAwesomeIcon icon={faSearch} /> <span>Analysis</span> </NavLink> </NavItem> <NavItem $collapsed={collapsed}> <NavLink to="/app/settings" className={({ isActive }) => (isActive ? "active" : "")} > <FontAwesomeIcon icon={faCog} /> <span>Settings</span> </NavLink> </NavItem> <NavItem $collapsed={collapsed}> <NavLink to="/app/help" className={({ isActive }) => (isActive ? "active" : "")} > <FontAwesomeIcon icon={faQuestionCircle} /> <span>Help</span> </NavLink> </NavItem> </NavItems> </div> <div> <LogoutButton onClick={handleLogout} $collapsed={collapsed}> <FontAwesomeIcon icon={faSignOutAlt} /> <span>Logout</span> </LogoutButton> <ToggleButton onClick={handleToggle} aria-label={collapsed ? "Expand Sidebar" : "Collapse Sidebar"} > <FontAwesomeIcon icon={collapsed ? faArrowRight : faArrowLeft} /> </ToggleButton> </div> </Sidebar> ); } SideNav.propTypes = { isMobile: PropTypes.bool, isMobileOpen: PropTypes.bool, toggleMobile: PropTypes.func.isRequired, collapsed: PropTypes.bool, toggleSidebar: PropTypes.func.isRequired, }; export default SideNav;
+```
+
+### File: `src/components/common/ImageViewer.jsx`
+
+**Language:** jsx
+
+**File Size:** 8347 bytes
+**Created:** 2024-09-20T00:19:14.378689
+**Modified:** 2024-09-20T00:19:14.378689
+
+```jsx
+import React, { useEffect, useRef } from 'react'; import styled from 'styled-components'; import PropTypes from 'prop-types'; import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'; import { faTimes, faSearchPlus, faSearchMinus, faForward, faBackward } from '@fortawesome/free-solid-svg-icons'; import FocusTrap from 'focus-trap-react'; const ModalOverlay = styled.div` position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.8); display: flex; justify-content: center; align-items: center; z-index: 2000; `; const ModalContent = styled.div` position: relative; background-color: ${({ theme }) => theme.colors.background}; padding: 20px; border-radius: 10px; max-width: 90%; max-height: 90%; overflow: auto; display: flex; flex-direction: column; align-items: center; `; const CloseButton = styled.button` position: absolute; top: 10px; right: 10px; background: transparent; border: none; color: white; font-size: 1.5rem; cursor: pointer; &:hover { color: #ccc; } &:focus { outline: 2px solid #3498db; outline-offset: 2px; } `; const ZoomControls = styled.div` display: flex; justify-content: center; gap: 10px; margin-top: 10px; button { background: none; border: none; color: white; font-size: 1.2rem; cursor: pointer; transition: color 0.2s ease; &:hover { color: #3498db; } &:focus { outline: 2px solid #3498db; outline-offset: 2px; } } `; const NavigationControls = styled.div` position: absolute; top: 50%; left: 10px; transform: translateY(-50%); display: flex; flex-direction: column; gap: 10px; button { background: rgba(0, 0, 0, 0.5); border: none; color: white; padding: 10px; border-radius: 50%; cursor: pointer; transition: background 0.2s ease; &:hover { background: rgba(0, 0, 0, 0.7); } &:focus { outline: 2px solid #3498db; outline-offset: 2px; } } `; const ImageStyled = styled.img` max-width: 100%; max-height: 80vh; transform: scale(${({ zoom }) => zoom}); transition: transform 0.3s ease; `; function ImageViewer({ fileUrl, fileName, onClose, goToNext, goToPrevious }) { const [zoom, setZoom] = React.useState(1); const imageRef = useRef(null); const zoomIn = () => { setZoom((prevZoom) => Math.min(prevZoom + 0.2, 3)); }; const zoomOut = () => { setZoom((prevZoom) => Math.max(prevZoom - 0.2, 1)); }; useEffect(() => { const handleKeyDown = (e) => { if (e.key === 'Escape') { onClose(); } if (e.key === '+') { zoomIn(); } if (e.key === '-') { zoomOut(); } if (e.key === 'ArrowRight') { goToNext(); } if (e.key === 'ArrowLeft') { goToPrevious(); } }; window.addEventListener('keydown', handleKeyDown); return () => { window.removeEventListener('keydown', handleKeyDown); }; }, [onClose, goToNext, goToPrevious]); return ( <ModalOverlay onClick={onClose} aria-modal="true" role="dialog"> <FocusTrap> <ModalContent onClick={(e) => e.stopPropagation()}> <CloseButton onClick={onClose} aria-label="Close Image Viewer"> <FontAwesomeIcon icon="times" /> </CloseButton> <h3>{fileName}</h3> <ImageStyled src={fileUrl} alt={fileName} zoom={zoom} ref={imageRef} /> <ZoomControls> <button onClick={zoomIn} aria-label="Zoom In"> <FontAwesomeIcon icon="search-plus" /> </button> <button onClick={zoomOut} aria-label="Zoom Out"> <FontAwesomeIcon icon="search-minus" /> </button> </ZoomControls> <NavigationControls> <button onClick={goToPrevious} aria-label="Previous Image"> <FontAwesomeIcon icon="backward" /> </button> <button onClick={goToNext} aria-label="Next Image"> <FontAwesomeIcon icon="forward" /> </button> </NavigationControls> </ModalContent> </FocusTrap> </ModalOverlay> ); } ImageViewer.propTypes = { fileUrl: PropTypes.string.isRequired, fileName: PropTypes.string.isRequired, onClose: PropTypes.func.isRequired, goToNext: PropTypes.func.isRequired, goToPrevious: PropTypes.func.isRequired, }; export default ImageViewer;
+```
+
+### File: `src/components/common/Tooltip.jsx`
+
+**Language:** jsx
+
+**File Size:** 3809 bytes
+**Created:** 2024-09-19T01:07:32.543909
+**Modified:** 2024-09-19T01:07:32.543909
+
+```jsx
+import React from 'react'; import styled from 'styled-components'; import PropTypes from 'prop-types'; const TooltipContent = styled.div` position: absolute; bottom: 125%; left: 50%; transform: translateX(-50%); background-color: ${({ theme }) => theme.colors.background || '#000'}; color: ${({ theme }) => theme.colors.text || '#fff'}; padding: 5px 10px; border: 1px solid #ddd; border-radius: 4px; white-space: nowrap; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); z-index: 1001; opacity: 0; visibility: hidden; pointer-events: none; transition: opacity 0.3s, visibility 0.3s; `; const TooltipArrow = styled.div` position: absolute; bottom: 115%; left: 50%; transform: translateX(-50%); border-width: 5px; border-style: solid; border-color: ${({ theme }) => theme.colors.background || '#000'} transparent transparent transparent; opacity: 0; visibility: hidden; pointer-events: none; z-index: 1001; transition: opacity 0.3s, visibility 0.3s; `; const TooltipWrapper = styled.div` position: relative; display: inline-block; &:hover ${TooltipContent}, &:hover ${TooltipArrow} { opacity: 1; visibility: visible; } `; function Tooltip({ $text, children }) { return ( <TooltipWrapper> {children} <TooltipContent className="tooltip-content"> {$text} </TooltipContent> <TooltipArrow className="tooltip-arrow" /> </TooltipWrapper> ); } Tooltip.propTypes = { $text: PropTypes.string.isRequired, children: PropTypes.node.isRequired, }; export default Tooltip;
+```
+
+### File: `src/components/common/ProgressBar.jsx`
+
+**Language:** jsx
+
+**File Size:** 1241 bytes
+**Created:** 2024-09-19T22:26:10.944317
+**Modified:** 2024-09-19T22:26:10.944317
+
+```jsx
+import React from 'react'; import styled from 'styled-components'; import PropTypes from 'prop-types'; const ProgressBarContainer = styled.div` margin-top: 20px; `; const ProgressWrapper = styled.div` width: 100%; background-color: #e0e0e0; padding: 3px; border-radius: 6px; overflow: hidden; `; const ProgressBarStyled = styled.div` height: 22px; background: linear-gradient(90deg, ${({ theme }) => theme.colors.primary}, #00c6ff); border-radius: 3px; width: ${({ $progress }) => `${$progress}%`}; transition: width 1s ease-in-out; display: flex; align-items: center; justify-content: center; color: white; font-weight: 500; `; function ProgressBar({ progress }) { if (progress === 0) return null; return ( <ProgressBarContainer> <ProgressWrapper> <ProgressBarStyled $progress={progress} role="progressbar" aria-valuenow={progress} aria-valuemin="0" aria-valuemax="100" > {progress}% </ProgressBarStyled> </ProgressWrapper> </ProgressBarContainer> ); } ProgressBar.propTypes = { progress: PropTypes.number.isRequired, }; export default ProgressBar;
+```
+
+### File: `src/components/common/FileDashboard.jsx`
+
+**Language:** jsx
+
+**File Size:** 7904 bytes
+**Created:** 2024-10-01T01:24:36.952526
+**Modified:** 2024-10-01T01:24:36.952526
+
+```jsx
+import React, { useState, useRef } from 'react'; import styled from 'styled-components'; import ViewerModal from './ViewerModal'; import PropTypes from 'prop-types'; import Tooltip from './Tooltip'; import { isAudioFile, isVideoFile, isImageFile } from "../../utils/mediaUtils"; const DashboardContainer = styled.div` margin-top: 30px; `; const FileGrid = styled.div` display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 20px; @media (max-width: 1199px) { grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); } @media (max-width: 767px) { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 15px; padding: 10px; } `; const FileCard = styled.div` background-color: ${({ theme }) => theme.colors.neutral}; padding: 20px; border-radius: 10px; box-sizing: border-box; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); text-align: center; transition: transform 0.2s ease, box-shadow 0.3s ease; cursor: pointer; display: flex; flex-direction: column; justify-content: center; height: 150px; &:hover { transform: translateY(-5px); box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2); } p { margin-bottom: 10px; color: ${({ theme }) => theme.colors.text}; font-size: 1rem; font-weight: ${({ theme }) => theme.fontWeights.medium}; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; } @media (max-width: 767px) { padding: 15px; height: auto; p { font-size: 0.875rem; } } `; function FileDashboard({ uploadedFiles }) { const [isViewerOpen, setIsViewerOpen] = useState(false); const [selectedIndex, setSelectedIndex] = useState(null); const triggerRef = useRef(null); if (!uploadedFiles || uploadedFiles.length === 0) { return <p>No files uploaded yet.</p>; } const selectFile = (index, event) => { triggerRef.current = event.currentTarget; const file = uploadedFiles[index]; const mimeType = file.type; if (isAudioFile(mimeType) || isVideoFile(mimeType) || isImageFile(mimeType)) { setSelectedIndex(index); setIsViewerOpen(true); } else { console.error('Unsupported media type:', mimeType); } }; const closeViewer = () => { setIsViewerOpen(false); setSelectedIndex(null); if (triggerRef.current) { triggerRef.current.focus(); } }; return ( <DashboardContainer> <h2>Uploaded Files</h2> <FileGrid> {uploadedFiles.map((file, index) => ( <FileCard key={index} onClick={(e) => selectFile(index, e)} tabIndex="0" onKeyPress={(e) => { if (e.key === 'Enter') selectFile(index, e); }} aria-label={`${ isImageFile(file.type) ? 'View' : 'Play' } ${file.filename}`} > <Tooltip $text={file.filename}> <p>{file.filename}</p> </Tooltip> <p>{(file.size / (1024 * 1024)).toFixed(2)} MB</p> </FileCard> ))} </FileGrid> {isViewerOpen && selectedIndex !== null && ( <ViewerModal uploadedFiles={uploadedFiles} initialIndex={selectedIndex} onClose={closeViewer} /> )} </DashboardContainer> ); } FileDashboard.propTypes = { uploadedFiles: PropTypes.arrayOf( PropTypes.shape({ filename: PropTypes.string.isRequired, path: PropTypes.string.isRequired, size: PropTypes.number.isRequired, type: PropTypes.string.isRequired, duration: PropTypes.string, }) ).isRequired, }; export default FileDashboard;
+```
+
+### File: `src/components/common/Breadcrumbs.jsx`
+
+**Language:** jsx
+
+**File Size:** 48744 bytes
+**Created:** 2024-10-01T10:54:03.327609
+**Modified:** 2024-10-01T10:54:03.327609
+
+```jsx
+import React, { useEffect, useState } from 'react'; import { Link, useLocation, matchPath } from 'react-router-dom'; import styled from 'styled-components'; import routes from '../../routes'; const BreadcrumbContainer = styled.nav` padding: 10px 20px; background-color: ${({ theme }) => theme.colors.background}; font-size: 0.9em; overflow: hidden; z-index: 1101; @media (max-width: 768px) { margin-top: 40px; padding: 10px 20px; font-size: 0.8em; } `; const BreadcrumbList = styled.ol` list-style: none; display: flex; flex-wrap: nowrap; margin: 0; padding: 0; overflow: hidden; `; const BreadcrumbItem = styled.li` margin-right: 5px; white-space: nowrap; text-overflow: ellipsis; overflow: hidden; &:after { content: ">"; margin-left: 5px; @media (max-width: 768px) { display: none; } } &:last-child:after { content: ""; } a { text-decoration: none; color: ${({ theme }) => theme.colors.primary}; &:hover { text-decoration: underline; } } span { color: ${({ theme }) => theme.colors.text}; } `; const formatLabel = (label) => label .replace(/-/g, " ") .replace(/\b\w/g, (char) => char.toUpperCase()); function Breadcrumbs() { const location = useLocation(); const [breadcrumbs, setBreadcrumbs] = useState([]); useEffect(() => { const generateBreadcrumbs = () => { console.log('Generating breadcrumbs for path:', location.pathname); const pathnames = location.pathname.split('/').filter((x) => x); console.log('Path segments:', pathnames); const crumbs = []; crumbs.push({ label: 'Home', path: '/home' }); if (pathnames.length > 0) { let currentPath = ''; pathnames.forEach((segment, index) => { currentPath += `/${segment}`; console.log('Current path segment:', currentPath); if (segment !== 'app') { const appRoute = routes.find(route => route.path === '/app'); if (appRoute && appRoute.children) { const childRoute = appRoute.children.find(child => child.path === segment); if (childRoute) { crumbs.push({ label: childRoute.breadcrumb, path: currentPath }); } else { crumbs.push({ label: formatLabel(segment), path: currentPath }); } } else { crumbs.push({ label: formatLabel(segment), path: currentPath }); } } }); } console.log('Generated breadcrumbs:', crumbs); setBreadcrumbs(crumbs); }; generateBreadcrumbs(); }, [location]); console.log('Rendering breadcrumbs:', breadcrumbs); return ( <BreadcrumbContainer aria-label="breadcrumb"> <BreadcrumbList> {breadcrumbs.map((crumb, index) => ( <BreadcrumbItem key={index} aria-current={index === breadcrumbs.length - 1 ? 'page' : undefined}> {crumb.path ? ( <Link to={crumb.path}>{crumb.label}</Link> ) : ( <span>{crumb.label}</span> )} </BreadcrumbItem> ))} </BreadcrumbList> </BreadcrumbContainer> ); } export default Breadcrumbs;
+```
+
+### File: `src/components/pages/Help.jsx`
+
+**Language:** jsx
+
+**File Size:** 390 bytes
+**Created:** 2024-09-19T00:03:22.515095
+**Modified:** 2024-09-19T00:03:22.515095
+
+```jsx
+import React from 'react'; import styled from 'styled-components'; const HelpContainer = styled.div` padding: 20px; `; function Help() { return ( <HelpContainer> <h1>Help</h1> <p>This section will provide help and support information.</p> {} </HelpContainer> ); } export default Help;
+```
+
+### File: `src/components/pages/Upload.jsx`
+
+**Language:** jsx
+
+**File Size:** 2706 bytes
+**Created:** 2024-10-01T01:21:31.947519
+**Modified:** 2024-10-01T01:21:31.947519
+
+```jsx
+import React, { useState, useEffect } from 'react'; import styled from 'styled-components'; import FileUploader from '../common/FileUploader'; import Notification from '../common/Notification'; import api from '../../utils/api'; const UploadContainer = styled.div` padding: 20px; `; function Upload() { const [notification, setNotification] = useState({ message: '', type: 'success' }); const [uploadedFiles, setUploadedFiles] = useState([]); useEffect(() => { const fetchUploadedFiles = async () => { try { const response = await api.get('/file_history'); setUploadedFiles(response.data.files || []); } catch (error) { console.error('Error fetching file history:', error); setNotification({ message: 'Failed to fetch uploaded files. Please try again.', type: 'error' }); } }; fetchUploadedFiles(); }, []); return ( <UploadContainer> <h1>Upload Files</h1> {notification.message && ( <Notification message={notification.message} type={notification.type} onClose={() => setNotification({ message: '', type: 'success' })} /> )} <FileUploader uploadedFiles={uploadedFiles} setUploadedFiles={setUploadedFiles} setNotification={setNotification} /> </UploadContainer> ); } export default Upload;
+```
+
+### File: `src/components/pages/ConfirmEmail.jsx`
+
+**Language:** jsx
+
+**File Size:** 1567 bytes
+**Created:** 2024-09-30T14:17:52.979174
+**Modified:** 2024-09-30T14:17:52.979174
+
+```jsx
+import React, { useEffect, useState } from 'react'; import { useParams, useNavigate } from 'react-router-dom'; import api from '../../utils/api'; import Notification from '../common/Notification'; import Button from '../common/Button'; const ConfirmEmail = () => { const { token } = useParams(); const [notification, setNotification] = useState({ message: '', type: '' }); const navigate = useNavigate(); useEffect(() => { const confirmEmail = async () => { try { const response = await api.get(`/auth/confirm/${token}`); setNotification({ message: response.data.message, type: 'success' }); setTimeout(() => { navigate('/login'); }, 3000); } catch (err) { const errorMsg = err.response?.data?.error || 'Email confirmation failed.'; setNotification({ message: errorMsg, type: 'error' }); } }; confirmEmail(); }, [token, navigate]); return ( <div> <h2>Email Confirmation</h2> {notification.message && ( <Notification message={notification.message} type={notification.type} onClose={() => setNotification({ message: '', type: '' })} /> )} {} {notification.type === 'error' && ( <Button onClick={() => navigate('/register')} variant="secondary"> Retry Registration </Button> )} </div> ); }; export default ConfirmEmail;
+```
+
+### File: `src/components/pages/NotFound.jsx`
+
+**Language:** jsx
+
+**File Size:** 1308 bytes
+**Created:** 2024-09-30T15:36:45.899990
+**Modified:** 2024-09-30T15:36:45.899990
+
+```jsx
+import React from 'react'; import styled from 'styled-components'; import { Link } from 'react-router-dom'; const NotFoundContainer = styled.div` display: flex; flex-direction: column; align-items: center; padding: 100px 20px; text-align: center; `; const Title = styled.h1` font-size: ${({ theme }) => theme.fontSizes.h1}; color: ${({ theme }) => theme.colors.error}; margin-bottom: 20px; `; const Description = styled.p` font-size: ${({ theme }) => theme.fontSizes.body}; color: ${({ theme }) => theme.colors.text}; margin-bottom: 40px; `; const HomeButton = styled(Link)` background-color: ${({ theme }) => theme.colors.primary}; color: ${({ theme }) => theme.colors.neutral}; padding: 15px 25px; text-decoration: none; border-radius: 5px; font-size: ${({ theme }) => theme.fontSizes.body}; transition: background-color 0.3s ease-in-out; &:hover { background-color: ${({ theme }) => theme.colors.accent}; } `; const NotFound = () => { return ( <NotFoundContainer> <Title>404 - Page Not Found</Title> <Description> Oops! The page you're looking for doesn't exist. </Description> <HomeButton to="/">Go to Home</HomeButton> </NotFoundContainer> ); }; export default NotFound;
+```
+
+### File: `src/components/pages/Analysis.jsx`
+
+**Language:** jsx
+
+**File Size:** 438 bytes
+**Created:** 2024-09-19T00:03:48.532111
+**Modified:** 2024-09-19T00:03:48.532111
+
+```jsx
+import React from 'react'; import styled from 'styled-components'; const AnalysisContainer = styled.div` padding: 20px; `; function Analysis() { return ( <AnalysisContainer> <h1>Analysis</h1> <p>This section will provide sentiment analysis and other data insights.</p> {} </AnalysisContainer> ); } export default Analysis;
+```
+
+### File: `src/components/pages/Dashboard.jsx`
+
+**Language:** jsx
+
+**File Size:** 2874 bytes
+**Created:** 2024-10-01T00:09:33.754491
+**Modified:** 2024-10-01T00:09:33.754491
+
+```jsx
+import React, { useEffect, useState } from 'react'; import styled from 'styled-components'; import FileDashboard from '../common/FileDashboard'; import Notification from '../common/Notification'; import api from '../../utils/api'; const DashboardContainer = styled.div` padding: 20px; `; function Dashboard() { const [uploadedFiles, setUploadedFiles] = useState([]); const [notification, setNotification] = useState({ message: '', type: 'success' }); useEffect(() => { api.get('/file_history') .then((response) => { const data = response.data; if (data.files) { setUploadedFiles(data.files); } }) .catch((error) => { console.error('Error fetching file history:', error); setNotification({ message: 'Failed to fetch file history.', type: 'error' }); }); }, []); return ( <DashboardContainer> <h1>Dashboard</h1> {notification.message && ( <Notification message={notification.message} type={notification.type} onClose={() => setNotification({ message: '', type: 'success' })} /> )} <FileDashboard uploadedFiles={uploadedFiles} /> </DashboardContainer> ); } export default Dashboard;
+```
+
+### File: `src/components/pages/Settings.jsx`
+
+**Language:** jsx
+
+**File Size:** 2379 bytes
+**Created:** 2024-09-19T00:03:13.140059
+**Modified:** 2024-09-19T00:03:13.140059
+
+```jsx
+import React, { useState } from 'react'; import styled from 'styled-components'; import Notification from '../common/Notification'; import Button from '../common/Button'; const SettingsContainer = styled.div` padding: 20px; `; const SettingsForm = styled.form` display: flex; flex-direction: column; gap: 15px; `; const Label = styled.label` font-size: ${({ theme }) => theme.fontSizes.body}; color: ${({ theme }) => theme.colors.text}; `; const Input = styled.input` padding: 10px; border: 1px solid #ccc; border-radius: 4px; font-size: ${({ theme }) => theme.fontSizes.body}; font-family: ${({ theme }) => theme.fonts.primary}; &:focus { border-color: ${({ theme }) => theme.colors.primary}; outline: none; box-shadow: 0 0 0 2px rgba(30, 144, 255, 0.2); } `; function Settings() { const [notification, setNotification] = useState({ message: '', type: 'success' }); const [settings, setSettings] = useState({ username: '', email: '', }); const handleChange = (e) => { setSettings({ ...settings, [e.target.name]: e.target.value, }); }; const handleSubmit = (e) => { e.preventDefault(); setNotification({ message: 'Settings updated successfully!', type: 'success' }); }; return ( <SettingsContainer> <h1>Settings</h1> {notification.message && ( <Notification message={notification.message} type={notification.type} onClose={() => setNotification({ message: '', type: 'success' })} /> )} <SettingsForm onSubmit={handleSubmit}> <div> <Label htmlFor="username">Username</Label> <Input type="text" id="username" name="username" value={settings.username} onChange={handleChange} required /> </div> <div> <Label htmlFor="email">Email</Label> <Input type="email" id="email" name="email" value={settings.email} onChange={handleChange} required /> </div> <Button variant="primary" type="submit"> Save Settings </Button> </SettingsForm> </SettingsContainer> ); } export default Settings;
+```
+
+### File: `src/components/pages/LandingPage.jsx`
+
+**Language:** jsx
+
+**File Size:** 12759 bytes
+**Created:** 2024-09-30T16:14:46.616214
+**Modified:** 2024-09-30T16:14:46.616214
+
+```jsx
+import React, { useContext, useEffect } from 'react'; import { Link, Navigate } from 'react-router-dom'; import styled from 'styled-components'; import { AuthContext } from '../../context/AuthContext'; import Loader from '../common/Loader'; import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'; import { faFileAudio, faSearch, faChartLine, faCog } from '@fortawesome/free-solid-svg-icons'; const LandingContainer = styled.div` display: flex; flex-direction: column; min-height: 100vh; `; const Header = styled.header` background-color: ${({ theme }) => theme.colors.primary}; color: ${({ theme }) => theme.colors.neutral}; padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center; `; const Logo = styled.h1` font-size: ${({ theme }) => theme.fontSizes.h2}; margin: 0; `; const Nav = styled.nav` display: flex; gap: 1rem; `; const NavLink = styled(Link)` color: ${({ theme }) => theme.colors.neutral}; text-decoration: none; font-weight: bold; padding: 0.5rem 1rem; border-radius: 4px; transition: background-color 0.3s ease; &:hover { background-color: rgba(255, 255, 255, 0.1); } `; const Hero = styled.section` background-color: ${({ theme }) => theme.colors.background}; color: ${({ theme }) => theme.colors.text}; padding: 4rem 2rem; text-align: center; `; const Title = styled.h2` font-size: ${({ theme }) => theme.fontSizes.h1}; margin-bottom: 1rem; `; const Subtitle = styled.p` font-size: ${({ theme }) => theme.fontSizes.h3}; max-width: 600px; margin: 0 auto 2rem; `; const CTAButton = styled(Link)` display: inline-block; background-color: ${({ theme }) => theme.colors.accent}; color: ${({ theme }) => theme.colors.neutral}; padding: 1rem 2rem; border-radius: 5px; text-decoration: none; font-weight: bold; font-size: ${({ theme }) => theme.fontSizes.body}; transition: background-color 0.3s ease; &:hover { background-color: ${({ theme }) => theme.colors.secondary}; } `; const FeaturesSection = styled.section` padding: 4rem 2rem; background-color: ${({ theme }) => theme.colors.neutral}; `; const FeaturesGrid = styled.div` display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 2rem; max-width: 1200px; margin: 0 auto; `; const FeatureCard = styled.div` background-color: ${({ theme }) => theme.colors.background}; border-radius: 8px; padding: 2rem; text-align: center; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); transition: transform 0.3s ease; &:hover { transform: translateY(-5px); } `; const FeatureIcon = styled(FontAwesomeIcon)` font-size: 2.5rem; color: ${({ theme }) => theme.colors.primary}; margin-bottom: 1rem; `; const FeatureTitle = styled.h3` font-size: ${({ theme }) => theme.fontSizes.h3}; margin-bottom: 0.5rem; `; const FeatureDescription = styled.p` font-size: ${({ theme }) => theme.fontSizes.body}; `; const CTASection = styled.section` background-color: ${({ theme }) => theme.colors.primary}; color: ${({ theme }) => theme.colors.neutral}; padding: 4rem 2rem; text-align: center; `; const CTATitle = styled.h2` font-size: ${({ theme }) => theme.fontSizes.h2}; margin-bottom: 1rem; `; const Footer = styled.footer` background-color: ${({ theme }) => theme.colors.background}; color: ${({ theme }) => theme.colors.text}; padding: 2rem; text-align: center; `; const LandingPage = () => { const { auth, loading } = useContext(AuthContext); useEffect(() => { console.log('LandingPage - Auth state:', auth); console.log('LandingPage - Loading state:', loading); }, [auth, loading]); if (loading) { return <Loader />; } if (auth.isAuthenticated) { console.log('LandingPage - Redirecting to dashboard'); return <Navigate to="/app/dashboard" replace />; } return ( <LandingContainer> <Header> <Logo>WaveAnalyzer</Logo> <Nav> <NavLink to="/login">Login</NavLink> <NavLink to="/register">Sign Up</NavLink> </Nav> </Header> <Hero> <Title>Analyze and Manage Your Media Files Effortlessly</Title> <Subtitle> Powerful tools for uploading, organizing, and analyzing your audio and video content. </Subtitle> <CTAButton to="/register">Get Started</CTAButton> </Hero> <FeaturesSection> <FeaturesGrid> <FeatureCard> <FeatureIcon icon={faFileAudio} /> <FeatureTitle>Organized Library</FeatureTitle> <FeatureDescription> Easily upload and categorize your media files for quick access and management. </FeatureDescription> </FeatureCard> <FeatureCard> <FeatureIcon icon={faSearch} /> <FeatureTitle>Advanced Search</FeatureTitle> <FeatureDescription> Utilize our powerful search tools to find specific files or information effortlessly. </FeatureDescription> </FeatureCard> <FeatureCard> <FeatureIcon icon={faChartLine} /> <FeatureTitle>Comprehensive Analysis</FeatureTitle> <FeatureDescription> Perform in-depth analyses on your media files to gain valuable insights. </FeatureDescription> </FeatureCard> <FeatureCard> <FeatureIcon icon={faCog} /> <FeatureTitle>Custom Settings</FeatureTitle> <FeatureDescription> Tailor the platform to your specific needs with customizable settings and preferences. </FeatureDescription> </FeatureCard> </FeaturesGrid> </FeaturesSection> <CTASection> <CTATitle>Ready to streamline your media workflow?</CTATitle> <CTAButton to="/register">Sign Up Now</CTAButton> </CTASection> <Footer> <p>&copy; {new Date().getFullYear()} WaveAnalyzer. All rights reserved.</p> </Footer> </LandingContainer> ); }; export default LandingPage;
+```
+
+### File: `src/components/pages/Library.jsx`
+
+**Language:** jsx
+
+**File Size:** 784 bytes
+**Created:** 2024-09-19T00:03:02.985720
+**Modified:** 2024-09-19T00:03:02.985720
+
+```jsx
+import React from 'react'; import styled from 'styled-components'; import FileDashboard from '../common/FileDashboard'; const LibraryContainer = styled.div` padding: 20px; `; function Library() { const dummyFiles = [ { filename: 'SampleAudio1.mp3', path: '/static/uploads/SampleAudio1.mp3', size: 10485760, type: 'audio/mpeg', duration: '03:45', }, { filename: 'SampleVideo1.mp4', path: '/static/uploads/SampleVideo1.mp4', size: 52428800, type: 'video/mp4', duration: '10:20', }, ]; return ( <LibraryContainer> <h1>Library</h1> <FileDashboard uploadedFiles={dummyFiles} /> </LibraryContainer> ); } export default Library;
+```
+

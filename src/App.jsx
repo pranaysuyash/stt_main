@@ -1,46 +1,356 @@
-import React, { Suspense } from 'react';
-import styled, { ThemeProvider } from 'styled-components';
-import GlobalStyle from './styles/GlobalStyle';
-import { theme } from './styles/theme';
-import ErrorBoundary from './components/common/ErrorBoundary';
-import Layout from './components/common/Layout';
-import { Routes, Route } from 'react-router-dom';
-import Loader from './components/common/Loader';
-import routes from './routes'; // Updated import statement
-import './fontAwesome'; // Import FontAwesome library
+// // // // import React, { Suspense, useEffect } from 'react';
+// // // // import { Routes, Route, useNavigate, useLocation } from 'react-router-dom';
+// // // // import styled from 'styled-components';
+// // // // import GlobalStyle from './styles/GlobalStyle';
+// // // // import ErrorBoundary from './components/common/ErrorBoundary';
+// // // // import Loader from './components/common/Loader';
+// // // // import routes from './routes';
+// // // // import './fontAwesome';
+// // // // import { AuthProvider, useAuth } from './context/AuthContext';
+// // // // import NotFound from './components/pages/NotFound';
+// // // // import LandingPage from './components/pages/LandingPage';
 
+// // // // const AppContainer = styled.div`
+// // // //   max-width: 100%;
+// // // //   margin: 0 auto;
+// // // //   background-color: ${({ theme }) => theme.colors.background};
+// // // // `;
+
+// // // // function AppRoutes() {
+// // // //   const navigate = useNavigate();
+// // // //   const location = useLocation();
+// // // //   const { auth, loading } = useAuth();
+
+// // // //   useEffect(() => {
+// // // //     console.log('Current path:', location.pathname);
+// // // //     console.log('Auth state:', auth);
+// // // //     console.log('Loading state:', loading);
+// // // //   }, [location.pathname, auth, loading]);
+
+// // // //   if (loading) {
+// // // //     return <Loader />;
+// // // //   }
+
+// // // //   return (
+// // // //     <Routes>
+// // // //       <Route path="/" element={<LandingPage />} />
+// // // //       {routes.map((route, index) => {
+// // // //         if (route.children) {
+// // // //           return (
+// // // //             <Route key={index} path={route.path} element={route.element}>
+// // // //               {route.children.map((child, childIndex) => (
+// // // //                 <Route key={childIndex} path={child.path} element={child.element} />
+// // // //               ))}
+// // // //             </Route>
+// // // //           );
+// // // //         }
+// // // //         return (
+// // // //           <Route key={index} path={route.path} element={route.element} />
+// // // //         );
+// // // //       })}
+// // // //       <Route path="*" element={<NotFound />} />
+// // // //     </Routes>
+// // // //   );
+// // // // }
+
+// // // // function App() {
+// // // //   return (
+// // // //     <AuthProvider>
+// // // //       <ErrorBoundary>
+// // // //         <AppContainer>
+// // // //           <GlobalStyle />
+// // // //           <Suspense fallback={<Loader />}>
+// // // //             <AppRoutes />
+// // // //           </Suspense>
+// // // //         </AppContainer>
+// // // //       </ErrorBoundary>
+// // // //     </AuthProvider>
+// // // //   );
+// // // // }
+
+// // // // export default App;
+// // // import React, { Suspense, useEffect } from 'react';
+// // // import { Routes, Route, useNavigate, useLocation } from 'react-router-dom';
+// // // import styled from 'styled-components';
+// // // import GlobalStyle from './styles/GlobalStyle';
+// // // import ErrorBoundary from './components/common/ErrorBoundary';
+// // // import Loader from './components/common/Loader';
+// // // import routes from './routes';
+// // // import './fontAwesome';
+// // // import { AuthProvider, useAuth } from './context/AuthContext';
+// // // import NotFound from './components/pages/NotFound';
+// // // import LandingPage from './components/pages/LandingPage';
+
+// // // const AppContainer = styled.div`
+// // //   max-width: 100%;
+// // //   margin: 0 auto;
+// // //   background-color: ${({ theme }) => theme.colors.background};
+// // // `;
+
+// // // function AppRoutes() {
+// // //   const navigate = useNavigate();
+// // //   const location = useLocation();
+// // //   const { auth, loading } = useAuth();
+
+// // //   useEffect(() => {
+// // //     console.log('Route changed:', location.pathname);
+// // //     console.log('Auth state:', auth);
+// // //     console.log('Loading state:', loading);
+// // //   }, [location.pathname, auth, loading]);
+
+// // //   return (
+// // //     <Routes>
+// // //       <Route path="/" element={<LandingPage />} />
+// // //       {routes.map((route, index) => {
+// // //         if (route.children) {
+// // //           return (
+// // //             <Route key={index} path={route.path} element={route.element}>
+// // //               {route.children.map((child, childIndex) => (
+// // //                 <Route key={childIndex} path={child.path} element={child.element} />
+// // //               ))}
+// // //             </Route>
+// // //           );
+// // //         }
+// // //         return (
+// // //           <Route key={index} path={route.path} element={route.element} />
+// // //         );
+// // //       })}
+// // //       <Route path="*" element={<NotFound />} />
+// // //     </Routes>
+// // //   );
+// // // }
+
+// // // function App() {
+// // //   const location = useLocation();
+
+// // //   useEffect(() => {
+// // //     console.log('Initial route:', location.pathname);
+// // //   }, []);
+
+// // //   return (
+// // //     <AuthProvider>
+// // //       <ErrorBoundary>
+// // //         <AppContainer>
+// // //           <GlobalStyle />
+// // //           <Suspense fallback={<Loader />}>
+// // //             <AppRoutes />
+// // //           </Suspense>
+// // //         </AppContainer>
+// // //       </ErrorBoundary>
+// // //     </AuthProvider>
+// // //   );
+// // // }
+
+// // // export default App;
+
+// // import React, { Suspense, useEffect } from 'react';
+// // import { Routes, Route, useLocation } from 'react-router-dom';
+// // import styled from 'styled-components';
+// // import GlobalStyle from './styles/GlobalStyle';
+// // import ErrorBoundary from './components/common/ErrorBoundary';
+// // import Loader from './components/common/Loader';
+// // import routes from './routes';
+// // import './fontAwesome';
+// // import { AuthProvider } from './context/AuthContext';
+// // import LandingPage from './components/pages/LandingPage';
+
+// // const AppContainer = styled.div`
+// //   max-width: 100%;
+// //   margin: 0 auto;
+// //   background-color: ${({ theme }) => theme.colors.background};
+// // `;
+
+// // function AppRoutes() {
+// //   const location = useLocation();
+
+// //   useEffect(() => {
+// //     console.log('Route changed:', location.pathname);
+// //   }, [location.pathname]);
+
+// //   return (
+// //     <Routes>
+// //       <Route path="/" element={<LandingPage />} />
+// //       {routes.map((route, index) => (
+// //         <Route key={index} path={route.path} element={route.element}>
+// //           {route.children?.map((child, childIndex) => (
+// //             <Route key={childIndex} path={child.path} element={child.element} />
+// //           ))}
+// //         </Route>
+// //       ))}
+// //     </Routes>
+// //   );
+// // }
+
+// // function App() {
+// //   return (
+// //     <AuthProvider>
+// //       <ErrorBoundary>
+// //         <AppContainer>
+// //           <GlobalStyle />
+// //           <Suspense fallback={<Loader />}>
+// //             <AppRoutes />
+// //           </Suspense>
+// //         </AppContainer>
+// //       </ErrorBoundary>
+// //     </AuthProvider>
+// //   );
+// // }
+
+// // export default App;
+// import React, { Suspense, useEffect } from 'react';
+// import { Routes, Route, useLocation, Navigate } from 'react-router-dom';
+// import styled from 'styled-components';
+// import GlobalStyle from './styles/GlobalStyle';
+// import ErrorBoundary from './components/common/ErrorBoundary';
+// import Loader from './components/common/Loader';
+// import routes from './routes';
+// import './fontAwesome';
+// import { AuthProvider, useAuth } from './context/AuthContext';
+// import LandingPage from './components/pages/LandingPage';
+
+// const AppContainer = styled.div`
+//   max-width: 100%;
+//   margin: 0 auto;
+//   background-color: ${({ theme }) => theme.colors.background};
+// `;
+
+// function AppRoutes() {
+//   const location = useLocation();
+//   const { auth, loading } = useAuth();
+
+//   useEffect(() => {
+//     console.log('Current route:', location.pathname);
+//     console.log('Auth state:', auth);
+//     console.log('Loading state:', loading);
+//   }, [location.pathname, auth, loading]);
+
+//   if (loading) {
+//     return <Loader />;
+//   }
+
+//   return (
+//     <Routes>
+//       <Route path="/" element={<LandingPage />} />
+//       {routes.map((route, index) => (
+//         <Route key={index} path={route.path} element={route.element} />
+//       ))}
+//       <Route path="*" element={<Navigate to="/" replace />} />
+//     </Routes>
+//   );
+// }
+
+// function App() {
+//   return (
+//     <AuthProvider>
+//       <ErrorBoundary>
+//         <AppContainer>
+//           <GlobalStyle />
+//           <Suspense fallback={<Loader />}>
+//             <AppRoutes />
+//           </Suspense>
+//         </AppContainer>
+//       </ErrorBoundary>
+//     </AuthProvider>
+//   );
+// }
+
+// export default App;
+
+// import React, { Suspense, useEffect } from 'react';
+// import { Routes, Route, useLocation } from 'react-router-dom';
+// import styled from 'styled-components';
+// import GlobalStyle from './styles/GlobalStyle';
+// import ErrorBoundary from './components/common/ErrorBoundary';
+// import Loader from './components/common/Loader';
+// import routes from './routes';
+// import './fontAwesome';
+// import { AuthProvider, useAuth } from './context/AuthContext';
+
+// const AppContainer = styled.div`
+//   max-width: 100%;
+//   margin: 0 auto;
+//   background-color: ${({ theme }) => theme.colors.background};
+// `;
+
+// function AppRoutes() {
+//   const location = useLocation();
+//   const { auth, loading } = useAuth();
+
+//   useEffect(() => {
+//     console.log('Current route:', location.pathname);
+//     console.log('Auth state:', auth);
+//     console.log('Loading state:', loading);
+//   }, [location.pathname, auth, loading]);
+
+//   if (loading) {
+//     return <Loader />;
+//   }
+
+//   return (
+//     <Routes>
+//       {routes.map((route, index) => {
+//         if (route.children) {
+//           return (
+//             <Route key={index} path={route.path} element={route.element}>
+//               {route.children.map((child, childIndex) => (
+//                 <Route
+//                   key={`${index}-${childIndex}`}
+//                   path={child.path}
+//                   element={child.element}
+//                 />
+//               ))}
+//             </Route>
+//           );
+//         }
+//         return (
+//           <Route key={index} path={route.path} element={route.element} />
+//         );
+//       })}
+//     </Routes>
+//   );
+// }
+
+// function App() {
+//   return (
+//     <AuthProvider>
+//       <ErrorBoundary>
+//         <AppContainer>
+//           <GlobalStyle />
+//           <Suspense fallback={<Loader />}>
+//             <AppRoutes />
+//           </Suspense>
+//         </AppContainer>
+//       </ErrorBoundary>
+//     </AuthProvider>
+//   );
+// }
+
+// export default App;
+
+import React, { Suspense } from 'react';
+import styled from 'styled-components';
+import GlobalStyle from './styles/GlobalStyle';
+import ErrorBoundary from './components/common/ErrorBoundary';
+import Loader from './components/common/Loader';
+import AppRoutes from './AppRoutes';
+import './fontAwesome';
 
 const AppContainer = styled.div`
   max-width: 100%;
   margin: 0 auto;
-  // padding: 20px;
   background-color: ${({ theme }) => theme.colors.background};
-  border-radius: 10px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 `;
 
 function App() {
   return (
-    <ThemeProvider theme={theme}>
-      <GlobalStyle />
-      <ErrorBoundary>
-        <AppContainer>
-          <Layout>
-            <Suspense fallback={<Loader />}>
-              <Routes>
-                {routes.map((route, index) => (
-                  <Route
-                    key={index}
-                    path={route.path}
-                    element={route.element}
-                  />
-                ))}
-              </Routes>
-            </Suspense>
-          </Layout>
-        </AppContainer>
-      </ErrorBoundary>
-    </ThemeProvider>
+    <ErrorBoundary>
+      <AppContainer>
+        <GlobalStyle />
+        <Suspense fallback={<Loader />}>
+          <AppRoutes />
+        </Suspense>
+      </AppContainer>
+    </ErrorBoundary>
   );
 }
 

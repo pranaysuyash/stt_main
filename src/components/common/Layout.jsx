@@ -7,6 +7,7 @@ import QuickAccessToolbar from "./QuickAccessToolbar";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faBars } from "@fortawesome/free-solid-svg-icons";
 import PropTypes from "prop-types";
+import { Outlet } from "react-router-dom"; // Import Outlet for nested routes
 
 const LayoutContainer = styled.div`
   display: flex;
@@ -19,13 +20,12 @@ const Content = styled.main`
   width: 100%;
   transition: margin-left 0.3s ease-in-out;
   @media (max-width: 768px) {
-  padding: 15px;
-  width: 100%;
-  border-radius: 0;
-  height: 100vh;
-  max-height: 100vh;
-}
-
+    padding: 15px;
+    width: 100%;
+    border-radius: 0;
+    height: 100vh;
+    max-height: 100vh;
+  }
 `;
 
 const MobileHeader = styled.header`
@@ -55,6 +55,10 @@ const MenuButton = styled.button`
   &:hover {
     color: #3498db;
   }
+  &:focus {
+    outline: 2px solid #3498db;
+    outline-offset: 2px;
+  }
 `;
 
 const ToolbarPlaceholder = styled.div`
@@ -64,13 +68,13 @@ const ToolbarPlaceholder = styled.div`
   }
 `;
 
-function Layout({ children }) {
+function Layout() {
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(window.innerWidth <= 768);
 
   const toggleMobile = () => {
     setIsMobileOpen(!isMobileOpen);
-    setSidebarCollapsed(isMobileOpen); // Synchronize sidebarCollapsed on mobile
+    setSidebarCollapsed(!isMobileOpen); // Toggle sidebar collapse based on mobile open state
   };
 
   const toggleSidebar = () => {
@@ -80,25 +84,24 @@ function Layout({ children }) {
   return (
     <>
       <SideNav
-        isMobile={false}
+        isMobile={true}
         isMobileOpen={isMobileOpen}
         toggleMobile={toggleMobile}
         collapsed={sidebarCollapsed}
         toggleSidebar={toggleSidebar}
       />
       <MobileHeader>
-        <MenuButton onClick={toggleMobile} aria-label="Open Sidebar">
+        <MenuButton onClick={toggleMobile} aria-label="Toggle Sidebar">
           <FontAwesomeIcon icon={faBars} />
         </MenuButton>
         <h2 style={{ marginLeft: "20px" }}>WaveAnalyzer</h2>
       </MobileHeader>
       <LayoutContainer>
-      {/* <Content data-sidebar-collapsed={sidebarCollapsed.toString()} $sidebarCollapsed={sidebarCollapsed}> */}
         <Content $sidebarCollapsed={sidebarCollapsed}>
           <Breadcrumbs />
           <QuickAccessToolbar />
           <ToolbarPlaceholder />
-          {children}
+          <Outlet /> {/* Render nested routes here */}
         </Content>
       </LayoutContainer>
     </>
@@ -106,7 +109,7 @@ function Layout({ children }) {
 }
 
 Layout.propTypes = {
-  children: PropTypes.node, 
+  children: PropTypes.node,
 };
 
 export default Layout;

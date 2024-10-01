@@ -6,28 +6,18 @@ const spin = keyframes`
   to { transform: rotate(360deg); }
 `;
 
-const LoaderWrapper = styled.div`
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100%;
-`;
-
 const Spinner = styled.div`
-  border: 4px solid ${({ theme }) => theme.colors.neutral};
-  border-top: 4px solid ${({ theme }) => theme.colors.primary};
+  width: 50px;
+  height: 50px;
+  border: 5px solid ${({ theme }) => theme.colors?.primary || '#008080'};
+  border-top-color: transparent;
   border-radius: 50%;
-  width: 40px;
-  height: 40px;
   animation: ${spin} 1s linear infinite;
+  margin: 100px auto;
 `;
 
-function Loader() {
-  return (
-    <LoaderWrapper>
-      <Spinner />
-    </LoaderWrapper>
-  );
-}
+const Loader = () => {
+  return <Spinner aria-label="Loading" />;
+};
 
 export default Loader;

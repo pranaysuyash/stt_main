@@ -1,162 +1,7 @@
-// // // // // // import React, { lazy } from 'react';
-
-// // // // // // // Lazy-loaded components for code-splitting
-// // // // // // const Dashboard = lazy(() => import('./components/pages/Dashboard'));
-// // // // // // const Upload = lazy(() => import('./components/pages/Upload'));
-// // // // // // const Library = lazy(() => import('./components/pages/Library'));
-// // // // // // const Settings = lazy(() => import('./components/pages/Settings'));
-// // // // // // const Help = lazy(() => import('./components/pages/Help'));
-// // // // // // const NotFound = lazy(() => import('./components/pages/NotFound'));
-// // // // // // const Analysis = lazy(() => import('./components/pages/Analysis'));
-
-// // // // // // // Route configuration with breadcrumb metadata
-// // // // // // const routes = [
-// // // // // //   {
-// // // // // //     path: '/',
-// // // // // //     element: <Dashboard />,
-// // // // // //     breadcrumb: 'Dashboard',
-// // // // // //   },
-// // // // // //   {
-// // // // // //     path: '/upload',
-// // // // // //     element: <Upload />,
-// // // // // //     breadcrumb: 'Upload',
-// // // // // //   },
-// // // // // //   {
-// // // // // //     path: '/library',
-// // // // // //     element: <Library />,
-// // // // // //     breadcrumb: 'Library',
-// // // // // //   },
-// // // // // //   {
-// // // // // //     path: '/analysis',
-// // // // // //     element: <Analysis />,
-// // // // // //     breadcrumb: 'Analysis',
-// // // // // //   },
-// // // // // //   {
-// // // // // //     path: '/settings',
-// // // // // //     element: <Settings />,
-// // // // // //     breadcrumb: 'Settings',
-// // // // // //   },
-// // // // // //   {
-// // // // // //     path: '/help',
-// // // // // //     element: <Help />,
-// // // // // //     breadcrumb: 'Help',
-// // // // // //   },
-// // // // // //   {
-// // // // // //     path: '*',
-// // // // // //     element: <NotFound />,
-// // // // // //     breadcrumb: 'Not Found',
-// // // // // //   },
-// // // // // // ];
-
-// // // // // // export default routes;
-
-// // // // // // src/routes.jsx
-// // // // // import React, { lazy } from 'react';
-
-// // // // // // Lazy-loaded components for code-splitting
-// // // // // const Dashboard = lazy(() => import('./components/pages/Dashboard'));
-// // // // // const Upload = lazy(() => import('./components/pages/Upload'));
-// // // // // const Library = lazy(() => import('./components/pages/Library'));
-// // // // // const Settings = lazy(() => import('./components/pages/Settings'));
-// // // // // const Help = lazy(() => import('./components/pages/Help'));
-// // // // // const NotFound = lazy(() => import('./components/pages/NotFound'));
-// // // // // const Analysis = lazy(() => import('./components/pages/Analysis'));
-
-// // // // // // Route configuration with breadcrumb metadata
-// // // // // const routes = [
-// // // // //   {
-// // // // //     path: '/',
-// // // // //     element: <Dashboard />,
-// // // // //     breadcrumb: 'Dashboard',
-// // // // //   },
-// // // // //   {
-// // // // //     path: '/upload',
-// // // // //     element: <Upload />,
-// // // // //     breadcrumb: 'Upload',
-// // // // //   },
-// // // // //   {
-// // // // //     path: '/library',
-// // // // //     element: <Library />,
-// // // // //     breadcrumb: 'Library',
-// // // // //   },
-// // // // //   {
-// // // // //     path: '/analysis',
-// // // // //     element: <Analysis />,
-// // // // //     breadcrumb: 'Analysis',
-// // // // //   },
-// // // // //   {
-// // // // //     path: '/settings',
-// // // // //     element: <Settings />,
-// // // // //     breadcrumb: 'Settings',
-// // // // //   },
-// // // // //   {
-// // // // //     path: '/help',
-// // // // //     element: <Help />,
-// // // // //     breadcrumb: 'Help',
-// // // // //   },
-// // // // //   {
-// // // // //     path: '*',
-// // // // //     element: <NotFound />,
-// // // // //     breadcrumb: 'Not Found',
-// // // // //   },
-// // // // // ];
-
-// // // // // export default routes;
-// // // // // src/routes.jsx
-// // // // import React, { lazy } from 'react';
-
-// // // // // Lazy-loaded components for code-splitting
-// // // // const Dashboard = lazy(() => import('./components/pages/Dashboard'));
-// // // // const Upload = lazy(() => import('./components/pages/Upload'));
-// // // // const Library = lazy(() => import('./components/pages/Library'));
-// // // // const Settings = lazy(() => import('./components/pages/Settings'));
-// // // // const Help = lazy(() => import('./components/pages/Help'));
-// // // // const NotFound = lazy(() => import('./components/pages/NotFound'));
-// // // // const Analysis = lazy(() => import('./components/pages/Analysis'));
-
-// // // // // Route configuration with breadcrumb metadata
-// // // // const routes = [
-// // // //   {
-// // // //     path: '/',
-// // // //     element: <Dashboard />,
-// // // //     breadcrumb: 'Dashboard',
-// // // //   },
-// // // //   {
-// // // //     path: '/upload',
-// // // //     element: <Upload />,
-// // // //     breadcrumb: 'Upload',
-// // // //   },
-// // // //   {
-// // // //     path: '/library',
-// // // //     element: <Library />,
-// // // //     breadcrumb: 'Library',
-// // // //   },
-// // // //   {
-// // // //     path: '/analysis',
-// // // //     element: <Analysis />,
-// // // //     breadcrumb: 'Analysis',
-// // // //   },
-// // // //   {
-// // // //     path: '/settings',
-// // // //     element: <Settings />,
-// // // //     breadcrumb: 'Settings',
-// // // //   },
-// // // //   {
-// // // //     path: '/help',
-// // // //     element: <Help />,
-// // // //     breadcrumb: 'Help',
-// // // //   },
-// // // //   {
-// // // //     path: '*',
-// // // //     element: <NotFound />,
-// // // //     breadcrumb: 'Not Found',
-// // // //   },
-// // // // ];
-
-// // // // export default routes;
-
 // // // // src/routes.jsx
 // // // import React, { lazy } from 'react';
+// // // import ProtectedRoute from './components/common/ProtectedRoute';
+// // // import Layout from './components/common/Layout';
 
 // // // // Lazy-loaded components for code-splitting
 // // // const Dashboard = lazy(() => import('./components/pages/Dashboard'));
@@ -166,51 +11,88 @@
 // // // const Help = lazy(() => import('./components/pages/Help'));
 // // // const NotFound = lazy(() => import('./components/pages/NotFound'));
 // // // const Analysis = lazy(() => import('./components/pages/Analysis'));
+// // // const Login = lazy(() => import('./components/auth/Login'));
+// // // const Register = lazy(() => import('./components/auth/Register'));
+// // // const ForgotPassword = lazy(() => import('./components/auth/ForgotPassword'));
+// // // const LandingPage = lazy(() => import('./components/pages/LandingPage'));
 
-// // // // Route configuration with breadcrumb metadata
 // // // const routes = [
+// // //   // Public Routes
 // // //   {
 // // //     path: '/',
-// // //     element: <Dashboard />,
-// // //     breadcrumb: 'Dashboard',
+// // //     element: <LandingPage />,
+// // //     breadcrumb: 'Home',
 // // //   },
 // // //   {
-// // //     path: '/upload',
-// // //     element: <Upload />,
-// // //     breadcrumb: 'Upload',
+// // //     path: '/login',
+// // //     element: <Login />,
+// // //     breadcrumb: 'Login',
 // // //   },
 // // //   {
-// // //     path: '/library',
-// // //     element: <Library />,
-// // //     breadcrumb: 'Library',
+// // //     path: '/register',
+// // //     element: <Register />,
+// // //     breadcrumb: 'Register',
 // // //   },
 // // //   {
-// // //     path: '/analysis',
-// // //     element: <Analysis />,
-// // //     breadcrumb: 'Analysis',
+// // //     path: '/forgot-password',
+// // //     element: <ForgotPassword />,
+// // //     breadcrumb: 'Forgot Password',
 // // //   },
+  
+// // //   // Protected Routes Nested within '/app'
 // // //   {
-// // //     path: '/settings',
-// // //     element: <Settings />,
-// // //     breadcrumb: 'Settings',
-// // //   },
-// // //   {
-// // //     path: '/help',
-// // //     element: <Help />,
-// // //     breadcrumb: 'Help',
-// // //   },
-// // //   {
-// // //     path: '*',
-// // //     element: <NotFound />,
-// // //     breadcrumb: 'Not Found',
+// // //     path: '/app',
+// // //     element: (
+// // //       <ProtectedRoute>
+// // //         <Layout />
+// // //       </ProtectedRoute>
+// // //     ),
+// // //     children: [
+// // //       {
+// // //         path: 'dashboard',
+// // //         element: <Dashboard />,
+// // //         breadcrumb: 'Dashboard',
+// // //       },
+// // //       {
+// // //         path: 'upload',
+// // //         element: <Upload />,
+// // //         breadcrumb: 'Upload',
+// // //       },
+// // //       {
+// // //         path: 'library',
+// // //         element: <Library />,
+// // //         breadcrumb: 'Library',
+// // //       },
+// // //       {
+// // //         path: 'analysis',
+// // //         element: <Analysis />,
+// // //         breadcrumb: 'Analysis',
+// // //       },
+// // //       {
+// // //         path: 'settings',
+// // //         element: <Settings />,
+// // //         breadcrumb: 'Settings',
+// // //       },
+// // //       {
+// // //         path: 'help',
+// // //         element: <Help />,
+// // //         breadcrumb: 'Help',
+// // //       },
+// // //       {
+// // //         path: '*',
+// // //         element: <NotFound />,
+// // //         breadcrumb: 'Not Found',
+// // //       },
+// // //     ],
 // // //   },
 // // // ];
 
 // // // export default routes;
-// // // src/routes.jsx
-// // import React, { lazy } from 'react';
 
-// // // Lazy-loaded components for code-splitting
+// // import React, { lazy } from 'react';
+// // import ProtectedRoute from './components/common/ProtectedRoute';
+// // import Layout from './components/common/Layout';
+
 // // const Dashboard = lazy(() => import('./components/pages/Dashboard'));
 // // const Upload = lazy(() => import('./components/pages/Upload'));
 // // const Library = lazy(() => import('./components/pages/Library'));
@@ -218,51 +100,56 @@
 // // const Help = lazy(() => import('./components/pages/Help'));
 // // const NotFound = lazy(() => import('./components/pages/NotFound'));
 // // const Analysis = lazy(() => import('./components/pages/Analysis'));
+// // const Login = lazy(() => import('./components/auth/Login'));
+// // const Register = lazy(() => import('./components/auth/Register'));
+// // const ForgotPassword = lazy(() => import('./components/auth/ForgotPassword'));
+// // const LandingPage = lazy(() => import('./components/pages/LandingPage'));
 
-// // // Route configuration with breadcrumb metadata
 // // const routes = [
 // //   {
 // //     path: '/',
-// //     element: <Dashboard />,
-// //     breadcrumb: 'Dashboard',
+// //     element: <LandingPage />,
+// //     breadcrumb: 'Home',
 // //   },
 // //   {
-// //     path: '/upload',
-// //     element: <Upload />,
-// //     breadcrumb: 'Upload',
+// //     path: '/login',
+// //     element: <Login />,
+// //     breadcrumb: 'Login',
 // //   },
 // //   {
-// //     path: '/library',
-// //     element: <Library />,
-// //     breadcrumb: 'Library',
+// //     path: '/register',
+// //     element: <Register />,
+// //     breadcrumb: 'Register',
 // //   },
 // //   {
-// //     path: '/analysis',
-// //     element: <Analysis />,
-// //     breadcrumb: 'Analysis',
+// //     path: '/forgot-password',
+// //     element: <ForgotPassword />,
+// //     breadcrumb: 'Forgot Password',
 // //   },
 // //   {
-// //     path: '/settings',
-// //     element: <Settings />,
-// //     breadcrumb: 'Settings',
-// //   },
-// //   {
-// //     path: '/help',
-// //     element: <Help />,
-// //     breadcrumb: 'Help',
-// //   },
-// //   {
-// //     path: '*',
-// //     element: <NotFound />,
-// //     breadcrumb: 'Not Found',
+// //     path: '/app',
+// //     element: (
+// //       <ProtectedRoute>
+// //         <Layout />
+// //       </ProtectedRoute>
+// //     ),
+// //     children: [
+// //       { path: 'dashboard', element: <Dashboard />, breadcrumb: 'Dashboard' },
+// //       { path: 'upload', element: <Upload />, breadcrumb: 'Upload' },
+// //       { path: 'library', element: <Library />, breadcrumb: 'Library' },
+// //       { path: 'analysis', element: <Analysis />, breadcrumb: 'Analysis' },
+// //       { path: 'settings', element: <Settings />, breadcrumb: 'Settings' },
+// //       { path: 'help', element: <Help />, breadcrumb: 'Help' },
+// //     ],
 // //   },
 // // ];
 
 // // export default routes;
-// // src/routes.jsx
-// import React, { lazy } from 'react';
 
-// // Lazy-loaded components for code-splitting
+// import React, { lazy } from 'react';
+// import ProtectedRoute from './components/common/ProtectedRoute';
+// import Layout from './components/common/Layout';
+
 // const Dashboard = lazy(() => import('./components/pages/Dashboard'));
 // const Upload = lazy(() => import('./components/pages/Upload'));
 // const Library = lazy(() => import('./components/pages/Library'));
@@ -270,38 +157,47 @@
 // const Help = lazy(() => import('./components/pages/Help'));
 // const NotFound = lazy(() => import('./components/pages/NotFound'));
 // const Analysis = lazy(() => import('./components/pages/Analysis'));
+// const Login = lazy(() => import('./components/auth/Login'));
+// const Register = lazy(() => import('./components/auth/Register'));
+// const ForgotPassword = lazy(() => import('./components/auth/ForgotPassword'));
+// const LandingPage = lazy(() => import('./components/pages/LandingPage'));
 
-// // Route configuration with breadcrumb metadata
 // const routes = [
 //   {
 //     path: '/',
-//     element: <Dashboard />,
-//     breadcrumb: 'Dashboard',
+//     element: <LandingPage />,
+//     breadcrumb: 'Home',
 //   },
 //   {
-//     path: '/upload',
-//     element: <Upload />,
-//     breadcrumb: 'Upload',
+//     path: '/login',
+//     element: <Login />,
+//     breadcrumb: 'Login',
 //   },
 //   {
-//     path: '/library',
-//     element: <Library />,
-//     breadcrumb: 'Library',
+//     path: '/register',
+//     element: <Register />,
+//     breadcrumb: 'Register',
 //   },
 //   {
-//     path: '/analysis',
-//     element: <Analysis />,
-//     breadcrumb: 'Analysis',
+//     path: '/forgot-password',
+//     element: <ForgotPassword />,
+//     breadcrumb: 'Forgot Password',
 //   },
 //   {
-//     path: '/settings',
-//     element: <Settings />,
-//     breadcrumb: 'Settings',
-//   },
-//   {
-//     path: '/help',
-//     element: <Help />,
-//     breadcrumb: 'Help',
+//     path: '/app',
+//     element: (
+//       <ProtectedRoute>
+//         <Layout />
+//       </ProtectedRoute>
+//     ),
+//     children: [
+//       { path: 'dashboard', element: <Dashboard />, breadcrumb: 'Dashboard' },
+//       { path: 'upload', element: <Upload />, breadcrumb: 'Upload' },
+//       { path: 'library', element: <Library />, breadcrumb: 'Library' },
+//       { path: 'analysis', element: <Analysis />, breadcrumb: 'Analysis' },
+//       { path: 'settings', element: <Settings />, breadcrumb: 'Settings' },
+//       { path: 'help', element: <Help />, breadcrumb: 'Help' },
+//     ],
 //   },
 //   {
 //     path: '*',
@@ -311,10 +207,74 @@
 // ];
 
 // export default routes;
-// src/routes.jsx
-import React, { lazy } from 'react';
 
-// Lazy-loaded components for code-splitting
+// import React, { lazy } from 'react';
+// import ProtectedRoute from './components/common/ProtectedRoute';
+// import Layout from './components/common/Layout';
+
+// const Dashboard = lazy(() => import('./components/pages/Dashboard'));
+// const Upload = lazy(() => import('./components/pages/Upload'));
+// const Library = lazy(() => import('./components/pages/Library'));
+// const Settings = lazy(() => import('./components/pages/Settings'));
+// const Help = lazy(() => import('./components/pages/Help'));
+// const NotFound = lazy(() => import('./components/pages/NotFound'));
+// const Analysis = lazy(() => import('./components/pages/Analysis'));
+// const Login = lazy(() => import('./components/auth/Login'));
+// const Register = lazy(() => import('./components/auth/Register'));
+// const ForgotPassword = lazy(() => import('./components/auth/ForgotPassword'));
+// const LandingPage = lazy(() => import('./components/pages/LandingPage'));
+
+// const routes = [
+//   {
+//     path: '/home',
+//     element: <LandingPage />,
+//     breadcrumb: 'Home',
+//   },
+//   {
+//     path: '/login',
+//     element: <Login />,
+//     breadcrumb: 'Login',
+//   },
+//   {
+//     path: '/register',
+//     element: <Register />,
+//     breadcrumb: 'Register',
+//   },
+//   {
+//     path: '/forgot-password',
+//     element: <ForgotPassword />,
+//     breadcrumb: 'Forgot Password',
+//   },
+//   {
+//     path: '/app',
+//     element: (
+//       <ProtectedRoute>
+//         <Layout />
+//       </ProtectedRoute>
+//     ),
+//     children: [
+//       { path: 'dashboard', element: <Dashboard />, breadcrumb: 'Dashboard' },
+//       { path: 'upload', element: <Upload />, breadcrumb: 'Upload' },
+//       { path: 'library', element: <Library />, breadcrumb: 'Library' },
+//       { path: 'analysis', element: <Analysis />, breadcrumb: 'Analysis' },
+//       { path: 'settings', element: <Settings />, breadcrumb: 'Settings' },
+//       { path: 'help', element: <Help />, breadcrumb: 'Help' },
+//     ],
+//   },
+//   {
+//     path: '*',
+//     element: <NotFound />,
+//     breadcrumb: 'Not Found',
+//   },
+// ];
+
+// export default routes;
+
+import React, { lazy } from 'react';
+import { Navigate } from 'react-router-dom';
+import ProtectedRoute from './components/common/ProtectedRoute';
+import Layout from './components/common/Layout';
+
 const Dashboard = lazy(() => import('./components/pages/Dashboard'));
 const Upload = lazy(() => import('./components/pages/Upload'));
 const Library = lazy(() => import('./components/pages/Library'));
@@ -322,46 +282,54 @@ const Settings = lazy(() => import('./components/pages/Settings'));
 const Help = lazy(() => import('./components/pages/Help'));
 const NotFound = lazy(() => import('./components/pages/NotFound'));
 const Analysis = lazy(() => import('./components/pages/Analysis'));
+const Login = lazy(() => import('./components/auth/Login'));
+const Register = lazy(() => import('./components/auth/Register'));
+const ForgotPassword = lazy(() => import('./components/auth/ForgotPassword'));
+const LandingPage = lazy(() => import('./components/pages/LandingPage'));
 
-// Route configuration with breadcrumb metadata
 const routes = [
   {
     path: '/',
-    element: <Dashboard />,
-    breadcrumb: 'Dashboard',
+    element: <Navigate to="/home" replace />,
   },
   {
-    path: '/dashboard',
-    element: <Dashboard />,
-    breadcrumb: 'Dashboard',
+    path: '/home',
+    element: <LandingPage />,
+    breadcrumb: 'Home',
   },
   {
-    path: '/upload',
-    element: <Upload />,
-    breadcrumb: 'Upload',
+    path: '/login',
+    element: <Login />,
+    breadcrumb: 'Login',
   },
   {
-    path: '/library',
-    element: <Library />,
-    breadcrumb: 'Library',
+    path: '/register',
+    element: <Register />,
+    breadcrumb: 'Register',
   },
   {
-    path: '/analysis',
-    element: <Analysis />,
-    breadcrumb: 'Analysis',
+    path: '/forgot-password',
+    element: <ForgotPassword />,
+    breadcrumb: 'Forgot Password',
   },
   {
-    path: '/settings',
-    element: <Settings />,
-    breadcrumb: 'Settings',
+    path: '/app',
+    element: (
+      <ProtectedRoute>
+        <Layout />
+      </ProtectedRoute>
+    ),
+    children: [
+      { path: 'dashboard', element: <Dashboard />, breadcrumb: 'Dashboard' },
+      { path: 'upload', element: <Upload />, breadcrumb: 'Upload' },
+      { path: 'library', element: <Library />, breadcrumb: 'Library' },
+      { path: 'analysis', element: <Analysis />, breadcrumb: 'Analysis' },
+      { path: 'settings', element: <Settings />, breadcrumb: 'Settings' },
+      { path: 'help', element: <Help />, breadcrumb: 'Help' },
+    ],
   },
   {
-    path: '/help',
-    element: <Help />,
-    breadcrumb: 'Help',
-  },
-  {
-    path: '*', // Wildcard route should be last
+    path: '*',
     element: <NotFound />,
     breadcrumb: 'Not Found',
   },
