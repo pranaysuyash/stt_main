@@ -309,19 +309,46 @@ class Subscription(db.Model):
 #     db.Column('tag_id', db.Integer, db.ForeignKey('tags.id'), primary_key=True)
 # )
 
+# class File(db.Model):
+#     __tablename__ = 'files'
+    
+#     id = db.Column(db.Integer, primary_key=True)
+#     filename = db.Column(db.String(255), unique=True, nullable=False, index=True)
+#     path = db.Column(db.String(255), unique=True, nullable=False, index=True)
+#     size = db.Column(db.BigInteger, nullable=False, index=True)  
+#     type = db.Column(db.String(100), nullable=False)
+#     duration = db.Column(db.String(10))
+#     uploaded_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False, index=True)
+    
+#     # Many-to-many relationship with Tag
+#     tags = db.relationship('Tag', secondary='file_tags', back_populates='files')
+
 class File(db.Model):
     __tablename__ = 'files'
     
     id = db.Column(db.Integer, primary_key=True)
     filename = db.Column(db.String(255), unique=True, nullable=False, index=True)
     path = db.Column(db.String(255), unique=True, nullable=False, index=True)
-    size = db.Column(db.BigInteger, nullable=False, index=True)  
-    type = db.Column(db.String(100), nullable=False)
-    duration = db.Column(db.String(10))
+    size = db.Column(db.BigInteger, nullable=False, index=True)  # File size in bytes
+    type = db.Column(db.String(100), nullable=False)  # MIME type of the file
+    duration = db.Column(db.String(10))  # Duration if it's a media file like audio or video
     uploaded_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False, index=True)
     
     # Many-to-many relationship with Tag
     tags = db.relationship('Tag', secondary='file_tags', back_populates='files')
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'filename': self.filename,
+            'path': self.path,
+            'size': self.size,
+            'type': self.type,
+            'duration': self.duration,
+            'uploaded_at': self.uploaded_at.isoformat(),
+            'tags': [tag.name for tag in self.tags]
+        }
+
 
 class Tag(db.Model):
     __tablename__ = 'tags'

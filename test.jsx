@@ -1,19 +1,29 @@
 import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
-import FileDashboard from '../common/FileDashboard';
+import { Pie, Bar } from 'react-chartjs-2';
+import 'chart.js/auto';
 import Notification from '../common/Notification';
 import api from '../../utils/api'; // Import the api instance
-import { Pie, Bar } from 'react-chartjs-2'; // Importing Chart.js components
-import 'chart.js/auto';
 
 const DashboardContainer = styled.div`
   padding: 20px;
+`;
+
+const WidgetContainer = styled.div`
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-gap: 20px;
 `;
 
 function Dashboard() {
   const [uploadedFiles, setUploadedFiles] = useState([]);
   const [notification, setNotification] = useState({ message: '', type: 'success' });
   const [mediaSummary, setMediaSummary] = useState({ images: 0, audio: 0, video: 0 });
+  const [uploadsPerDay, setUploadsPerDay] = useState({});
+  const [uploadsPerWeek, setUploadsPerWeek] = useState({});
+  const [totalUploads, setTotalUploads] = useState(0);
+  const [storageUsed, setStorageUsed] = useState(0);
+  const [storageLimit, setStorageLimit] = useState(1000); // Assuming 1000MB as a limit for now
 
   useEffect(() => {
     api.get('/file_history')
@@ -32,16 +42,26 @@ function Dashboard() {
           { images: 0, audio: 0, video: 0 }
         );
         setMediaSummary(summary);
+
+        // Calculate total uploads
+        setTotalUploads(files.length);
+
+        // Calculate storage usage (assuming file.size is in bytes)
+        const totalStorage = files.reduce((acc, file) => acc + file.size, 0);
+        setStorageUsed(totalStorage / 1024 / 1024); // Convert to MB
+
+        // Day-wise uploads
+        setUploadsPerDay(response.data.uploads_per_day);
+
+        // Week-wise uploads
+        setUploadsPerWeek(response.data.uploads_per_week);
       })
       .catch((error) => {
         console.error('Error fetching file history:', error);
-        let errorMessage = 'Failed to fetch file history.';
-        if (error.response && error.response.data && error.response.data.error) {
-          errorMessage = error.response.data.error; // More specific error message
-        } else if (error.response && error.response.status) {
-          errorMessage = `HTTP error ${error.response.status}`; // Generic HTTP error
-        }
-        setNotification({ message: errorMessage, type: 'error' });
+        setNotification({
+          message: 'Error fetching file history. Please try again later.',
+          type: 'error'
+        });
       });
   }, []);
 
@@ -55,13 +75,24 @@ function Dashboard() {
     ],
   };
 
-  const barData = {
-    labels: ['Images', 'Audio', 'Videos'],
+  const dayWiseBarData = {
+    labels: Object.keys(uploadsPerDay),
     datasets: [
       {
-        label: 'Media Files',
-        data: [mediaSummary.images, mediaSummary.audio, mediaSummary.video],
-        backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56'],
+        label: 'Uploads Per Day',
+        data: Object.values(uploadsPerDay),
+        backgroundColor: '#36A2EB',
+      },
+    ],
+  };
+
+  const weekWiseBarData = {
+    labels: Object.keys(uploadsPerWeek),
+    datasets: [
+      {
+        label: 'Uploads Per Week',
+        data: Object.values(uploadsPerWeek),
+        backgroundColor: '#FFCE56',
       },
     ],
   };
@@ -76,15 +107,46 @@ function Dashboard() {
           onClose={() => setNotification({ message: '', type: 'success' })} 
         />
       )}
-      <div>
-        <h2>Media Summary (Pie Chart)</h2>
-        <Pie data={pieData} />
-      </div>
-      <div>
-        <h2>Media Summary (Bar Chart)</h2>
-        <Bar data={barData} />
-      </div>
-      <FileDashboard uploadedFiles={uploadedFiles} />
+      
+      <WidgetContainer>
+        {/* Total Uploads */}
+        <div>
+          <h2>Total Uploads: {totalUploads}</h2>
+        </div>
+
+        {/* Storage Usage */}
+        <div>
+          <h2>Storage Used: {storageUsed.toFixed(2)} MB / {storageLimit} MB</h2>
+          <div style={{ width: '100%', height: '20px', backgroundColor: '#e0e0e0', borderRadius: '5px' }}>
+            <div
+              style={{
+                width: `${(storageUsed / storageLimit) * 100}%`,
+                height: '100%',
+                backgroundColor: storageUsed / storageLimit > 0.8 ? 'red' : '#36A2EB',
+                borderRadius: '5px'
+              }}
+            />
+          </div>
+        </div>
+
+        {/* Pie Chart for Media Summary */}
+        <div style={{ maxWidth: '400px', margin: '0 auto' }}>
+          <h2>Media Summary</h2>
+          <Pie data={pieData} style={{ width: '100%', height: '300px' }} />
+        </div>
+
+        {/* Day-wise Uploads Bar Chart */}
+        <div style={{ maxWidth: '600px', margin: '0 auto' }}>
+          <h2>Uploads Per Day</h2>
+          <Bar data={dayWiseBarData} style={{ width: '100%', height: '300px' }} />
+        </div>
+
+        {/* Week-wise Uploads Bar Chart */}
+        <div style={{ maxWidth: '600px', margin: '0 auto' }}>
+          <h2>Uploads Per Week</h2>
+          <Bar data={weekWiseBarData} style={{ width: '100%', height: '300px' }} />
+        </div>
+      </WidgetContainer>
     </DashboardContainer>
   );
 }

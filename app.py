@@ -25,6 +25,8 @@ from models import (
     Tag
 )
 import logging
+from sqlalchemy import func, extract
+
 from utils import allowed_file, get_file_category, extract_audio  # Import helper functions
 
 # Load environment variables from .env file
@@ -210,37 +212,249 @@ def file_exists():
     exists = os.path.exists(file_path)
     return jsonify({'exists': exists}), 200
 
+# @app.route('/api/file_history', methods=['GET'])
+# @limiter.limit("30 per minute")
+# def file_history():
+#     """
+#     Retrieve the list of uploaded files with their metadata.
+#     Supports pagination.
+#     """
+#     page = request.args.get('page', 1, type=int)
+#     per_page = request.args.get('per_page', 20, type=int)
+#     pagination = File.query.paginate(page=page, per_page=per_page, error_out=False)
+#     files = pagination.items
+#     file_list = []
+#     for file in files:
+#         file_info = {
+#             'id': file.id,
+#             'filename': file.filename,
+#             'path': f'/static/uploads/{file.filename}',  # Or adjust path if needed
+#             'size': file.size,
+#             'type': file.type,
+#             'duration': file.duration,
+#             'tags': [tag.name for tag in file.tags]  # Include tags here
+#         }
+#         file_list.append(file_info)
+#     return jsonify({
+#         'files': file_list,
+#         'total': pagination.total,
+#         'page': pagination.page,
+#         'per_page': pagination.per_page,
+#         'pages': pagination.pages
+#     }), 200
+    
+
+# @app.route('/api/file_history', methods=['GET'])
+# @limiter.limit("30 per minute")
+# def file_history():
+#     """
+#     Retrieve the list of uploaded files with their metadata.
+#     Supports pagination, filtering by date range, and statistics for day-wise and week-wise uploads.
+#     """
+#     page = request.args.get('page', 1, type=int)
+#     per_page = request.args.get('per_page', 20, type=int)
+#     start_date = request.args.get('start_date')
+#     end_date = request.args.get('end_date')
+
+#     query = File.query
+
+#     # Filter by date range if provided
+#     if start_date:
+#         query = query.filter(File.uploaded_at >= start_date)
+#     if end_date:
+#         query = query.filter(File.uploaded_at <= end_date)
+
+#     # Pagination
+#     pagination = query.paginate(page=page, per_page=per_page, error_out=False)
+#     files = pagination.items
+
+#     # Calculate uploads per day and week
+#     day_wise_uploads = (
+#         db.session.query(
+#             func.date(File.uploaded_at).label('day'),
+#             func.count(File.id).label('upload_count')
+#         )
+#         .group_by(func.date(File.uploaded_at))
+#         .all()
+#     )
+
+#     week_wise_uploads = (
+#         db.session.query(
+#             func.year(File.uploaded_at).label('year'),
+#             func.week(File.uploaded_at).label('week'),
+#             func.count(File.id).label('upload_count')
+#         )
+#         .group_by(func.year(File.uploaded_at), func.week(File.uploaded_at))
+#         .all()
+#     )
+
+#     # Build response
+#     file_list = []
+#     for file in files:
+#         file_info = {
+#             'id': file.id,
+#             'filename': file.filename,
+#             'path': f'/static/uploads/{file.filename}',  # Or adjust path if needed
+#             'size': file.size,
+#             'type': file.type,
+#             'duration': file.duration,
+#             'uploaded_at': file.uploaded_at.isoformat(),
+#             'tags': [tag.name for tag in file.tags]  # Include tags here
+#         }
+#         file_list.append(file_info)
+
+#     return jsonify({
+#         'files': file_list,
+#         'total': pagination.total,
+#         'page': pagination.page,
+#         'per_page': pagination.per_page,
+#         'pages': pagination.pages,
+#         'uploads_per_day': {str(day): count for day, count in day_wise_uploads},
+#         'uploads_per_week': {f"{year}-W{week}": count for year, week, count in week_wise_uploads}
+#     }), 200
+# @app.route('/api/file_history', methods=['GET'])
+# @limiter.limit("30 per minute")
+# def file_history():
+#     try:
+#         # Pagination and filtering parameters
+#         page = request.args.get('page', 1, type=int)
+#         per_page = request.args.get('per_page', 20, type=int)
+#         start_date = request.args.get('start_date')
+#         end_date = request.args.get('end_date')
+
+#         query = File.query
+
+#         # Filter by date range if provided
+#         if start_date:
+#             query = query.filter(File.uploaded_at >= start_date)
+#         if end_date:
+#             query = query.filter(File.uploaded_at <= end_date)
+
+#         # Pagination
+#         pagination = query.paginate(page=page, per_page=per_page, error_out=False)
+#         files = pagination.items
+
+#         # Day-wise uploads (using strftime for SQLite compatibility)
+#         day_wise_uploads = (
+#             db.session.query(
+#                 func.strftime('%Y-%m-%d', File.uploaded_at).label('day'),
+#                 func.count(File.id).label('upload_count')
+#             )
+#             .group_by(func.strftime('%Y-%m-%d', File.uploaded_at))
+#             .all()
+#         )
+
+#         # Week-wise uploads (using strftime for SQLite compatibility)
+#         week_wise_uploads = (
+#             db.session.query(
+#                 func.strftime('%Y', File.uploaded_at).label('year'),
+#                 func.strftime('%W', File.uploaded_at).label('week'),
+#                 func.count(File.id).label('upload_count')
+#             )
+#             .group_by(func.strftime('%Y', File.uploaded_at), func.strftime('%W', File.uploaded_at))
+#             .all()
+#         )
+
+#         # Build response
+#         file_list = []
+#         for file in files:
+#             file_info = {
+#                 'id': file.id,
+#                 'filename': file.filename,
+#                 'path': f'/static/uploads/{file.filename}',  # Or adjust path if needed
+#                 'size': file.size,
+#                 'type': file.type,
+#                 'duration': file.duration,
+#                 'uploaded_at': file.uploaded_at.isoformat(),
+#                 'tags': [tag.name for tag in file.tags]  # Include tags here
+#             }
+#             file_list.append(file_info)
+
+#         return jsonify({
+#             'files': file_list,
+#             'total': pagination.total,
+#             'page': pagination.page,
+#             'per_page': pagination.per_page,
+#             'pages': pagination.pages,
+#             'uploads_per_day': {day: count for day, count in day_wise_uploads},
+#             'uploads_per_week': {f"{year}-W{week}": count for year, week, count in week_wise_uploads}
+#         }), 200
+
+#     except Exception as e:
+#         app.logger.error(f"Error in /file_history: {str(e)}")
+#         return jsonify({"error": "An error occurred while fetching file history.", "details": str(e)}), 500
+
 @app.route('/api/file_history', methods=['GET'])
 @limiter.limit("30 per minute")
 def file_history():
-    """
-    Retrieve the list of uploaded files with their metadata.
-    Supports pagination.
-    """
-    page = request.args.get('page', 1, type=int)
-    per_page = request.args.get('per_page', 20, type=int)
-    pagination = File.query.paginate(page=page, per_page=per_page, error_out=False)
-    files = pagination.items
-    file_list = []
-    for file in files:
-        file_info = {
-            'id': file.id,
-            'filename': file.filename,
-            'path': f'/static/uploads/{file.filename}',  # Or adjust path if needed
-            'size': file.size,
-            'type': file.type,
-            'duration': file.duration,
-            'tags': [tag.name for tag in file.tags]  # Include tags here
-        }
-        file_list.append(file_info)
-    return jsonify({
-        'files': file_list,
-        'total': pagination.total,
-        'page': pagination.page,
-        'per_page': pagination.per_page,
-        'pages': pagination.pages
-    }), 200
-    
+    try:
+        # Pagination and filtering parameters
+        page = request.args.get('page', 1, type=int)
+        per_page = request.args.get('per_page', 20, type=int)
+        start_date = request.args.get('start_date')
+        end_date = request.args.get('end_date')
+
+        query = File.query
+
+        # Filter by date range if provided
+        if start_date:
+            query = query.filter(File.uploaded_at >= start_date)
+        if end_date:
+            query = query.filter(File.uploaded_at <= end_date)
+
+        # Pagination
+        pagination = query.paginate(page=page, per_page=per_page, error_out=False)
+        files = pagination.items
+
+        # Day-wise uploads (using TO_CHAR for PostgreSQL compatibility)
+        day_wise_uploads = (
+            db.session.query(
+                func.to_char(File.uploaded_at, 'YYYY-MM-DD').label('day'),
+                func.count(File.id).label('upload_count')
+            )
+            .group_by(func.to_char(File.uploaded_at, 'YYYY-MM-DD'))
+            .all()
+        )
+
+        # Week-wise uploads (using TO_CHAR for PostgreSQL compatibility)
+        week_wise_uploads = (
+            db.session.query(
+                func.to_char(File.uploaded_at, 'YYYY').label('year'),
+                func.to_char(File.uploaded_at, 'IW').label('week'),
+                func.count(File.id).label('upload_count')
+            )
+            .group_by(func.to_char(File.uploaded_at, 'YYYY'), func.to_char(File.uploaded_at, 'IW'))
+            .all()
+        )
+
+        # Build response
+        file_list = []
+        for file in files:
+            file_info = {
+                'id': file.id,
+                'filename': file.filename,
+                'path': f'/static/uploads/{file.filename}',  # Or adjust path if needed
+                'size': file.size,
+                'type': file.type,
+                'duration': file.duration,
+                'uploaded_at': file.uploaded_at.isoformat(),
+                'tags': [tag.name for tag in file.tags]  # Include tags here
+            }
+            file_list.append(file_info)
+
+        return jsonify({
+            'files': file_list,
+            'total': pagination.total,
+            'page': pagination.page,
+            'per_page': pagination.per_page,
+            'pages': pagination.pages,
+            'uploads_per_day': {day: count for day, count in day_wise_uploads},
+            'uploads_per_week': {f"{year}-W{week}": count for year, week, count in week_wise_uploads}
+        }), 200
+
+    except Exception as e:
+        app.logger.error(f"Error in /file_history: {str(e)}")
+        return jsonify({"error": "An error occurred while fetching file history.", "details": str(e)}), 500
 
 @app.route('/static/uploads/<path:filename>', methods=['GET'])
 def serve_file(filename):
@@ -342,6 +556,10 @@ def method_not_allowed(error):
     Handle 405 errors.
     """
     return jsonify({'error': 'Method not allowed.'}), 405
+
+@app.errorhandler(500)
+def internal_error(error):
+    return jsonify({'error': 'Internal server error'}), 500
 
 @app.errorhandler(Exception)
 def handle_exception(e):
