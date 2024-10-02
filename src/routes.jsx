@@ -1,4 +1,4 @@
-// src/routes.jsx
+// // src/routes.jsx
 
 import React, { lazy } from 'react';
 import { Navigate } from 'react-router-dom';
@@ -15,6 +15,7 @@ const Analysis = lazy(() => import('./components/pages/Analysis'));
 const Login = lazy(() => import('./components/auth/Login'));
 const Register = lazy(() => import('./components/auth/Register'));
 const ForgotPassword = lazy(() => import('./components/auth/ForgotPassword'));
+const ResetPassword = lazy(() => import('./components/auth/ResetPassword'));
 const LandingPage = lazy(() => import('./components/pages/LandingPage'));
 
 const routes = [
@@ -41,6 +42,11 @@ const routes = [
     path: '/forgot-password',
     element: <ForgotPassword />,
     breadcrumb: 'Forgot Password',
+  },
+  {
+    path: '/reset-password/:token',
+    element: <ResetPassword />,
+    breadcrumb: 'Reset Password',
   },
   {
     path: '/app',

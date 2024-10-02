@@ -110,3 +110,7 @@ static/uploads/*
 
 # Specific files
 logic.py
+test.jsx
+test.py
+code.txt
+codecv3.txt.md

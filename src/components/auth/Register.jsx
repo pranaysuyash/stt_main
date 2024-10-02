@@ -6,7 +6,7 @@ import styled from 'styled-components';
 import api from '../../utils/api';
 import Button from '../common/Button';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faEnvelope, faLock, faUser } from '@fortawesome/free-solid-svg-icons';
+import { faEnvelope, faLock, faUser, faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons';
 
 // Styled Components
 const RegisterContainer = styled.div`
@@ -87,13 +87,29 @@ const LoginLink = styled(Link)`
   }
 `;
 
+const PasswordInputWrapper = styled.div`
+  position: relative;
+  width: 100%;
+`;
+
+const TogglePasswordVisibility = styled.button`
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: ${({ theme }) => theme.colors.text};
+`;
 const Register = () => {
   // State Variables for Form Fields
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName]   = useState('');
   const [email, setEmail]         = useState('');
   const [password, setPassword]   = useState('');
-  
+  const [showPassword, setShowPassword] = useState(false);
+
   // State Variables for Messages
   const [error, setError]         = useState('');
   const [success, setSuccess]     = useState('');
@@ -148,7 +164,9 @@ const Register = () => {
       }
     }
   };
-
+  const togglePasswordVisibility = () => {
+    setShowPassword(!showPassword);
+  };
   return (
     <RegisterContainer>
       <RegisterForm onSubmit={handleSubmit}>
@@ -196,14 +214,22 @@ const Register = () => {
         {/* Password Input */}
         <InputGroup>
           <InputIcon icon={faLock} />
+          <PasswordInputWrapper>
           <Input
-            type="password"
-            placeholder="Password"
+              type={showPassword ? "text" : "password"}
+              placeholder="Password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
             autoComplete="new-password"
-          />
+          /><TogglePasswordVisibility
+          type="button"
+          onClick={togglePasswordVisibility}
+          aria-label={showPassword ? "Hide password" : "Show password"}
+        >
+          <FontAwesomeIcon icon={showPassword ? faEyeSlash : faEye} />
+        </TogglePasswordVisibility>
+      </PasswordInputWrapper>
         </InputGroup>
         
         {/* Submit Button */}

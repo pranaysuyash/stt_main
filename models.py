@@ -1,3 +1,4 @@
+
 # models.py
 
 from extensions import db, bcrypt
@@ -5,7 +6,8 @@ from datetime import datetime, timedelta
 from flask import current_app
 from enum import Enum
 from sqlalchemy import Enum as SQLAlchemyEnum
-import jwt  # Import PyJWT
+import jwt
+
 
 class RoleEnum(str, Enum):
     ADMIN = 'ADMIN'
@@ -93,12 +95,54 @@ class User(db.Model):
 
     def __repr__(self):
         return f"<User {self.email}>"
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'email': self.email,
+            'first_name': self.first_name,
+            'last_name': self.last_name,
+            'is_active': self.is_active,
+            'created_at': self.created_at.isoformat() if self.created_at else None,
+            'updated_at': self.updated_at.isoformat() if self.updated_at else None,
+            'roles': [role.name for role in self.roles]
+        }
+
+# class Role(db.Model):
+#     __tablename__ = 'roles'
+    
+#     id = db.Column(db.Integer, primary_key=True)
+#     name = db.Column(SQLAlchemyEnum(RoleEnum), unique=True, nullable=False)
+#     description = db.Column(db.String(255))
+    
+#     user_roles = db.relationship(
+#         'UserRole', 
+#         back_populates='role', 
+#         cascade="all, delete-orphan", 
+#         overlaps="users,user_roles"
+#     )
+#     users = db.relationship(
+#         'User', 
+#         secondary='user_roles', 
+#         back_populates='roles', 
+#         overlaps="user_roles,users"
+#     )
+    
+#     def __init__(self, name: RoleEnum, description=''):
+#         self.name = name
+#         self.description = description
+
+#     def to_dict(self):
+#         return {
+#             'id': self.id,
+#             'name': self.name.value,
+#             'description': self.description
+#         }
 
 class Role(db.Model):
     __tablename__ = 'roles'
     
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(SQLAlchemyEnum(RoleEnum), unique=True, nullable=False)
+    name = db.Column(SQLAlchemyEnum(RoleEnum, name='roleenum'), unique=True, nullable=False)  # Ensure 'roleenum' is specified
     description = db.Column(db.String(255))
     
     user_roles = db.relationship(
@@ -199,3 +243,96 @@ class Subscription(db.Model):
     
     user = db.relationship('User', back_populates='subscriptions')
     tier = db.relationship('SubscriptionTier', back_populates='subscriptions')
+
+# New models for File and Tag
+
+# class File(db.Model):
+#     __tablename__ = 'files'
+    
+#     id = db.Column(db.Integer, primary_key=True)
+#     filename = db.Column(db.String(255), nullable=False)
+#     path = db.Column(db.String(255), nullable=False)
+#     size = db.Column(db.Integer, nullable=False)
+#     type = db.Column(db.String(100), nullable=False)
+#     duration = db.Column(db.String(10))
+#     uploaded_at = db.Column(db.DateTime, default=datetime.utcnow)
+    
+#     tags = db.relationship('Tag', secondary='file_tags', back_populates='files')
+# class File(db.Model):
+#     __tablename__ = 'files'
+    
+#     id = db.Column(db.Integer, primary_key=True)
+#     filename = db.Column(db.String(255), unique=True, nullable=False, index=True)
+#     path = db.Column(db.String(255), unique=True, nullable=False, index=True)
+#     size = db.Column(db.BigInteger, nullable=False)
+#     type = db.Column(db.String(100), nullable=False)
+#     duration = db.Column(db.String(10))
+#     uploaded_at = db.Column(db.DateTime, default=datetime.utcnow, index=True)
+    
+#     tags = db.relationship('Tag', secondary='file_tags', back_populates='files')
+
+
+# class File(db.Model):
+#     __tablename__ = 'files'
+    
+#     id = db.Column(db.Integer, primary_key=True)
+#     filename = db.Column(db.String(255), unique=True, nullable=False, index=True)
+#     path = db.Column(db.String(255), unique=True, nullable=False, index=True)
+#     size = db.Column(db.BigInteger, nullable=False, index=True)  # Changed to BigInteger
+#     type = db.Column(db.String(100), nullable=False)
+#     duration = db.Column(db.String(10))
+#     uploaded_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False, index=True)
+    
+#     tags = db.relationship('Tag', secondary='file_tags', back_populates='files')
+    
+#     def to_dict(self):
+#         return {
+#             'id': self.id,
+#             'filename': self.filename,
+#             'path': self.path,
+#             'size': self.size,
+#             'type': self.type,
+#             'duration': self.duration,
+#             'uploaded_at': self.uploaded_at.isoformat(),
+#             'tags': [tag.name for tag in self.tags]
+#         }
+# class Tag(db.Model):
+#     __tablename__ = 'tags'
+    
+#     id = db.Column(db.Integer, primary_key=True)
+#     name = db.Column(db.String(50), unique=True, nullable=False)
+    
+#     files = db.relationship('File', secondary='file_tags', back_populates='tags')
+
+# file_tags = db.Table('file_tags',
+#     db.Column('file_id', db.Integer, db.ForeignKey('files.id'), primary_key=True),
+#     db.Column('tag_id', db.Integer, db.ForeignKey('tags.id'), primary_key=True)
+# )
+
+class File(db.Model):
+    __tablename__ = 'files'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    filename = db.Column(db.String(255), unique=True, nullable=False, index=True)
+    path = db.Column(db.String(255), unique=True, nullable=False, index=True)
+    size = db.Column(db.BigInteger, nullable=False, index=True)  
+    type = db.Column(db.String(100), nullable=False)
+    duration = db.Column(db.String(10))
+    uploaded_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False, index=True)
+    
+    # Many-to-many relationship with Tag
+    tags = db.relationship('Tag', secondary='file_tags', back_populates='files')
+
+class Tag(db.Model):
+    __tablename__ = 'tags'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(50), unique=True, nullable=False)
+    
+    # Many-to-many relationship with File
+    files = db.relationship('File', secondary='file_tags', back_populates='tags')
+
+file_tags = db.Table('file_tags',
+    db.Column('file_id', db.Integer, db.ForeignKey('files.id'), primary_key=True),
+    db.Column('tag_id', db.Integer, db.ForeignKey('tags.id'), primary_key=True)
+)

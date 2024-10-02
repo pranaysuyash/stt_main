@@ -1,11 +1,13 @@
+
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 import api from '../../utils/api';
 import { useAuth } from '../../context/AuthContext';
 import Button from '../common/Button';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faEnvelope, faLock } from '@fortawesome/free-solid-svg-icons';
+import { faEnvelope, faLock,faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons';
+import ForgotPassword from './ForgotPassword';
 
 const LoginContainer = styled.div`
   display: flex;
@@ -64,11 +66,13 @@ const ErrorMessage = styled.p`
   margin-top: 1rem;
 `;
 
-const ForgotPasswordLink = styled(Link)`
+const ForgotPasswordLink = styled.button`
   display: block;
   text-align: right;
   color: ${({ theme }) => theme.colors.primary};
-  text-decoration: none;
+  background: none;
+  border: none;
+  cursor: pointer;
   margin-bottom: 1rem;
   font-size: 0.9rem;
   &:hover {
@@ -82,19 +86,39 @@ const RegisterPrompt = styled.p`
   font-size: 0.9rem;
 `;
 
-const RegisterLink = styled(Link)`
+const RegisterLink = styled.button`
   color: ${({ theme }) => theme.colors.primary};
-  text-decoration: none;
+  background: none;
+  border: none;
+  cursor: pointer;
   font-weight: bold;
   &:hover {
     text-decoration: underline;
   }
 `;
 
+const PasswordInputWrapper = styled.div`
+  position: relative;
+  width: 100%;
+`;
+
+const TogglePasswordVisibility = styled.button`
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: ${({ theme }) => theme.colors.text};
+`;
+
 const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
   const navigate = useNavigate();
   const { login } = useAuth();
 
@@ -118,6 +142,12 @@ const Login = () => {
       setError(err.response?.data?.error || 'An error occurred during login');
     }
   };
+  const togglePasswordVisibility = () => {
+    setShowPassword(!showPassword);
+  };
+  if (showForgotPassword) {
+    return <ForgotPassword onBack={() => setShowForgotPassword(false)} />;
+  }
 
   return (
     <LoginContainer>
@@ -136,22 +166,34 @@ const Login = () => {
         </InputGroup>
         <InputGroup>
           <InputIcon icon={faLock} />
+          <PasswordInputWrapper>
           <Input
-            type="password"
-            placeholder="Password"
+              type={showPassword ? "text" : "password"}
+              placeholder="Password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
             autoComplete="current-password"
           />
+          <TogglePasswordVisibility
+              type="button"
+              onClick={togglePasswordVisibility}
+              aria-label={showPassword ? "Hide password" : "Show password"}
+            >
+              <FontAwesomeIcon icon={showPassword ? faEyeSlash : faEye} />
+            </TogglePasswordVisibility>
+          </PasswordInputWrapper>
         </InputGroup>
-        <ForgotPasswordLink to="/forgot-password">Forgot password?</ForgotPasswordLink>
+        <ForgotPasswordLink onClick={() => setShowForgotPassword(true)}>
+          Forgot password?
+        </ForgotPasswordLink>
         <Button type="submit" fullWidth>
           Log In
         </Button>
         {error && <ErrorMessage>{error}</ErrorMessage>}
         <RegisterPrompt>
-          Don't have an account? <RegisterLink to="/register">Sign up</RegisterLink>
+          Don't have an account?{' '}
+          <RegisterLink onClick={() => navigate('/register')}>Sign up</RegisterLink>
         </RegisterPrompt>
       </LoginForm>
     </LoginContainer>

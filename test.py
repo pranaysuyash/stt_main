@@ -1,77 +1,106 @@
-# auth/routes.py
+# models.py
 
-from flask import Blueprint, request, jsonify, url_for
-from extensions import db, mail
-from models import User
-from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity
-from flask_mail import Message
+from sqlalchemy import Column, Integer, String, Enum, ForeignKey, Table
+from sqlalchemy.orm import relationship
+from extensions import db
+from enum import Enum as PyEnum
 
-auth_bp = Blueprint('auth', __name__)
+class RoleEnum(PyEnum):
+    ADMIN = 'ADMIN'
+    USER = 'USER'
+    MANAGER = 'MANAGER'
 
-@auth_bp.route('/signup', methods=['POST'])
-def signup():
-    data = request.get_json()
-    email = data.get('email')
-    password = data.get('password')
+class Role(db.Model):
+    __tablename__ = 'roles'
     
-    if not email or not password:
-        return jsonify({"error": "Email and password are required."}), 400
-    
-    existing_user = User.query.filter_by(email=email).first()
-    if existing_user:
-        return jsonify({"error": "User already exists."}), 409
-    
-    # Create new user
-    new_user = User(email=email, password=password)
-    db.session.add(new_user)
-    db.session.commit()
-    
-    # Assign default 'User' role
-    user_role = Role.query.filter_by(name='User').first()
-    if user_role:
-        new_user.roles.append(user_role)
-        db.session.commit()
-    
-    # Send confirmation email
-    token = new_user.get_confirmation_token()
-    confirm_url = url_for('auth.confirm_email', token=token, _external=True)
-    html = f"""
-    <p>Hi {new_user.first_name or 'User'},</p>
-    <p>Thanks for signing up! Please confirm your email by clicking on the link below:</p>
-    <p><a href="{confirm_url}">Confirm Email</a></p>
-    """
-    msg = Message('Confirm Your Email', recipients=[new_user.email], html=html)
-    mail.send(msg)
-    
-    return jsonify({"message": "User created successfully. Please check your email to confirm your account."}), 201
+    id = Column(Integer, primary_key=True)
+    name = Column(Enum(RoleEnum, name='roleenum'), unique=True, nullable=False)
+    description = Column(String(255))
+    users = relationship('User', secondary='user_roles', back_populates='roles')
 
-@auth_bp.route('/confirm/<token>', methods=['GET'])
-def confirm_email(token):
-    user = User.verify_confirmation_token(token)
-    if not user:
-        return jsonify({"error": "Invalid or expired token."}), 400
-    if user.is_active:
-        return jsonify({"message": "Account already confirmed."}), 200
-    user.is_active = True
-    user.confirmed_at = datetime.utcnow()
-    db.session.commit()
-    return jsonify({"message": "Email confirmed successfully."}), 200
+class User(db.Model):
+    __tablename__ = 'users'
+    
+    id = Column(Integer, primary_key=True)
+    username = Column(String(80), unique=True, nullable=False)
+    email = Column(String(120), unique=True, nullable=False)
+    password = Column(String(200), nullable=False)
+    roles = relationship('Role', secondary='user_roles', back_populates='users')
 
-@auth_bp.route('/login', methods=['POST'])
-def login():
-    data = request.get_json()
-    email = data.get('email')
-    password = data.get('password')
+class UserRole(db.Model):
+    __tablename__ = 'user_roles'
     
-    if not email or not password:
-        return jsonify({"error": "Email and password are required."}), 400
+    user_id = Column(Integer, ForeignKey('users.id'), primary_key=True)
+    role_id = Column(Integer, ForeignKey('roles.id'), primary_key=True)
+
+class Organization(db.Model):
+    __tablename__ = 'organizations'
     
-    user = User.query.filter_by(email=email).first()
-    if not user or not user.check_password(password):
-        return jsonify({"error": "Invalid email or password."}), 401
+    id = Column(Integer, primary_key=True)
+    name = Column(String(100), unique=True, nullable=False)
+    members = relationship('OrganizationMember', back_populates='organization')
+
+class Workspace(db.Model):
+    __tablename__ = 'workspaces'
     
-    if not user.is_active:
-        return jsonify({"error": "Account is not active. Please confirm your email."}), 403
+    id = Column(Integer, primary_key=True)
+    name = Column(String(100), nullable=False)
+    organization_id = Column(Integer, ForeignKey('organizations.id'), nullable=False)
+    organization = relationship('Organization', back_populates='workspaces')
+    members = relationship('WorkspaceMember', back_populates='workspace')
+
+class SubscriptionTier(db.Model):
+    __tablename__ = 'subscription_tiers'
     
-    access_token = create_access_token(identity=user.id, expires_delta=timedelta(hours=1))
-    return jsonify({"access_token": access_token}), 200
+    id = Column(Integer, primary_key=True)
+    name = Column(String(50), unique=True, nullable=False)
+    price = Column(Integer, nullable=False)
+    features = Column(String(500))
+
+class Subscription(db.Model):
+    __tablename__ = 'subscriptions'
+    
+    id = Column(Integer, primary_key=True)
+    user_id = Column(Integer, ForeignKey('users.id'), nullable=False)
+    tier_id = Column(Integer, ForeignKey('subscription_tiers.id'), nullable=False)
+    start_date = Column(String, nullable=False)
+    end_date = Column(String, nullable=False)
+    user = relationship('User')
+    tier = relationship('SubscriptionTier')
+
+class OrganizationMember(db.Model):
+    __tablename__ = 'organization_members'
+    
+    id = Column(Integer, primary_key=True)
+    organization_id = Column(Integer, ForeignKey('organizations.id'), nullable=False)
+    user_id = Column(Integer, ForeignKey('users.id'), nullable=False)
+    organization = relationship('Organization', back_populates='members')
+    user = relationship('User')
+
+class WorkspaceMember(db.Model):
+    __tablename__ = 'workspace_members'
+    
+    id = Column(Integer, primary_key=True)
+    workspace_id = Column(Integer, ForeignKey('workspaces.id'), nullable=False)
+    user_id = Column(Integer, ForeignKey('users.id'), nullable=False)
+    workspace = relationship('Workspace', back_populates='members')
+    user = relationship('User')
+
+class File(db.Model):
+    __tablename__ = 'files'
+    
+    id = Column(Integer, primary_key=True)
+    filename = Column(String, nullable=False)
+    path = Column(String, nullable=False)
+    type = Column(String, nullable=False)
+    size = Column(Integer, nullable=False)
+    duration = Column(String)  # e.g., "02:30"
+    tags = relationship('Tag', back_populates='file')
+
+class Tag(db.Model):
+    __tablename__ = 'tags'
+    
+    id = Column(Integer, primary_key=True)
+    name = Column(String, nullable=False)
+    file_id = Column(Integer, ForeignKey('files.id'), nullable=False)
+    file = relationship('File', back_populates='tags')

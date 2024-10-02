@@ -15,19 +15,19 @@ function Dashboard() {
   const [notification, setNotification] = useState({ message: '', type: 'success' });
 
   useEffect(() => {
-    api.get('/file_history') // Use the api instance
-      .then((response) => {
-        const data = response.data;
-        if (data.files) {
-          setUploadedFiles(data.files);
-        }
-      })
+    api.get('/file_history')
+      .then((response) => { /* ... */ })
       .catch((error) => {
         console.error('Error fetching file history:', error);
-        setNotification({ message: 'Failed to fetch file history.', type: 'error' });
+        let errorMessage = 'Failed to fetch file history.';
+        if (error.response && error.response.data && error.response.data.error) {
+          errorMessage = error.response.data.error; // More specific error message
+        } else if (error.response && error.response.status) {
+          errorMessage = `HTTP error ${error.response.status}`; // Generic HTTP error
+        } // Add more specific error handling as needed
+        setNotification({ message: errorMessage, type: 'error' });
       });
   }, []);
-
   return (
     <DashboardContainer>
       <h1>Dashboard</h1>

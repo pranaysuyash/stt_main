@@ -1,3 +1,4 @@
+
 # app.py
 
 import os
@@ -19,10 +20,11 @@ from models import (
     SubscriptionTier,
     Subscription,
     OrganizationMember,
-    WorkspaceMember
+    WorkspaceMember,
+    File,
+    Tag
 )
 import logging
-
 from utils import allowed_file, get_file_category, extract_audio  # Import helper functions
 
 # Load environment variables from .env file
@@ -63,8 +65,6 @@ app.config['MAIL_USE_SSL'] = os.getenv('MAIL_USE_SSL') == 'True'
 app.config['MAIL_USERNAME'] = os.getenv('MAIL_USERNAME')
 app.config['MAIL_PASSWORD'] = os.getenv('MAIL_PASSWORD')
 app.config['MAIL_DEFAULT_SENDER'] = os.getenv('MAIL_DEFAULT_SENDER')
-
-
 
 # Upload Configuration
 UPLOAD_FOLDER = 'static/uploads'
@@ -139,12 +139,25 @@ def upload_file():
                 file.save(file_path)
                 file_mime_type = mimetypes.guess_type(file_path)[0] or 'application/octet-stream'
                 print(f"Uploaded File: {filename}, MIME Type: {file_mime_type}")  # Debugging log
+                
+                # Create a new File entry in the database
+                new_file = File(
+                    filename=filename,
+                    path=file_path,
+                    size=os.path.getsize(file_path),
+                    type=file_mime_type,
+                    duration=''  # You can update this if duration is extracted
+                )
+                db.session.add(new_file)
+                db.session.commit()
+                
                 file_info = {
-                    'filename': filename,
-                    'path': f'/static/uploads/{filename}',
-                    'size': os.path.getsize(file_path),
-                    'type': file_mime_type,
-                    'duration': ''
+                    'id': new_file.id,
+                    'filename': new_file.filename,
+                    'path': f'/static/uploads/{new_file.filename}',
+                    'size': new_file.size,
+                    'type': new_file.type,
+                    'duration': new_file.duration
                 }
                 category = get_file_category(filename)
                 if category == 'video':
@@ -152,12 +165,24 @@ def upload_file():
                     audio_path = os.path.join(app.config['UPLOAD_FOLDER'], audio_filename)
                     success, message = extract_audio(file_path, audio_path)
                     if success:
+                        # Create a new File entry for the extracted audio
+                        extracted_audio = File(
+                            filename=audio_filename,
+                            path=audio_path,
+                            size=os.path.getsize(audio_path),
+                            type=mimetypes.guess_type(audio_path)[0] or 'application/octet-stream',
+                            duration=''  # Update if needed
+                        )
+                        db.session.add(extracted_audio)
+                        db.session.commit()
+                        
                         file_info['extracted_audio'] = {
-                            'filename': audio_filename,
-                            'path': f'/static/uploads/{audio_filename}',
-                            'size': os.path.getsize(audio_path),
-                            'type': mimetypes.guess_type(audio_path)[0] or 'application/octet-stream',
-                            'duration': ''  
+                            'id': extracted_audio.id,
+                            'filename': extracted_audio.filename,
+                            'path': f'/static/uploads/{extracted_audio.filename}',
+                            'size': extracted_audio.size,
+                            'type': extracted_audio.type,
+                            'duration': extracted_audio.duration
                         }
                         response['uploaded_files'].append(file_info)
                     else:
@@ -165,6 +190,7 @@ def upload_file():
                 else:
                     response['uploaded_files'].append(file_info)
             except Exception as e:
+                db.session.rollback()  # Rollback in case of error
                 response['errors'].append({'filename': filename, 'error': str(e)})
         else:
             response['errors'].append({'filename': file.filename, 'error': 'File type not allowed.'})
@@ -185,48 +211,115 @@ def file_exists():
     return jsonify({'exists': exists}), 200
 
 @app.route('/api/file_history', methods=['GET'])
-@limiter.limit("30 per minute")  # Example: Limit to 30 history fetches per minute per IP
+@limiter.limit("30 per minute")
 def file_history():
     """
     Retrieve the list of uploaded files with their metadata.
+    Supports pagination.
     """
-    files = os.listdir(app.config['UPLOAD_FOLDER'])
+    page = request.args.get('page', 1, type=int)
+    per_page = request.args.get('per_page', 20, type=int)
+    pagination = File.query.paginate(page=page, per_page=per_page, error_out=False)
+    files = pagination.items
     file_list = []
-    for f in files:
-        file_path = os.path.join(app.config['UPLOAD_FOLDER'], f)
-        if os.path.isfile(file_path):
-            mime_type, _ = mimetypes.guess_type(file_path)
-            category = get_file_category(f)
-            duration = ''
-            if category in ['audio', 'video']:
-                try:
-                    if category == 'audio':
-                        from moviepy.editor import AudioFileClip
-                        with AudioFileClip(file_path) as clip:
-                            duration = str(int(clip.duration // 60)).zfill(2) + ":" + str(int(clip.duration % 60)).zfill(2)
-                    elif category == 'video':
-                        from moviepy.editor import VideoFileClip
-                        with VideoFileClip(file_path) as clip:
-                            duration = str(int(clip.duration // 60)).zfill(2) + ":" + str(int(clip.duration % 60)).zfill(2)
-                except Exception as e:
-                    duration = ''
-            file_info = {
-                'filename': f,
-                'path': f'/static/uploads/{f}',
-                'size': os.path.getsize(file_path),
-                'type': mime_type or 'application/octet-stream',
-                'duration': duration
-            }
-            file_list.append(file_info)
-    return jsonify({'files': file_list}), 200
+    for file in files:
+        file_info = {
+            'id': file.id,
+            'filename': file.filename,
+            'path': f'/static/uploads/{file.filename}',  # Or adjust path if needed
+            'size': file.size,
+            'type': file.type,
+            'duration': file.duration,
+            'tags': [tag.name for tag in file.tags]  # Include tags here
+        }
+        file_list.append(file_info)
+    return jsonify({
+        'files': file_list,
+        'total': pagination.total,
+        'page': pagination.page,
+        'per_page': pagination.per_page,
+        'pages': pagination.pages
+    }), 200
+    
 
 @app.route('/static/uploads/<path:filename>', methods=['GET'])
 def serve_file(filename):
-    """
-    Serve uploaded files.
-    """
-    return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
+     """
+#     Serve uploaded files.
+#    """
+     app.logger.info(f"Serving file: {filename} from {app.config['UPLOAD_FOLDER']}")
+     return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
 
+
+@app.route('/api/files/<int:file_id>/tag', methods=['POST'])
+def tag_file(file_id):
+    """
+    Endpoint to tag a file with multiple tags.
+    """
+    file = File.query.get(file_id)
+    if not file:
+        return jsonify({"error": "File not found."}), 404
+
+    # Get tags from the request body
+    data = request.json
+    tag_names = data.get('tags', [])
+
+    if not tag_names:
+        return jsonify({"error": "No tags provided."}), 400
+
+    # Add each tag to the file, create the tag if it doesn't exist
+    for tag_name in tag_names:
+        tag_name = tag_name.strip().capitalize()  # Sentence case
+
+        tag = Tag.query.filter_by(name=tag_name).first()
+        if not tag:
+            tag = Tag(name=tag_name)
+            db.session.add(tag)
+
+        if tag not in file.tags:
+            file.tags.append(tag)
+
+    # Commit the changes to the database
+    try:
+        db.session.commit()
+        return jsonify({"message": "Tags added successfully."}), 200
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route('/api/files/<int:file_id>/remove_tag', methods=['POST'])
+def remove_tag(file_id):
+    """
+    Endpoint to remove multiple tags from a file.
+    """
+    file = File.query.get(file_id)
+    if not file:
+        return jsonify({"error": "File not found."}), 404
+
+    # Get tags from the request body
+    data = request.json
+    tag_names = data.get('tags', [])
+
+    if not tag_names:
+        return jsonify({"error": "No tags provided."}), 400
+
+    # Remove each tag from the file
+    for tag_name in tag_names:
+        tag_name = tag_name.strip().capitalize()  # Sentence case
+        tag = Tag.query.filter_by(name=tag_name).first()
+        
+        if tag and tag in file.tags:
+            file.tags.remove(tag)
+
+    # Commit the changes to the database
+    try:
+        db.session.commit()
+        return jsonify({"message": "Tags removed successfully."}), 200
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"error": str(e)}), 500
+    
 # Define Error Handlers
 
 @app.errorhandler(413)
