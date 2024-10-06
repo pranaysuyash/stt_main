@@ -1,40 +1,33 @@
-// src/components/common/MediaPlayer.jsx
 
 import React from 'react';
 import AudioPlayer from './AudioPlayer';
-import VideoPlayer from './VideoPlayer'; 
+import VideoPlayer from './VideoPlayer';
 import PropTypes from 'prop-types';
 
-function MediaPlayer({ 
-  fileUrl, 
-  fileName, 
-  fileType, 
-  fileSize, 
-  duration = '', 
-  onClose, 
-  isPlaying, 
-  togglePlayPause 
+function MediaPlayer({
+  fileUrl,
+  fileName,
+  fileType,
+  fileSize,
+  duration = '',
+  onClose,
+  isPlaying,
+  togglePlayPause
 }) {
-  const mimeType = fileType;
-
-  if (mimeType.startsWith('audio/')) {
+  if (fileType.startsWith('audio/')) {
     return (
       <AudioPlayer
-        key={fileName} // Ensure unique key
         fileUrl={fileUrl}
         fileName={fileName}
-        fileType={fileType}
         fileSize={fileSize}
-        duration={duration}
         onClose={onClose}
         isPlaying={isPlaying}
-        togglePlayPause={togglePlayPause}
+        setIsPlaying={togglePlayPause}
       />
     );
-  } else if (mimeType.startsWith('video/')) {
+  } else if (fileType.startsWith('video/')) {
     return (
       <VideoPlayer
-        key={fileName} // Ensure unique key
         fileUrl={fileUrl}
         fileName={fileName}
         fileType={fileType}
@@ -57,8 +50,8 @@ MediaPlayer.propTypes = {
   fileSize: PropTypes.number.isRequired,
   duration: PropTypes.string,
   onClose: PropTypes.func.isRequired,
-  isPlaying: PropTypes.bool.isRequired, 
-  togglePlayPause: PropTypes.func.isRequired, 
+  isPlaying: PropTypes.bool.isRequired,
+  togglePlayPause: PropTypes.func.isRequired,
 };
 
 export default MediaPlayer;
