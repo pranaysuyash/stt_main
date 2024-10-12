@@ -1,181 +1,398 @@
-import os
-import mimetypes
-from flask import Flask, request, jsonify, send_from_directory
-from flask_mail import Mail
-from flask_cors import CORS
-from werkzeug.utils import secure_filename
-from sqlalchemy import func
-from extensions import db, mail, bcrypt, jwt, migrate, limiter
-from auth.routes import auth_bp
-from models import File, Tag
-from utils import allowed_file, get_file_category, extract_audio
-from dotenv import load_dotenv
+# models.py
 
-# Load environment variables
-load_dotenv()
+from extensions import db, bcrypt
+from datetime import datetime, timedelta
+from flask import current_app
+from enum import Enum
+from sqlalchemy import Enum as SQLAlchemyEnum, ForeignKey, Table
+import jwt
+import uuid
 
-app = Flask(__name__)
+# Define RoleEnum
+class RoleEnum(str, Enum):
+    ADMIN = 'ADMIN'
+    USER = 'USER'
+    MANAGER = 'MANAGER'
 
-# Configuration
-app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
-app.config['JWT_SECRET_KEY'] = os.getenv('JWT_SECRET_KEY')
-app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL')
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.config['UPLOAD_FOLDER'] = 'static/uploads'
-app.config['MAX_CONTENT_LENGTH'] = 300 * 1024 * 1024  # 300MB
+# Association table for User and Role (UserRole)
+class UserRole(db.Model):
+    __tablename__ = 'user_roles'
+    
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), primary_key=True)
+    role_id = db.Column(db.Integer, db.ForeignKey('roles.id'), primary_key=True)
+    assigned_at = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    user = db.relationship('User', back_populates='user_roles', overlaps="roles,user_roles")
+    role = db.relationship('Role', back_populates='user_roles', overlaps="users,user_roles")
 
-# Initialize extensions
-db.init_app(app)
-mail.init_app(app)
-bcrypt.init_app(app)
-jwt.init_app(app)
-migrate.init_app(app, db)
-limiter.init_app(app)
+# User Model
+class User(db.Model):
+    __tablename__ = 'users'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    email = db.Column(db.String(120), unique=True, nullable=False, index=True)
+    password_hash = db.Column(db.String(128), nullable=False)
+    first_name = db.Column(db.String(30))
+    last_name = db.Column(db.String(30))
+    is_active = db.Column(db.Boolean, default=False)
+    confirmed_at = db.Column(db.DateTime)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    is_deleted = db.Column(db.Boolean, default=False)
+    
+    # Relationships
+    user_roles = db.relationship(
+        'UserRole', 
+        back_populates='user', 
+        cascade="all, delete-orphan", 
+        overlaps="roles,user_roles"
+    )
+    roles = db.relationship(
+        'Role', 
+        secondary='user_roles', 
+        back_populates='users', 
+        overlaps="user_roles,roles"
+    )
+    memberships = db.relationship('OrganizationMember', back_populates='user', cascade="all, delete-orphan")
+    workspace_memberships = db.relationship('WorkspaceMember', back_populates='user', cascade="all, delete-orphan")
+    subscriptions = db.relationship('Subscription', back_populates='user', cascade="all, delete-orphan")
+    media_files = db.relationship('MediaFile', back_populates='user', cascade="all, delete-orphan")
+    workflows = db.relationship('Workflow', back_populates='user', cascade="all, delete-orphan")
+    user_profile = db.relationship('UserProfile', back_populates='user', uselist=False, cascade="all, delete-orphan")
 
-# CORS setup
-cors_config = {
-    "origins": os.getenv('ALLOWED_ORIGINS', 'http://localhost:5173').split(','),
-    "methods": ["GET", "HEAD", "POST", "OPTIONS", "PUT", "PATCH", "DELETE"],
-    "allow_headers": ["Content-Type", "Authorization"],
-    "expose_headers": ["Content-Type", "X-CSRFToken"],
-    "supports_credentials": True,
-    "max_age": 600,
-    "vary_header": True
-}
-CORS(app, resources={r"/api/*": cors_config})
+    # Methods for password management, token generation, etc.
+    def __init__(self, email, password, first_name='', last_name=''):
+        self.email = email
+        self.set_password(password)
+        self.first_name = first_name
+        self.last_name = last_name
 
-# Register Blueprints
-app.register_blueprint(auth_bp, url_prefix='/api/auth')
+    def set_password(self, password):
+        self.password_hash = bcrypt.generate_password_hash(password).decode('utf-8')
 
-# Ensure the upload directory exists
-os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
+    def check_password(self, password):
+        return bcrypt.check_password_hash(self.password_hash, password)
 
-# MIME Types Configuration
-mimetypes.init()
-mimetypes.add_type('audio/mp3', '.mp3')
-mimetypes.add_type('video/mp4', '.mp4')
-mimetypes.add_type('image/jpeg', '.jpg')
-mimetypes.add_type('image/png', '.png')
+    def get_confirmation_token(self, expires_in=3600):
+        payload = {
+            'confirm': self.id,
+            'exp': datetime.utcnow() + timedelta(seconds=expires_in)
+        }
+        token = jwt.encode(
+            payload,
+            current_app.config['SECRET_KEY'],
+            algorithm='HS256'
+        )
+        return token
 
+    @staticmethod
+    def verify_confirmation_token(token):
+        try:
+            payload = jwt.decode(
+                token,
+                current_app.config['SECRET_KEY'],
+                algorithms=['HS256']
+            )
+            user_id = payload.get('confirm')
+            if user_id is None:
+                return None
+            return User.query.get(user_id)
+        except jwt.ExpiredSignatureError:
+            return None
+        except jwt.InvalidTokenError:
+            return None
 
-@app.route('/api/file_history', methods=['GET'])
-@limiter.limit("30 per minute")
-def file_history():
-    """
-    Retrieve the list of uploaded files with their metadata.
-    Supports pagination, filtering by date range, media type, search, and tags.
-    """
-    try:
-        page = request.args.get('page', 1, type=int)
-        per_page = request.args.get('per_page', 20, type=int)
-        start_date = request.args.get('start_date')
-        end_date = request.args.get('end_date')
-        media_type = request.args.get('media_type')
-        search_term = request.args.get('search')
-        tags = request.args.get('tags', '').split(',')
+    def get_reset_token(self, expires_in=3600):
+        payload = {
+            'reset': self.id,
+            'exp': datetime.utcnow() + timedelta(seconds=expires_in)
+        }
+        token = jwt.encode(
+            payload,
+            current_app.config['SECRET_KEY'],
+            algorithm='HS256'
+        )
+        return token
 
-        query = File.query
+    @staticmethod
+    def verify_reset_token(token):
+        try:
+            payload = jwt.decode(
+                token,
+                current_app.config['SECRET_KEY'],
+                algorithms=['HS256']
+            )
+            user_id = payload.get('reset')
+            if user_id is None:
+                return None
+            return User.query.get(user_id)
+        except jwt.ExpiredSignatureError:
+            return None
+        except jwt.InvalidTokenError:
+            return None
 
-        # Search by filename
-        if search_term:
-            query = query.filter(File.filename.ilike(f'%{search_term}%'))
+    def __repr__(self):
+        return f"<User {self.email}>"
 
-        # Filter by media type
-        if media_type:
-            query = query.filter(File.type.ilike(f'{media_type}%'))
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'email': self.email,
+            'first_name': self.first_name,
+            'last_name': self.last_name,
+            'is_active': self.is_active,
+            'created_at': self.created_at.isoformat() if self.created_at else None,
+            'updated_at': self.updated_at.isoformat() if self.updated_at else None,
+            'roles': [role.name for role in self.roles]
+        }
 
-        # Filter by date range
-        if start_date:
-            query = query.filter(File.uploaded_at >= start_date)
-        if end_date:
-            query = query.filter(File.uploaded_at <= end_date)
+# Role Model
+class Role(db.Model):
+    __tablename__ = 'roles'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(SQLAlchemyEnum(RoleEnum, name='roleenum'), unique=True, nullable=False)
+    description = db.Column(db.String(255))
+    
+    user_roles = db.relationship(
+        'UserRole', 
+        back_populates='role', 
+        cascade="all, delete-orphan", 
+        overlaps="users,user_roles"
+    )
+    users = db.relationship(
+        'User', 
+        secondary='user_roles', 
+        back_populates='roles', 
+        overlaps="user_roles,users"
+    )
+    
+    def __init__(self, name: RoleEnum, description=''):
+        self.name = name
+        self.description = description
 
-        # Filter by tags
-        if tags and tags[0]:
-            query = query.join(File.tags).filter(Tag.name.in_(tags))
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'name': self.name.value,
+            'description': self.description
+        }
 
-        # Pagination
-        pagination = query.paginate(page=page, per_page=per_page, error_out=False)
-        files = pagination.items
+# UserProfile Model
+class UserProfile(db.Model):
+    __tablename__ = 'user_profiles'
+    
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), primary_key=True)
+    industry = db.Column(db.String(100))
+    job_role = db.Column(db.String(100))
+    experience_level = db.Column(db.String(50))
+    use_cases = db.Column(db.Text)
+    
+    # Relationship
+    user = db.relationship('User', back_populates='user_profile')
 
-        # Day-wise uploads
-        day_wise_uploads = db.session.query(
-            func.to_char(File.uploaded_at, 'YYYY-MM-DD').label('day'),
-            func.count(File.id).label('upload_count')
-        ).group_by(func.to_char(File.uploaded_at, 'YYYY-MM-DD')).all()
+# Organization Model
+class Organization(db.Model):
+    __tablename__ = 'organizations'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(150), unique=True, nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    is_deleted = db.Column(db.Boolean, default=False)
+    
+    members = db.relationship('OrganizationMember', back_populates='organization', cascade="all, delete-orphan")
+    workspaces = db.relationship('Workspace', back_populates='organization', cascade="all, delete-orphan")
 
-        # Week-wise uploads
-        week_wise_uploads = db.session.query(
-            func.to_char(File.uploaded_at, 'YYYY').label('year'),
-            func.to_char(File.uploaded_at, 'IW').label('week'),
-            func.count(File.id).label('upload_count')
-        ).group_by(func.to_char(File.uploaded_at, 'YYYY'), func.to_char(File.uploaded_at, 'IW')).all()
+# Workspace Model
+class Workspace(db.Model):
+    __tablename__ = 'workspaces'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(150), nullable=False)
+    organization_id = db.Column(db.Integer, db.ForeignKey('organizations.id'), nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    is_deleted = db.Column(db.Boolean, default=False)
+    
+    organization = db.relationship('Organization', back_populates='workspaces')
+    members = db.relationship('WorkspaceMember', back_populates='workspace', cascade="all, delete-orphan")
 
-        # Build response
-        file_list = [{
-            'id': file.id,
-            'filename': file.filename,
-            'path': f'/static/uploads/{file.filename}',
-            'size': file.size,
-            'type': file.type,
-            'duration': file.duration,
-            'uploaded_at': file.uploaded_at.isoformat(),
-            'tags': [tag.name for tag in file.tags]
-        } for file in files]
+# WorkspaceMember Model
+class WorkspaceMember(db.Model):
+    __tablename__ = 'workspace_members'
+    
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), primary_key=True)
+    workspace_id = db.Column(db.Integer, db.ForeignKey('workspaces.id'), primary_key=True)
+    role_id = db.Column(db.Integer, db.ForeignKey('roles.id'), nullable=False)
+    joined_at = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    user = db.relationship('User', back_populates='workspace_memberships')
+    workspace = db.relationship('Workspace', back_populates='members')
+    role = db.relationship('Role')
 
-        return jsonify({
-            'files': file_list,
-            'total': pagination.total,
-            'page': pagination.page,
-            'per_page': pagination.per_page,
-            'pages': pagination.pages,
-            'uploads_per_day': {day: count for day, count in day_wise_uploads},
-            'uploads_per_week': {f"{year}-W{week}": count for year, week, count in week_wise_uploads}
-        }), 200
+# OrganizationMember Model
+class OrganizationMember(db.Model):
+    __tablename__ = 'organization_members'
+    
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), primary_key=True)
+    organization_id = db.Column(db.Integer, db.ForeignKey('organizations.id'), primary_key=True)
+    role_id = db.Column(db.Integer, db.ForeignKey('roles.id'), nullable=False)
+    joined_at = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    user = db.relationship('User', back_populates='memberships')
+    organization = db.relationship('Organization', back_populates='members')
+    role = db.relationship('Role')
 
-    except Exception as e:
-        app.logger.error(f"Error in /file_history: {str(e)}")
-        return jsonify({"error": "An error occurred while fetching file history.", "details": str(e)}), 500
+# SubscriptionTier Model
+class SubscriptionTier(db.Model):
+    __tablename__ = 'subscription_tiers'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(50), unique=True, nullable=False)
+    price = db.Column(db.Float, nullable=False)
+    features = db.Column(db.JSON)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    subscriptions = db.relationship('Subscription', back_populates='tier', cascade="all, delete-orphan")
 
+# Subscription Model
+class Subscription(db.Model):
+    __tablename__ = 'subscriptions'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    tier_id = db.Column(db.Integer, db.ForeignKey('subscription_tiers.id'), nullable=False)
+    start_date = db.Column(db.DateTime, default=datetime.utcnow)
+    end_date = db.Column(db.DateTime, nullable=True)
+    is_active = db.Column(db.Boolean, default=True)
+    is_deleted = db.Column(db.Boolean, default=False)
+    
+    user = db.relationship('User', back_populates='subscriptions')
+    tier = db.relationship('SubscriptionTier', back_populates='subscriptions')
 
-@app.route('/api/tags', methods=['GET'])
-@limiter.limit("30 per minute")
-def get_tags():
-    """
-    Retrieve the list of all available tags.
-    """
-    try:
-        tags = Tag.query.all()
-        return jsonify({'tags': [{'id': tag.id, 'name': tag.name} for tag in tags]}), 200
-    except Exception as e:
-        app.logger.error(f"Error fetching tags: {str(e)}")
-        return jsonify({"error": "Failed to fetch tags", "details": str(e)}), 500
+# Association table for MediaFile and Tag
+media_file_tags = db.Table('media_file_tags',
+    db.Column('media_file_id', db.String(36), db.ForeignKey('media_files.id'), primary_key=True),
+    db.Column('tag_id', db.Integer, db.ForeignKey('tags.id'), primary_key=True)
+)
 
+# Tag Model
+class Tag(db.Model):
+    __tablename__ = 'tags'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(50), unique=True, nullable=False)
+    
+    # Many-to-many relationship with MediaFile
+    media_files = db.relationship('MediaFile', secondary=media_file_tags, back_populates='tags')
 
-@app.route('/static/uploads/<path:filename>', methods=['GET'])
-def serve_file(filename):
-    """
-    Serve uploaded files.
-    """
-    return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
+# MediaFile Model
+class MediaFile(db.Model):
+    __tablename__ = 'media_files'
+    
+    id = db.Column(db.String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    filename = db.Column(db.String(255), nullable=False, index=True)
+    storage_path = db.Column(db.String(500), nullable=False)
+    file_size = db.Column(db.BigInteger, nullable=False)  # File size in bytes
+    file_type = db.Column(db.String(50), nullable=False)  # e.g., 'video', 'audio', 'image'
+    duration = db.Column(db.Float)  # Duration in seconds if media file
+    uploaded_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False, index=True)
+    metadata = db.Column(db.JSON)  # Additional metadata as JSON
+    is_deleted = db.Column(db.Boolean, default=False)
+    
+    # Relationships
+    user = db.relationship('User', back_populates='media_files')
+    processed_artifacts = db.relationship('ProcessedArtifact', back_populates='media_file', cascade="all, delete-orphan")
+    analysis_results = db.relationship('AnalysisResult', back_populates='media_file', cascade="all, delete-orphan")
+    tags = db.relationship('Tag', secondary=media_file_tags, back_populates='media_files')
 
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'user_id': self.user_id,
+            'filename': self.filename,
+            'storage_path': self.storage_path,
+            'file_size': self.file_size,
+            'file_type': self.file_type,
+            'duration': self.duration,
+            'uploaded_at': self.uploaded_at.isoformat(),
+            'metadata': self.metadata,
+            'tags': [tag.name for tag in self.tags]
+        }
 
-# Error Handlers
-@app.errorhandler(404)
-def not_found(error):
-    return jsonify({'error': 'Resource not found.'}), 404
+# ProcessedArtifact Model
+class ProcessedArtifact(db.Model):
+    __tablename__ = 'processed_artifacts'
+    
+    id = db.Column(db.String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    media_file_id = db.Column(db.String(36), db.ForeignKey('media_files.id'), nullable=False)
+    artifact_type = db.Column(db.String(50), nullable=False)  # e.g., 'audio_chunk', 'video_chunk', 'frame'
+    file_path = db.Column(db.String(500), nullable=False)
+    metadata = db.Column(db.JSON)  # Additional metadata as JSON
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    # Relationships
+    media_file = db.relationship('MediaFile', back_populates='processed_artifacts')
+    analysis_results = db.relationship('AnalysisResult', back_populates='processed_artifact', cascade="all, delete-orphan")
 
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'media_file_id': self.media_file_id,
+            'artifact_type': self.artifact_type,
+            'file_path': self.file_path,
+            'metadata': self.metadata,
+            'created_at': self.created_at.isoformat()
+        }
 
-@app.errorhandler(500)
-def internal_error(error):
-    return jsonify({'error': 'Internal server error'}), 500
+# AnalysisResult Model
+class AnalysisResult(db.Model):
+    __tablename__ = 'analysis_results'
+    
+    id = db.Column(db.String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    media_file_id = db.Column(db.String(36), db.ForeignKey('media_files.id'), nullable=True)
+    processed_artifact_id = db.Column(db.String(36), db.ForeignKey('processed_artifacts.id'), nullable=True)
+    analysis_type = db.Column(db.String(100), nullable=False)  # e.g., 'transcription', 'sentiment_analysis'
+    result = db.Column(db.JSON, nullable=False)  # Analysis result as JSON
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    # Relationships
+    media_file = db.relationship('MediaFile', back_populates='analysis_results')
+    processed_artifact = db.relationship('ProcessedArtifact', back_populates='analysis_results')
 
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'media_file_id': self.media_file_id,
+            'processed_artifact_id': self.processed_artifact_id,
+            'analysis_type': self.analysis_type,
+            'result': self.result,
+            'created_at': self.created_at.isoformat()
+        }
 
-@app.errorhandler(Exception)
-def handle_exception(e):
-    app.logger.error('Unhandled Exception: %s', e, exc_info=True)
-    return jsonify({'error': 'An unexpected error occurred.'}), 500
+# Workflow Model
+class Workflow(db.Model):
+    __tablename__ = 'workflows'
+    
+    id = db.Column(db.String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    name = db.Column(db.String(255), nullable=False)
+    steps = db.Column(db.JSON, nullable=False)  # Ordered list of analysis steps
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    # Relationships
+    user = db.relationship('User', back_populates='workflows')
 
-
-if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5555, debug=True)
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'user_id': self.user_id,
+            'name': self.name,
+            'steps': self.steps,
+            'created_at': self.created_at.isoformat(),
+            'updated_at': self.updated_at.isoformat()
+        }

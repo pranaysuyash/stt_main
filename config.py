@@ -46,3 +46,20 @@ class Config:
     ALLOWED_ORIGINS = os.getenv('ALLOWED_ORIGINS', '').split(',')
     REACT_APP_API_BASE_URL = os.getenv('REACT_APP_API_BASE_URL', 'http://localhost:5555/api')
     VITE_API_BASE_URL = os.getenv('VITE_API_BASE_URL', 'http://localhost:5555/api')
+
+class DevelopmentConfig(Config):
+    DEBUG = True
+
+class TestingConfig(Config):
+    TESTING = True
+    SQLALCHEMY_DATABASE_URI = os.getenv('TEST_DATABASE_URL') or 'sqlite://'
+
+class ProductionConfig(Config):
+    pass
+
+config = {
+    'development': DevelopmentConfig,
+    'testing': TestingConfig,
+    'production': ProductionConfig,
+    'default': DevelopmentConfig
+}
