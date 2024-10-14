@@ -84,5 +84,5 @@ migrate = Migrate()
 limiter = Limiter(
     key_func=get_remote_address,
     storage_uri=redis_url,  # Configure Redis as the storage backend
-    default_limits=["200 per day", "50 per hour"]  # Default rate limits
+    # default_limits=["200 per day", "50 per hour"]  # Default rate limits
 )

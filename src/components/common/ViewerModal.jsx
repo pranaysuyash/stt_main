@@ -1,6 +1,877 @@
-// src/components/common/ViewerModal.jsx
+// // // // import React, { useState, useEffect } from 'react';
+// // // // import styled from 'styled-components';
+// // // // import MediaPlayer from './MediaPlayer';
+// // // // import ImageViewer from './ImageViewer';
+// // // // import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+// // // // import { faTimes, faForward, faBackward } from '@fortawesome/free-solid-svg-icons';
+// // // // import FocusTrap from 'focus-trap-react';
+// // // // import PropTypes from 'prop-types';
+// // // // import { isAudioFile, isVideoFile, isImageFile } from '../../utils/mediaUtils';
 
-import React, { useEffect, useState } from 'react';
+// // // // const ModalOverlay = styled.div`
+// // // //   position: fixed;
+// // // //   top: 0;
+// // // //   left: 0;
+// // // //   width: 100%;
+// // // //   height: 100%;
+// // // //   background-color: rgba(0, 0, 0, 0.7);
+// // // //   display: flex;
+// // // //   justify-content: center;
+// // // //   align-items: center;
+// // // //   z-index: 3000;
+// // // // `;
+
+// // // // const ModalContent = styled.div`
+// // // //   background-color: ${({ theme }) => theme.colors.background};
+// // // //   padding: 20px;
+// // // //   border-radius: 10px;
+// // // //   width: 95%;
+// // // //   max-width: 900px;
+// // // //   max-height: 90vh;
+// // // //   overflow-y: auto;
+// // // //   display: flex;
+// // // //   flex-direction: column;
+// // // //   align-items: center;
+// // // // `;
+
+// // // // const NavigationControls = styled.div`
+// // // //   display: flex;
+// // // //   justify-content: space-between;
+// // // //   width: 100%;
+// // // //   margin-top: 15px;
+// // // // `;
+
+// // // // const CloseIcon = styled(FontAwesomeIcon)`
+// // // //   position: absolute;
+// // // //   top: 10px;
+// // // //   right: 10px;
+// // // //   cursor: pointer;
+// // // //   color: ${({ theme }) => theme.colors.error};
+// // // // `;
+
+// // // // function ViewerModal({ uploadedFiles, initialIndex, onClose }) {
+// // // //   const [currentIndex, setCurrentIndex] = useState(initialIndex);
+// // // //   const [isPlaying, setIsPlaying] = useState(false);
+
+// // // //   const currentFile = uploadedFiles[currentIndex];
+// // // //   const mediaType = isAudioFile(currentFile.type)
+// // // //     ? 'audio'
+// // // //     : isVideoFile(currentFile.type)
+// // // //     ? 'video'
+// // // //     : isImageFile(currentFile.type)
+// // // //     ? 'image'
+// // // //     : 'unsupported';
+
+// // // //   const goToNext = () => {
+// // // //     if (currentIndex < uploadedFiles.length - 1) {
+// // // //       setCurrentIndex(currentIndex + 1);
+// // // //       setIsPlaying(false);
+// // // //     }
+// // // //   };
+
+// // // //   const goToPrevious = () => {
+// // // //     if (currentIndex > 0) {
+// // // //       setCurrentIndex(currentIndex - 1);
+// // // //       setIsPlaying(false);
+// // // //     }
+// // // //   };
+
+// // // //   useEffect(() => {
+// // // //     setIsPlaying(false);
+// // // //   }, [currentIndex]);
+
+// // // //   const togglePlayPause = () => {
+// // // //     setIsPlaying(!isPlaying);
+// // // //   };
+
+// // // //   const renderMedia = () => {
+// // // //     switch (mediaType) {
+// // // //       case 'video':
+// // // //       case 'audio':
+// // // //         return (
+// // // //           <MediaPlayer
+// // // //             key={currentFile.filename}
+// // // //             fileUrl={currentFile.path}
+// // // //             fileName={currentFile.filename}
+// // // //             fileType={currentFile.type}
+// // // //             fileSize={currentFile.size}
+// // // //             duration={currentFile.duration}
+// // // //             onClose={onClose}
+// // // //             isPlaying={isPlaying}
+// // // //             togglePlayPause={togglePlayPause}
+// // // //           />
+// // // //         );
+// // // //       case 'image':
+// // // //         return (
+// // // //           <ImageViewer
+// // // //             key={currentFile.filename}
+// // // //             fileUrl={currentFile.path}
+// // // //             fileName={currentFile.filename}
+// // // //             onClose={onClose}
+// // // //             goToNext={goToNext}
+// // // //             goToPrevious={goToPrevious}
+// // // //           />
+// // // //         );
+// // // //       default:
+// // // //         return <div>Unsupported media type</div>;
+// // // //     }
+// // // //   };
+
+// // // //   return (
+// // // //     <ModalOverlay onClick={onClose}>
+// // // //       <FocusTrap>
+// // // //         <ModalContent onClick={(e) => e.stopPropagation()}>
+// // // //           <CloseIcon icon={faTimes} onClick={onClose} />
+// // // //           {renderMedia()}
+// // // //           <NavigationControls>
+// // // //             <button onClick={goToPrevious} disabled={currentIndex === 0}>
+// // // //               <FontAwesomeIcon icon={faBackward} /> Previous
+// // // //             </button>
+// // // //             <button onClick={goToNext} disabled={currentIndex === uploadedFiles.length - 1}>
+// // // //               Next <FontAwesomeIcon icon={faForward} />
+// // // //             </button>
+// // // //           </NavigationControls>
+// // // //         </ModalContent>
+// // // //       </FocusTrap>
+// // // //     </ModalOverlay>
+// // // //   );
+// // // // }
+
+// // // // ViewerModal.propTypes = {
+// // // //   uploadedFiles: PropTypes.arrayOf(
+// // // //     PropTypes.shape({
+// // // //       filename: PropTypes.string.isRequired,
+// // // //       path: PropTypes.string.isRequired,
+// // // //       type: PropTypes.string.isRequired,
+// // // //       size: PropTypes.number.isRequired,
+// // // //       duration: PropTypes.string,
+// // // //     })
+// // // //   ).isRequired,
+// // // //   initialIndex: PropTypes.number.isRequired,
+// // // //   onClose: PropTypes.func.isRequired,
+// // // // };
+
+// // // // export default ViewerModal;
+
+// // // import React, { useState, useEffect } from 'react';
+// // // import styled from 'styled-components';
+// // // import MediaPlayer from './MediaPlayer';
+// // // import ImageViewer from './ImageViewer';
+// // // import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+// // // import { faTimes, faForward, faBackward } from '@fortawesome/free-solid-svg-icons';
+// // // import FocusTrap from 'focus-trap-react';
+// // // import PropTypes from 'prop-types';
+// // // import { isAudioFile, isVideoFile, isImageFile } from '../../utils/mediaUtils';
+
+// // // const ModalOverlay = styled.div`
+// // //   position: fixed;
+// // //   top: 0;
+// // //   left: 0;
+// // //   width: 100%;
+// // //   height: 100%;
+// // //   background-color: rgba(0, 0, 0, 0.7);
+// // //   display: flex;
+// // //   justify-content: center;
+// // //   align-items: center;
+// // //   z-index: 3000;
+// // // `;
+
+// // // const ModalContent = styled.div`
+// // //   background-color: ${({ theme }) => theme.colors.background};
+// // //   padding: 20px;
+// // //   border-radius: 10px;
+// // //   width: 95%;
+// // //   max-width: 900px;
+// // //   max-height: 90vh;
+// // //   overflow-y: auto;
+// // //   display: flex;
+// // //   flex-direction: column;
+// // //   align-items: center;
+// // // `;
+
+// // // const NavigationControls = styled.div`
+// // //   display: flex;
+// // //   justify-content: space-between;
+// // //   width: 100%;
+// // //   margin-top: 15px;
+// // // `;
+
+// // // const CloseIcon = styled(FontAwesomeIcon)`
+// // //   position: absolute;
+// // //   top: 10px;
+// // //   right: 10px;
+// // //   cursor: pointer;
+// // //   color: ${({ theme }) => theme.colors.error};
+// // // `;
+
+// // // function ViewerModal({ uploadedFiles, initialIndex, onClose }) {
+// // //   const [currentIndex, setCurrentIndex] = useState(initialIndex);
+// // //   const [isPlaying, setIsPlaying] = useState(false);
+
+// // //   const currentFile = uploadedFiles[currentIndex];
+// // //   const mediaType = isAudioFile(currentFile.type)
+// // //     ? 'audio'
+// // //     : isVideoFile(currentFile.type)
+// // //     ? 'video'
+// // //     : isImageFile(currentFile.type)
+// // //     ? 'image'
+// // //     : 'unsupported';
+
+// // //   const goToNext = () => {
+// // //     if (currentIndex < uploadedFiles.length - 1) {
+// // //       setCurrentIndex(currentIndex + 1);
+// // //       setIsPlaying(false);
+// // //     }
+// // //   };
+
+// // //   const goToPrevious = () => {
+// // //     if (currentIndex > 0) {
+// // //       setCurrentIndex(currentIndex - 1);
+// // //       setIsPlaying(false);
+// // //     }
+// // //   };
+
+// // //   useEffect(() => {
+// // //     setIsPlaying(false);
+// // //   }, [currentIndex]);
+
+// // //   const togglePlayPause = () => {
+// // //     setIsPlaying(!isPlaying);
+// // //   };
+
+// // //   const renderMedia = () => {
+// // //     switch (mediaType) {
+// // //       case 'video':
+// // //       case 'audio':
+// // //         return (
+// // //           <MediaPlayer
+// // //             key={currentFile.filename}
+// // //             fileUrl={currentFile.path}
+// // //             fileName={currentFile.filename}
+// // //             fileType={currentFile.type}
+// // //             fileSize={currentFile.size}
+// // //             duration={currentFile.duration}
+// // //             metadata={currentFile.meta_data}
+// // //             onClose={onClose}
+// // //             isPlaying={isPlaying}
+// // //             togglePlayPause={togglePlayPause}
+// // //           />
+// // //         );
+// // //       case 'image':
+// // //         return (
+// // //           <ImageViewer
+// // //             key={currentFile.filename}
+// // //             fileUrl={currentFile.path}
+// // //             fileName={currentFile.filename}
+// // //             metadata={currentFile.meta_data}
+// // //             onClose={onClose}
+// // //             goToNext={goToNext}
+// // //             goToPrevious={goToPrevious}
+// // //           />
+// // //         );
+// // //       default:
+// // //         return <div>Unsupported media type</div>;
+// // //     }
+// // //   };
+
+// // //   return (
+// // //     <ModalOverlay onClick={onClose}>
+// // //       <FocusTrap>
+// // //         <ModalContent onClick={(e) => e.stopPropagation()}>
+// // //           <CloseIcon icon={faTimes} onClick={onClose} />
+// // //           {renderMedia()}
+// // //           <NavigationControls>
+// // //             <button onClick={goToPrevious} disabled={currentIndex === 0}>
+// // //               <FontAwesomeIcon icon={faBackward} /> Previous
+// // //             </button>
+// // //             <button onClick={goToNext} disabled={currentIndex === uploadedFiles.length - 1}>
+// // //               Next <FontAwesomeIcon icon={faForward} />
+// // //             </button>
+// // //           </NavigationControls>
+// // //         </ModalContent>
+// // //       </FocusTrap>
+// // //     </ModalOverlay>
+// // //   );
+// // // }
+
+// // // ViewerModal.propTypes = {
+// // //   uploadedFiles: PropTypes.arrayOf(
+// // //     PropTypes.shape({
+// // //       filename: PropTypes.string.isRequired,
+// // //       path: PropTypes.string.isRequired,
+// // //       type: PropTypes.string.isRequired,
+// // //       size: PropTypes.number.isRequired,
+// // //       duration: PropTypes.string,
+// // //       meta_data: PropTypes.object,
+// // //     })
+// // //   ).isRequired,
+// // //   initialIndex: PropTypes.number.isRequired,
+// // //   onClose: PropTypes.func.isRequired,
+// // // };
+
+// // // export default ViewerModal;
+
+// // import React, { useState, useEffect } from 'react';
+// // import styled from 'styled-components';
+// // import MediaPlayer from './MediaPlayer';
+// // import ImageViewer from './ImageViewer';
+// // import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+// // import { faTimes, faForward, faBackward } from '@fortawesome/free-solid-svg-icons';
+// // import FocusTrap from 'focus-trap-react';
+// // import PropTypes from 'prop-types';
+// // import { isAudioFile, isVideoFile, isImageFile } from '../../utils/mediaUtils';
+
+// // const ModalOverlay = styled.div`
+// //   position: fixed;
+// //   top: 0;
+// //   left: 0;
+// //   width: 100%;
+// //   height: 100%;
+// //   background-color: rgba(0, 0, 0, 0.7);
+// //   display: flex;
+// //   justify-content: center;
+// //   align-items: center;
+// //   z-index: 3000;
+// // `;
+
+// // const ModalContent = styled.div`
+// //   background-color: ${({ theme }) => theme.colors.background};
+// //   padding: 20px;
+// //   border-radius: 10px;
+// //   width: 95%;
+// //   max-width: 900px;
+// //   max-height: 90vh;
+// //   overflow-y: auto;
+// //   display: flex;
+// //   flex-direction: column;
+// //   align-items: center;
+// // `;
+
+// // const NavigationControls = styled.div`
+// //   display: flex;
+// //   justify-content: space-between;
+// //   width: 100%;
+// //   margin-top: 15px;
+// // `;
+
+// // const CloseIcon = styled(FontAwesomeIcon)`
+// //   position: absolute;
+// //   top: 10px;
+// //   right: 10px;
+// //   cursor: pointer;
+// //   color: ${({ theme }) => theme.colors.error};
+// // `;
+
+// // const ErrorMessage = styled.div`
+// //   color: ${({ theme }) => theme.colors.error};
+// //   margin: 20px 0;
+// //   text-align: center;
+// // `;
+
+// // function ViewerModal({ uploadedFiles, initialIndex, onClose }) {
+// //   const [currentIndex, setCurrentIndex] = useState(initialIndex);
+// //   const [isPlaying, setIsPlaying] = useState(false);
+// //   const [error, setError] = useState(null);
+
+// //   const currentFile = uploadedFiles[currentIndex];
+
+// //   useEffect(() => {
+// //     if (!currentFile) {
+// //       setError("File not found");
+// //       return;
+// //     }
+// //     setError(null);
+// //     setIsPlaying(false);
+// //   }, [currentIndex, currentFile]);
+
+// //   const mediaType = currentFile && (
+// //     isAudioFile(currentFile.type)
+// //       ? 'audio'
+// //       : isVideoFile(currentFile.type)
+// //         ? 'video'
+// //         : isImageFile(currentFile.type)
+// //           ? 'image'
+// //           : 'unsupported'
+// //   );
+
+// //   const goToNext = () => {
+// //     if (currentIndex < uploadedFiles.length - 1) {
+// //       setCurrentIndex(currentIndex + 1);
+// //     }
+// //   };
+
+// //   const goToPrevious = () => {
+// //     if (currentIndex > 0) {
+// //       setCurrentIndex(currentIndex - 1);
+// //     }
+// //   };
+
+// //   const togglePlayPause = () => {
+// //     setIsPlaying(!isPlaying);
+// //   };
+
+// //   const renderMedia = () => {
+// //     if (error) {
+// //       return <ErrorMessage>{error}</ErrorMessage>;
+// //     }
+
+// //     if (!currentFile) {
+// //       return <ErrorMessage>No file selected</ErrorMessage>;
+// //     }
+
+// //     switch (mediaType) {
+// //       case 'video':
+// //       case 'audio':
+// //         return (
+// //           <MediaPlayer
+// //             key={currentFile.id}
+// //             fileUrl={currentFile.path}
+// //             fileName={currentFile.filename}
+// //             fileType={currentFile.type}
+// //             fileSize={currentFile.size}
+// //             duration={currentFile.duration}
+// //             metadata={currentFile.meta_data || {}}
+// //             fileId={currentFile.id.toString()}
+// //             onClose={onClose}
+// //             isPlaying={isPlaying}
+// //             togglePlayPause={togglePlayPause}
+// //           />
+// //         );
+// //       case 'image':
+// //         return (
+// //           <ImageViewer
+// //             key={currentFile.id}
+// //             fileUrl={currentFile.path}
+// //             fileName={currentFile.filename}
+// //             metadata={currentFile.meta_data || {}}
+// //             fileId={currentFile.id.toString()}
+// //             onClose={onClose}
+// //             goToNext={goToNext}
+// //             goToPrevious={goToPrevious}
+// //           />
+// //         );
+// //       default:
+// //         return <ErrorMessage>Unsupported media type</ErrorMessage>;
+// //     }
+// //   };
+
+// //   return (
+// //     <ModalOverlay onClick={onClose}>
+// //       <FocusTrap>
+// //         <ModalContent onClick={(e) => e.stopPropagation()}>
+// //           <CloseIcon icon={faTimes} onClick={onClose} />
+// //           {renderMedia()}
+// //           <NavigationControls>
+// //             <button onClick={goToPrevious} disabled={currentIndex === 0}>
+// //               <FontAwesomeIcon icon={faBackward} /> Previous
+// //             </button>
+// //             <button onClick={goToNext} disabled={currentIndex === uploadedFiles.length - 1}>
+// //               Next <FontAwesomeIcon icon={faForward} />
+// //             </button>
+// //           </NavigationControls>
+// //         </ModalContent>
+// //       </FocusTrap>
+// //     </ModalOverlay>
+// //   );
+// // }
+
+// // ViewerModal.propTypes = {
+// //   uploadedFiles: PropTypes.arrayOf(
+// //     PropTypes.shape({
+// //       id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
+// //       filename: PropTypes.string.isRequired,
+// //       path: PropTypes.string.isRequired,
+// //       type: PropTypes.string.isRequired,
+// //       size: PropTypes.number.isRequired,
+// //       duration: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+// //       meta_data: PropTypes.object,
+// //     })
+// //   ).isRequired,
+// //   initialIndex: PropTypes.number.isRequired,
+// //   onClose: PropTypes.func.isRequired,
+// // };
+
+// // export default ViewerModal;
+
+// // import React, { useState, useEffect } from 'react';
+// // import styled from 'styled-components';
+// // import VideoPlayer from './VideoPlayer';
+// // import AudioPlayer from './AudioPlayer';
+// // import ImageViewer from './ImageViewer';
+// // import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+// // import { faTimes, faForward, faBackward } from '@fortawesome/free-solid-svg-icons';
+// // import FocusTrap from 'focus-trap-react';
+// // import PropTypes from 'prop-types';
+// // import { isAudioFile, isVideoFile, isImageFile } from '../../utils/mediaUtils';
+
+// // const ModalOverlay = styled.div`
+// //   position: fixed;
+// //   top: 0;
+// //   left: 0;
+// //   width: 100%;
+// //   height: 100%;
+// //   background-color: rgba(0, 0, 0, 0.7);
+// //   display: flex;
+// //   justify-content: center;
+// //   align-items: center;
+// //   z-index: 3000;
+// // `;
+
+// // const ModalContent = styled.div`
+// //   background-color: ${({ theme }) => theme.colors.background};
+// //   padding: 20px;
+// //   border-radius: 10px;
+// //   width: 95%;
+// //   max-width: 900px;
+// //   max-height: 90vh;
+// //   overflow-y: auto;
+// //   display: flex;
+// //   flex-direction: column;
+// //   align-items: center;
+// // `;
+
+// // const NavigationControls = styled.div`
+// //   display: flex;
+// //   justify-content: space-between;
+// //   width: 100%;
+// //   margin-top: 15px;
+// // `;
+
+// // const CloseIcon = styled(FontAwesomeIcon)`
+// //   position: absolute;
+// //   top: 10px;
+// //   right: 10px;
+// //   cursor: pointer;
+// //   color: ${({ theme }) => theme.colors.error};
+// // `;
+
+// // const ErrorMessage = styled.div`
+// //   color: ${({ theme }) => theme.colors.error};
+// //   margin: 20px 0;
+// //   text-align: center;
+// // `;
+
+// // function ViewerModal({ uploadedFiles, initialIndex, onClose }) {
+// //   const [currentIndex, setCurrentIndex] = useState(initialIndex);
+// //   const [isPlaying, setIsPlaying] = useState(false);
+// //   const [error, setError] = useState(null);
+
+// //   const currentFile = uploadedFiles[currentIndex];
+
+// //   useEffect(() => {
+// //     if (!currentFile) {
+// //       setError("File not found");
+// //       return;
+// //     }
+// //     setError(null);
+// //     setIsPlaying(false);
+// //   }, [currentIndex, currentFile]);
+
+// //   const mediaType = currentFile && (
+// //     isAudioFile(currentFile.type)
+// //       ? 'audio'
+// //       : isVideoFile(currentFile.type)
+// //         ? 'video'
+// //         : isImageFile(currentFile.type)
+// //           ? 'image'
+// //           : 'unsupported'
+// //   );
+
+// //   const goToNext = () => {
+// //     if (currentIndex < uploadedFiles.length - 1) {
+// //       setCurrentIndex(currentIndex + 1);
+// //     }
+// //   };
+
+// //   const goToPrevious = () => {
+// //     if (currentIndex > 0) {
+// //       setCurrentIndex(currentIndex - 1);
+// //     }
+// //   };
+
+// //   const togglePlayPause = () => {
+// //     setIsPlaying(!isPlaying);
+// //   };
+
+// //   const renderMedia = () => {
+// //     if (error) {
+// //       return <ErrorMessage>{error}</ErrorMessage>;
+// //     }
+
+// //     if (!currentFile) {
+// //       return <ErrorMessage>No file selected</ErrorMessage>;
+// //     }
+
+// //     switch (mediaType) {
+// //       case 'video':
+// //         return (
+// //           <VideoPlayer
+// //             key={currentFile.id}
+// //             fileUrl={currentFile.path}
+// //             fileName={currentFile.filename}
+// //             fileType={currentFile.type}
+// //             fileSize={currentFile.size}
+// //             duration={currentFile.duration}
+// //             metadata={currentFile.meta_data || {}}
+// //             fileId={currentFile.id.toString()}
+// //             onClose={onClose}
+// //             isPlaying={isPlaying}
+// //             togglePlayPause={togglePlayPause}
+// //           />
+// //         );
+// //       case 'audio':
+// //         return (
+// //           <AudioPlayer
+// //             key={currentFile.id}
+// //             fileUrl={currentFile.path}
+// //             fileName={currentFile.filename}
+// //             fileType={currentFile.type}
+// //             fileSize={currentFile.size}
+// //             duration={currentFile.duration}
+// //             metadata={currentFile.meta_data || {}}
+// //             fileId={currentFile.id.toString()}
+// //           />
+// //         );
+// //       case 'image':
+// //         return (
+// //           <ImageViewer
+// //             key={currentFile.id}
+// //             fileUrl={currentFile.path}
+// //             fileName={currentFile.filename}
+// //             metadata={currentFile.meta_data || {}}
+// //             fileId={currentFile.id.toString()}
+// //             onClose={onClose}
+// //             goToNext={goToNext}
+// //             goToPrevious={goToPrevious}
+// //           />
+// //         );
+// //       default:
+// //         return <ErrorMessage>Unsupported media type</ErrorMessage>;
+// //     }
+// //   };
+
+// //   return (
+// //     <ModalOverlay onClick={onClose}>
+// //       <FocusTrap>
+// //         <ModalContent onClick={(e) => e.stopPropagation()}>
+// //           <CloseIcon icon={faTimes} onClick={onClose} />
+// //           {renderMedia()}
+// //           <NavigationControls>
+// //             <button onClick={goToPrevious} disabled={currentIndex === 0}>
+// //               <FontAwesomeIcon icon={faBackward} /> Previous
+// //             </button>
+// //             <button onClick={goToNext} disabled={currentIndex === uploadedFiles.length - 1}>
+// //               Next <FontAwesomeIcon icon={faForward} />
+// //             </button>
+// //           </NavigationControls>
+// //         </ModalContent>
+// //       </FocusTrap>
+// //     </ModalOverlay>
+// //   );
+// // }
+
+// // ViewerModal.propTypes = {
+// //   uploadedFiles: PropTypes.arrayOf(
+// //     PropTypes.shape({
+// //       id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
+// //       filename: PropTypes.string.isRequired,
+// //       path: PropTypes.string.isRequired,
+// //       type: PropTypes.string.isRequired,
+// //       size: PropTypes.number.isRequired,
+// //       duration: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+// //       meta_data: PropTypes.object,
+// //     })
+// //   ).isRequired,
+// //   initialIndex: PropTypes.number.isRequired,
+// //   onClose: PropTypes.func.isRequired,
+// // };
+
+// // export default ViewerModal;
+
+// import React, { useState, useEffect } from 'react';
+// import styled from 'styled-components';
+// import MediaPlayer from './MediaPlayer';
+// import ImageViewer from './ImageViewer';
+// import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+// import { faTimes, faForward, faBackward } from '@fortawesome/free-solid-svg-icons';
+// import FocusTrap from 'focus-trap-react';
+// import PropTypes from 'prop-types';
+// import { isAudioFile, isVideoFile, isImageFile } from '../../utils/mediaUtils';
+
+// const ModalOverlay = styled.div`
+//   position: fixed;
+//   top: 0;
+//   left: 0;
+//   width: 100%;
+//   height: 100%;
+//   background-color: rgba(0, 0, 0, 0.7);
+//   display: flex;
+//   justify-content: center;
+//   align-items: center;
+//   z-index: 3000;
+// `;
+
+// const ModalContent = styled.div`
+//   background-color: ${({ theme }) => theme.colors.background};
+//   padding: 20px;
+//   border-radius: 10px;
+//   width: 95%;
+//   max-width: 900px;
+//   max-height: 90vh;
+//   overflow-y: auto;
+//   display: flex;
+//   flex-direction: column;
+//   align-items: center;
+// `;
+
+// const NavigationControls = styled.div`
+//   display: flex;
+//   justify-content: space-between;
+//   width: 100%;
+//   margin-top: 15px;
+// `;
+
+// const CloseIcon = styled(FontAwesomeIcon)`
+//   position: absolute;
+//   top: 10px;
+//   right: 10px;
+//   cursor: pointer;
+//   color: ${({ theme }) => theme.colors.error};
+// `;
+
+// const ErrorMessage = styled.div`
+//   color: ${({ theme }) => theme.colors.error};
+//   margin: 20px 0;
+//   text-align: center;
+// `;
+
+// function ViewerModal({ uploadedFiles, initialIndex, onClose }) {
+//   const [currentIndex, setCurrentIndex] = useState(initialIndex);
+//   const [isPlaying, setIsPlaying] = useState(false);
+//   const [error, setError] = useState(null);
+
+//   const currentFile = uploadedFiles[currentIndex];
+
+//   useEffect(() => {
+//     if (!currentFile) {
+//       setError("File not found");
+//       return;
+//     }
+//     setError(null);
+//     setIsPlaying(false);
+//   }, [currentIndex, currentFile]);
+
+//   const mediaType = currentFile && (
+//     isAudioFile(currentFile.type)
+//       ? 'audio'
+//       : isVideoFile(currentFile.type)
+//         ? 'video'
+//         : isImageFile(currentFile.type)
+//           ? 'image'
+//           : 'unsupported'
+//   );
+
+//   const goToNext = () => {
+//     if (currentIndex < uploadedFiles.length - 1) {
+//       setCurrentIndex(currentIndex + 1);
+//     }
+//   };
+
+//   const goToPrevious = () => {
+//     if (currentIndex > 0) {
+//       setCurrentIndex(currentIndex - 1);
+//     }
+//   };
+
+//   const togglePlayPause = () => {
+//     setIsPlaying(!isPlaying);
+//   };
+
+//   const renderMedia = () => {
+//     if (error) {
+//       return <ErrorMessage>{error}</ErrorMessage>;
+//     }
+
+//     if (!currentFile) {
+//       return <ErrorMessage>No file selected</ErrorMessage>;
+//     }
+
+//     switch (mediaType) {
+//       case 'video':
+//       case 'audio':
+//         return (
+//           <MediaPlayer
+//             key={currentFile.id}
+//             fileUrl={currentFile.path}
+//             fileName={currentFile.filename}
+//             fileType={currentFile.type}
+//             fileId={currentFile.id.toString()}
+//             fileSize={currentFile.size}
+//             duration={currentFile.duration}
+//             metadata={currentFile.meta_data || {}}
+//             onClose={onClose}
+//             isPlaying={isPlaying}
+//             togglePlayPause={togglePlayPause}
+//           />
+//         );
+//       case 'image':
+//         return (
+//           <ImageViewer
+//             key={currentFile.id}
+//             fileUrl={currentFile.path}
+//             fileName={currentFile.filename}
+//             fileId={currentFile.id.toString()}
+//             metadata={currentFile.meta_data || {}}
+//             onClose={onClose}
+//             goToNext={goToNext}
+//             goToPrevious={goToPrevious}
+//           />
+//         );
+//       default:
+//         return <ErrorMessage>Unsupported media type</ErrorMessage>;
+//     }
+//   };
+
+//   return (
+//     <ModalOverlay onClick={onClose}>
+//       <FocusTrap>
+//         <ModalContent onClick={(e) => e.stopPropagation()}>
+//           <CloseIcon icon={faTimes} onClick={onClose} />
+//           {renderMedia()}
+//           <NavigationControls>
+//             <button onClick={goToPrevious} disabled={currentIndex === 0}>
+//               <FontAwesomeIcon icon={faBackward} /> Previous
+//             </button>
+//             <button onClick={goToNext} disabled={currentIndex === uploadedFiles.length - 1}>
+//               Next <FontAwesomeIcon icon={faForward} />
+//             </button>
+//           </NavigationControls>
+//         </ModalContent>
+//       </FocusTrap>
+//     </ModalOverlay>
+//   );
+// }
+
+// ViewerModal.propTypes = {
+//   uploadedFiles: PropTypes.arrayOf(
+//     PropTypes.shape({
+//       id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
+//       filename: PropTypes.string.isRequired,
+//       path: PropTypes.string.isRequired,
+//       type: PropTypes.string.isRequired,
+//       size: PropTypes.number.isRequired,
+//       duration: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+//       meta_data: PropTypes.object,
+//     })
+//   ).isRequired,
+//   initialIndex: PropTypes.number.isRequired,
+//   onClose: PropTypes.func.isRequired,
+// };
+
+// export default ViewerModal;
+
+// ViewerModal.jsx
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import styled from 'styled-components';
 import MediaPlayer from './MediaPlayer';
 import ImageViewer from './ImageViewer';
@@ -8,8 +879,9 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTimes, faForward, faBackward } from '@fortawesome/free-solid-svg-icons';
 import FocusTrap from 'focus-trap-react';
 import PropTypes from 'prop-types';
-import { isAudioFile, isVideoFile, isImageFile } from "../../utils/mediaUtils"; // Ensure correct import
+import { isAudioFile, isVideoFile, isImageFile } from '../../utils/mediaUtils';
 
+// Styled Components
 const ModalOverlay = styled.div`
   position: fixed;
   top: 0;
@@ -21,30 +893,27 @@ const ModalOverlay = styled.div`
   justify-content: center;
   align-items: center;
   z-index: 3000;
-  animation: fadeIn 0.3s ease-out;
 `;
 
 const ModalContent = styled.div`
+  position: relative;
   background-color: ${({ theme }) => theme.colors.background};
-  padding: 20px;
+  padding: 30px 20px 20px 20px;
   border-radius: 10px;
   width: 95%;
   max-width: 900px;
-  position: relative;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
   max-height: 90vh;
   overflow-y: auto;
   display: flex;
   flex-direction: column;
   align-items: center;
+`;
 
-  @media (max-width: 768px) {
-    padding: 15px;
-    width: 100%;
-    border-radius: 0;
-    height: 100vh;
-    max-height: 100vh;
-  }
+const NavigationControls = styled.div`
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  margin-top: 20px;
 `;
 
 const CloseIcon = styled(FontAwesomeIcon)`
@@ -56,165 +925,191 @@ const CloseIcon = styled(FontAwesomeIcon)`
   font-size: 1.5rem;
 
   &:hover {
-    color: #c0392b;
-  }
-
-  @media (max-width: 768px) {
-    top: 10px;
-    right: 10px;
-    font-size: 1.2rem;
+    color: ${({ theme }) => theme.colors.errorDark};
   }
 `;
 
-const NavigationControls = styled.div`
+const ErrorMessage = styled.div`
+  color: ${({ theme }) => theme.colors.error};
+  margin: 20px 0;
+  text-align: center;
+  font-size: 1rem;
+`;
+
+const NavigationButton = styled.button`
+  background-color: ${({ theme, disabled }) => 
+    disabled ? theme.colors.disabled : theme.colors.primary};
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 5px;
+  cursor: ${({ disabled }) => (disabled ? 'not-allowed' : 'pointer')};
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  margin-top: 15px;
-  width: 100%;
+  gap: 8px;
+  font-size: 0.9rem;
+  transition: background-color 0.3s;
 
-  button {
-    background: none;
-    border: none;
-    color: ${({ theme }) => theme.colors.primary};
-    font-size: 1.2rem;
-    cursor: pointer;
-    transition: color 0.2s ease;
-    display: flex;
-    align-items: center;
-    gap: 5px;
-
-    &:hover {
-      color: ${({ theme }) => theme.colors.secondary};
-    }
-
-    &:disabled {
-      color: #7f8c8d;
-      cursor: not-allowed;
-    }
+  &:hover {
+    background-color: ${({ theme, disabled }) => 
+      !disabled && theme.colors.primaryDark};
   }
 
-  @media (max-width: 768px) {
-    button {
-      font-size: 1rem;
-    }
+  &:focus {
+    outline: 2px solid ${({ theme }) => theme.colors.focus};
+    outline-offset: 2px;
   }
 `;
 
-function ViewerModal({ 
-  uploadedFiles, 
-  initialIndex, 
-  onClose 
-}) {
-  const [currentIndex, setCurrentIndex] = useState(initialIndex);
-  const [isPlaying, setIsPlaying] = useState(false); // Manage play state here
-
-  const currentFile = uploadedFiles[currentIndex];
-  const mimeType = currentFile.type;
-
-  // Determine media type dynamically
-  const mediaType = 
-    isAudioFile(mimeType) ? 'audio' :
-    isVideoFile(mimeType) ? 'video' :
-    isImageFile(mimeType) ? 'image' :
-    'unsupported';
-
-  const goToNext = () => {
-    if (currentIndex < uploadedFiles.length - 1) {
-      setCurrentIndex(currentIndex + 1);
-      setIsPlaying(false); // Reset play state when navigating
+function ViewerModal({ uploadedFiles, initialIndex, onClose }) {
+  // Validate initialIndex
+  const validInitialIndex = useMemo(() => {
+    if (
+      Array.isArray(uploadedFiles) &&
+      uploadedFiles.length > 0 &&
+      initialIndex >= 0 &&
+      initialIndex < uploadedFiles.length
+    ) {
+      return initialIndex;
     }
-  };
+    return 0;
+  }, [uploadedFiles, initialIndex]);
 
-  const goToPrevious = () => {
-    if (currentIndex > 0) {
-      setCurrentIndex(currentIndex - 1);
-      setIsPlaying(false); // Reset play state when navigating
-    }
-  };
+  const [currentIndex, setCurrentIndex] = useState(validInitialIndex);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [error, setError] = useState(null);
 
-  const togglePlayPause = () => {
-    setIsPlaying(!isPlaying);
-  };
+  const currentFile = useMemo(() => uploadedFiles[currentIndex], [uploadedFiles, currentIndex]);
+
+  const mediaType = useMemo(() => {
+    if (!currentFile) return 'unsupported';
+    if (isAudioFile(currentFile.type)) return 'audio';
+    if (isVideoFile(currentFile.type)) return 'video';
+    if (isImageFile(currentFile.type)) return 'image';
+    return 'unsupported';
+  }, [currentFile]);
 
   useEffect(() => {
-    // Reset isPlaying when file changes
-    setIsPlaying(false);
+    if (!currentFile) {
+      setError('File not found.');
+    } else {
+      setError(null);
+      setIsPlaying(false);
+    }
+  }, [currentFile]);
+
+  const goToNext = useCallback(() => {
+    if (currentIndex < uploadedFiles.length - 1) {
+      setCurrentIndex((prevIndex) => prevIndex + 1);
+    }
+  }, [currentIndex, uploadedFiles.length]);
+
+  const goToPrevious = useCallback(() => {
+    if (currentIndex > 0) {
+      setCurrentIndex((prevIndex) => prevIndex - 1);
+    }
   }, [currentIndex]);
 
-  const renderViewer = () => {
-    if (mediaType === 'audio' || mediaType === 'video') {
-      return (
-        <MediaPlayer
-          key={currentFile.filename} // Force remount on file change
-          fileUrl={
-            currentFile.path.startsWith('/static/uploads') 
-              ? `${window.location.origin}${currentFile.path}` 
-              : currentFile.path
-          }
-          fileName={currentFile.filename}
-          fileType={currentFile.type}
-          fileSize={currentFile.size}
-          duration={currentFile.duration}
-          onClose={onClose}
-          isPlaying={isPlaying}
-          togglePlayPause={togglePlayPause}
-        />
-      );
-    } else if (mediaType === 'image') {
-      return (
-        <ImageViewer
-          key={currentFile.filename} // Force remount on file change
-          fileUrl={
-            currentFile.path.startsWith('/static/uploads') 
-              ? `${window.location.origin}${currentFile.path}` 
-              : currentFile.path
-          }
-          fileName={currentFile.filename}
-          onClose={onClose}
-          goToNext={goToNext}
-          goToPrevious={goToPrevious}
-        />
-      );
-    } else {
-      return <div role="alert">Unsupported media type selected.</div>;
+  const togglePlayPause = useCallback(() => {
+    setIsPlaying((prev) => !prev);
+  }, []);
+
+  const renderMedia = () => {
+    if (error) {
+      return <ErrorMessage>{error}</ErrorMessage>;
+    }
+
+    if (!currentFile) {
+      return <ErrorMessage>No file selected.</ErrorMessage>;
+    }
+
+    const commonProps = {
+      key: currentFile.id,
+      fileUrl: currentFile.path,
+      fileName: currentFile.filename,
+      fileId: currentFile.id.toString(),
+      metadata: currentFile.meta_data || {},
+      onClose,
+    };
+
+    switch (mediaType) {
+      case 'video':
+      case 'audio':
+        return (
+          <MediaPlayer
+            {...commonProps}
+            fileType={currentFile.type}
+            fileSize={currentFile.size}
+            duration={currentFile.duration}
+            isPlaying={isPlaying}
+            togglePlayPause={togglePlayPause}
+          />
+        );
+      case 'image':
+        return (
+          <ImageViewer
+            {...commonProps}
+            fileType={currentFile.type}
+            goToNext={goToNext}
+            goToPrevious={goToPrevious}
+          />
+        );
+      default:
+        return <ErrorMessage>Unsupported media type.</ErrorMessage>;
     }
   };
 
-  // Debugging: Log current media type and file details
+  // Handle keyboard navigation for accessibility
+  const handleKeyDown = useCallback(
+    (e) => {
+      if (e.key === 'ArrowRight') {
+        goToNext();
+      } else if (e.key === 'ArrowLeft') {
+        goToPrevious();
+      } else if (e.key === 'Escape') {
+        onClose();
+      }
+    },
+    [goToNext, goToPrevious, onClose]
+  );
+
   useEffect(() => {
-    console.log(`Current Index: ${currentIndex}`);
-    console.log(`Current File: ${currentFile.filename}, Type: ${mimeType}`);
-    console.log(`Determined Media Type: ${mediaType}`);
-  }, [currentIndex, currentFile, mimeType, mediaType]);
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [handleKeyDown]);
+
+  // Prevent rendering if no files are uploaded
+  if (!Array.isArray(uploadedFiles) || uploadedFiles.length === 0) {
+    return null;
+  }
 
   return (
     <ModalOverlay onClick={onClose} aria-modal="true" role="dialog">
       <FocusTrap>
         <ModalContent onClick={(e) => e.stopPropagation()}>
-          <CloseIcon 
-            icon="times" 
-            onClick={onClose} 
+          <CloseIcon
+            icon={faTimes}
+            onClick={onClose}
             aria-label="Close Viewer"
           />
-          {renderViewer()}
+          {renderMedia()}
           <NavigationControls>
-            <button 
-              onClick={goToPrevious} 
+            <NavigationButton
+              onClick={goToPrevious}
               disabled={currentIndex === 0}
               aria-label="Previous File"
             >
-              <FontAwesomeIcon icon="backward" />
+              <FontAwesomeIcon icon={faBackward} />
               Previous
-            </button>
-            <button 
-              onClick={goToNext} 
+            </NavigationButton>
+            <NavigationButton
+              onClick={goToNext}
               disabled={currentIndex === uploadedFiles.length - 1}
               aria-label="Next File"
             >
               Next
-              <FontAwesomeIcon icon="forward" />
-            </button>
+              <FontAwesomeIcon icon={faForward} />
+            </NavigationButton>
           </NavigationControls>
         </ModalContent>
       </FocusTrap>
@@ -225,15 +1120,21 @@ function ViewerModal({
 ViewerModal.propTypes = {
   uploadedFiles: PropTypes.arrayOf(
     PropTypes.shape({
+      id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
       filename: PropTypes.string.isRequired,
       path: PropTypes.string.isRequired,
-      size: PropTypes.number.isRequired,
       type: PropTypes.string.isRequired,
-      duration: PropTypes.string,
+      size: PropTypes.number.isRequired,
+      duration: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+      meta_data: PropTypes.object,
     })
   ).isRequired,
-  initialIndex: PropTypes.number.isRequired,
+  initialIndex: PropTypes.number,
   onClose: PropTypes.func.isRequired,
+};
+
+ViewerModal.defaultProps = {
+  initialIndex: 0,
 };
 
 export default ViewerModal;

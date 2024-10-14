@@ -1,8 +1,14 @@
 # # auth/routes.py
-from flask import Blueprint, request, jsonify, url_for
+from flask import Blueprint, request, jsonify, url_for, make_response
 from extensions import db, mail, bcrypt, limiter
 from models import User, Role, UserRole, RoleEnum
-from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity
+from flask_jwt_extended import (
+    create_access_token,
+    jwt_required,
+    get_jwt_identity,
+    set_access_cookies,
+    unset_jwt_cookies
+)
 from flask_mail import Message
 from datetime import datetime, timedelta
 from sqlalchemy.exc import SQLAlchemyError
@@ -137,7 +143,9 @@ def login():
         return jsonify({"error": "Account is not active. Please confirm your email."}), 403
     
     access_token = create_access_token(identity=user.id, expires_delta=timedelta(hours=1))
-    return jsonify({"access_token": access_token}), 200
+    response = jsonify({"message": "Login successful"})
+    set_access_cookies(response, access_token)
+    return response, 200
 
 @auth_bp.route('/me', methods=['GET'])
 @jwt_required()
@@ -195,6 +203,12 @@ def reset_password():
     db.session.commit()
     
     return jsonify({"message": "Password has been reset successfully."}), 200
+
+@auth_bp.route('/logout', methods=['POST'])
+def logout():
+    response = jsonify({"message": "Logout successful"})
+    unset_jwt_cookies(response)
+    return response, 200
 
 @auth_bp.route('/settings', methods=['PUT'])
 @jwt_required()

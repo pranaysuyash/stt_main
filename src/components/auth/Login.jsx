@@ -129,7 +129,7 @@ const Login = () => {
       const response = await api.post('/auth/login', { email, password });
       const { access_token } = response.data;
 
-      localStorage.setItem('token', access_token);
+      localStorage.setItem('jwtToken', access_token);
 
       const userResponse = await api.get('/auth/me');
       const user = userResponse.data.user;

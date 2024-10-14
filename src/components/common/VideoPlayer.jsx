@@ -1,179 +1,180 @@
-// src/components/common/VideoPlayer.jsx
 
-import React, { useRef, useEffect } from 'react';
+
+import React, { useState, useRef, useEffect } from 'react';
 import styled from 'styled-components';
 import PropTypes from 'prop-types';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { 
-  faPlay, 
-  faPause, 
-  faStop, 
-  faRedo, 
-  faExpand, 
-  faCompress, 
-  faVolumeUp, 
-  faVolumeMute 
+import {
+  faPlay,
+  faPause,
+  faStop,
+  faVolumeUp,
+  faVolumeMute,
+  faExpand,
+  faCompress,
+  faRedo,
+  faForward,
+  faBackward,
+  faChevronLeft,
+  faChevronRight
 } from '@fortawesome/free-solid-svg-icons';
+import TabView from './TabView';
+import Metadata from './Metadata';
 
 const VideoPlayerContainer = styled.div`
-  margin-top: 20px;
-  text-align: center;
-  background-color: ${({ theme }) => theme.colors.background};
+  margin: 20px auto;
   padding: 20px;
+  background-color: ${({ theme }) => theme.colors.background};
   border-radius: 10px;
-  outline: none; 
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 `;
 
 const Video = styled.video`
   width: 100%;
   max-width: 800px;
-  border-radius: 5px;
+  height: auto;
 `;
 
 const Controls = styled.div`
   display: flex;
   justify-content: center;
   align-items: center;
-  margin-top: 15px;
+  margin-top: 20px;
   flex-wrap: wrap;
-  gap: 10px;
+`;
 
-  button {
-    margin: 5px;
-    padding: 10px;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    background-color: ${({ theme }) => theme.colors.primary};
-    color: white;
-    transition: background-color 0.2s ease;
-    display: flex;
-    align-items: center;
-    gap: 5px;
+const Button = styled.button`
+  background-color: ${({ theme }) => theme.colors.primary};
+  color: white;
+  border: none;
+  padding: 10px 15px;
+  margin: 0 5px;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s;
 
-    &:hover {
-      background-color: ${({ theme }) => theme.colors.secondary};
-    }
-
-    &:focus {
-      outline: 2px solid ${({ theme }) => theme.colors.primary};
-      outline-offset: 2px;
-    }
+  &:hover {
+    background-color: ${({ theme }) => theme.colors.secondary};
   }
 
-  label {
-    display: flex;
-    align-items: center;
-    margin: 5px;
-    color: ${({ theme }) => theme.colors.text};
-    font-size: 14px;
-  }
-
-  input[type="range"] {
-    width: 100px;
-    margin-left: 5px;
+  &:disabled {
+    background-color: ${({ theme }) => theme.colors.disabled};
+    cursor: not-allowed;
   }
 `;
 
-const CloseButton = styled.button`
-  margin-top: 15px;
-  background-color: ${({ theme }) => theme.colors.error};
-  border: none;
-  color: white;
-  padding: 8px 15px;
-  border-radius: 4px;
-  cursor: pointer;
-  transition: background-color 0.2s ease;
+const VolumeControl = styled.input`
+  width: 100px;
+  margin: 0 10px;
+`;
 
-  &:hover {
-    background-color: #c0392b;
-  }
+const SpeedControl = styled.select`
+  margin: 0 10px;
+`;
 
-  &:focus {
-    outline: 2px solid ${({ theme }) => theme.colors.error};
-    outline-offset: 2px;
-  }
+const ProgressBar = styled.progress`
+  width: 100%;
+  height: 10px;
+  margin-top: 10px;
+`;
+
+const TimeDisplay = styled.div`
+  font-size: 14px;
+  margin-top: 5px;
+  text-align: center;
 `;
 
 const ErrorMessage = styled.div`
-  color: red;
+  color: ${({ theme }) => theme.colors.error};
   margin-bottom: 10px;
 `;
+
+// const NavigationControls = styled.div`
+//   display: flex;
+//   justify-content: space-between;
+//   margin-top: 20px;
+// `;
 
 function VideoPlayer({
   fileUrl,
   fileName,
   fileType,
+  fileId,
   fileSize,
-  duration = '', 
-  onClose,
+  duration,
+  metadata,
   isPlaying,
   togglePlayPause,
+  volume,
+  setVolume,
+  speed,
+  setSpeed,
+  loop,
+  setLoop,
+  onNext,
+  onPrevious
 }) {
   const videoRef = useRef(null);
-  const [loop, setLoop] = React.useState(false);
-  const [volume, setVolume] = React.useState(1);
-  const [playbackRate, setPlaybackRate] = React.useState(1);
-  const [error, setError] = React.useState('');
+  const [currentTime, setCurrentTime] = useState(0);
+  const [isMuted, setIsMuted] = useState(false);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const [error, setError] = useState('');
+  const [videoLoaded, setVideoLoaded] = useState(false);
 
   useEffect(() => {
     const video = videoRef.current;
     if (video) {
-      video.loop = loop;
       video.volume = volume;
-      video.playbackRate = playbackRate;
-
-      if (isPlaying) {
-        video.play().catch((e) => {
-          console.error('Video play error:', e);
-          setError('Failed to play the video.');
-          onClose();
-        });
-      } else {
-        video.pause();
-      }
-
-      video.addEventListener('ended', () => {
-        if (!loop) {
-          togglePlayPause();
-        }
-      });
-
-      video.addEventListener('error', (e) => {
-        console.error('Video playback error:', e);
-        setError('Failed to play the video. It might be corrupted or unsupported.');
-        // Do not call onClose here to prevent unmounting during destroy
-      });
-
-      return () => {
-        video.removeEventListener('ended', () => {});
-        video.removeEventListener('error', () => {});
-      };
+      video.playbackRate = speed;
+      video.loop = loop;
     }
-  }, [isPlaying, loop, volume, playbackRate, onClose, togglePlayPause]);
+  }, [volume, speed, loop]);
+
+  useEffect(() => {
+    const video = videoRef.current;
+    if (video && videoLoaded) {
+      const playVideo = async () => {
+        try {
+          if (isPlaying) {
+            await video.play();
+          } else {
+            video.pause();
+          }
+        } catch (e) {
+          console.error('Video play error:', e);
+          setError('Failed to play the video. It might be unsupported or corrupted.');
+        }
+      };
+
+      playVideo();
+    }
+  }, [isPlaying, videoLoaded]);
+
+  const stopVideo = () => {
+    const video = videoRef.current;
+    if (video) {
+      video.pause();
+      video.currentTime = 0;
+      togglePlayPause(false);
+    }
+  };
 
   const toggleLoop = () => {
     setLoop(!loop);
   };
 
-  const stop = () => {
-    const video = videoRef.current;
-    if (video) {
-      video.pause();
-      video.currentTime = 0;
-      togglePlayPause(); 
-    }
-  };
-
   const toggleFullscreen = () => {
     const video = videoRef.current;
     if (video) {
-      if (video.requestFullscreen) {
-        video.requestFullscreen();
-      } else if (video.webkitRequestFullscreen) { 
-        video.webkitRequestFullscreen();
-      } else if (video.msRequestFullscreen) { 
-        video.msRequestFullscreen();
+      if (!document.fullscreenElement) {
+        video.requestFullscreen().then(() => {
+          setIsFullscreen(true);
+        }).catch(err => {
+          console.error(`Error attempting to enable fullscreen: ${err.message}`);
+        });
+      } else {
+        document.exitFullscreen();
+        setIsFullscreen(false);
       }
     }
   };
@@ -181,82 +182,155 @@ function VideoPlayer({
   const handleVolumeChange = (e) => {
     const newVolume = parseFloat(e.target.value);
     setVolume(newVolume);
+    setIsMuted(newVolume === 0);
   };
 
-  const handlePlaybackRateChange = (e) => {
-    const newRate = parseFloat(e.target.value);
-    setPlaybackRate(newRate);
+  const toggleMute = () => {
+    if (isMuted) {
+      setVolume(1);
+      setIsMuted(false);
+    } else {
+      setVolume(0);
+      setIsMuted(true);
+    }
   };
 
-  const closePlayer = () => {
-    onClose();
+  const handleSpeedChange = (e) => {
+    setSpeed(parseFloat(e.target.value));
   };
 
-  return (
-    <VideoPlayerContainer tabIndex="-1" aria-label="Video Player">
-      <h3>Now Playing: {fileName}</h3>
-      {fileSize && (
-        <p>File Size: {(fileSize / (1024 * 1024)).toFixed(2)} MB</p>
-      )}
-      {duration && <p>Duration: {duration}</p>}
-      {error && (
-        <ErrorMessage role="alert">
-          {error}
-        </ErrorMessage>
-      )}
+  const handleTimeUpdate = () => {
+    const video = videoRef.current;
+    if (video) {
+      setCurrentTime(video.currentTime);
+    }
+  };
+
+  const formatTime = (timeInSeconds) => {
+    const minutes = Math.floor(timeInSeconds / 60);
+    const seconds = Math.floor(timeInSeconds % 60);
+    return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+  };
+
+  const seekBackward = () => {
+    const video = videoRef.current;
+    if (video) {
+      video.currentTime = Math.max(0, video.currentTime - 10);
+    }
+  };
+
+  const seekForward = () => {
+    const video = videoRef.current;
+    if (video) {
+      video.currentTime = Math.min(video.duration, video.currentTime + 10);
+    }
+  };
+
+  const handleVideoError = (e) => {
+    console.error('Video error:', e);
+    setError('Failed to load the video. It might be unsupported or corrupted.');
+  };
+
+  const handleVideoLoaded = () => {
+    setVideoLoaded(true);
+    setError('');
+  };
+
+  const videoContent = (
+    <>
+      {error && <ErrorMessage role="alert">{error}</ErrorMessage>}
       <Video
         ref={videoRef}
         src={fileUrl}
-        controls={true} // Enable standard HTML5 controls
-        aria-label={`Video player for ${fileName}`}
+        onTimeUpdate={handleTimeUpdate}
+        onEnded={() => togglePlayPause(false)}
+        onError={handleVideoError}
+        onLoadedMetadata={handleVideoLoaded}
       >
         Your browser does not support the video tag.
       </Video>
+      <ProgressBar value={currentTime} max={duration || 0} />
+      <TimeDisplay>
+        {formatTime(currentTime)} / {formatTime(parseFloat(duration) || 0)}
+      </TimeDisplay>
       <Controls>
-        <button onClick={togglePlayPause} aria-label={isPlaying ? 'Pause' : 'Play'}>
-          <FontAwesomeIcon icon={isPlaying ? 'pause' : 'play'} />
-        </button>
-        <button onClick={stop} aria-label="Stop">
-          <FontAwesomeIcon icon="stop" />
-        </button>
-        <button 
-          onClick={toggleLoop} 
-          aria-label={loop ? 'Disable Loop' : 'Enable Loop'}
-          className={loop ? 'loop-active' : ''}
-        >
+        <Button onClick={seekBackward} aria-label="Seek 10 seconds backward">
+          <FontAwesomeIcon icon={faBackward} />
+        </Button>
+        <Button onClick={() => togglePlayPause(!isPlaying)} disabled={!videoLoaded}>
+          <FontAwesomeIcon icon={isPlaying ? faPause : faPlay} />
+          {isPlaying ? 'Pause' : 'Play'}
+        </Button>
+        <Button onClick={seekForward} aria-label="Seek 10 seconds forward">
+          <FontAwesomeIcon icon={faForward} />
+        </Button>
+        <Button onClick={stopVideo}>
+          <FontAwesomeIcon icon={faStop} />
+          Stop
+        </Button>
+        <Button onClick={toggleLoop}>
+          <FontAwesomeIcon icon={faRedo} />
           {loop ? 'Looping' : 'Loop'}
-        </button>
-        <button onClick={toggleFullscreen} aria-label="Fullscreen">
-          <FontAwesomeIcon icon="expand" /> {/* Use 'expand' instead of 'fullscreen' */}
-        </button>
-        <label>
-          <FontAwesomeIcon icon={volume > 0 ? 'volume-up' : 'volume-mute'} />
-          <input
-            type="range"
-            min="0"
-            max="1"
-            step="0.01"
-            value={volume}
-            onChange={handleVolumeChange}
-            aria-label="Volume Control"
-          />
-        </label>
-        <label>
-          Speed:
-          <input
-            type="range"
-            min="0.5"
-            max="2"
-            step="0.1"
-            value={playbackRate}
-            onChange={handlePlaybackRateChange}
-            aria-label="Playback Speed Control"
-          />
-        </label>
+        </Button>
+        <Button onClick={toggleMute}>
+          <FontAwesomeIcon icon={isMuted ? faVolumeMute : faVolumeUp} />
+        </Button>
+        <VolumeControl
+          type="range"
+          min="0"
+          max="1"
+          step="0.1"
+          value={volume}
+          onChange={handleVolumeChange}
+          aria-label="Volume Control"
+        />
+        <SpeedControl value={speed} onChange={handleSpeedChange} aria-label="Playback Speed">
+          <option value="0.5">0.5x</option>
+          <option value="1">1x</option>
+          <option value="1.5">1.5x</option>
+          <option value="2">2x</option>
+        </SpeedControl>
+        <Button onClick={toggleFullscreen}>
+          <FontAwesomeIcon icon={isFullscreen ? faCompress : faExpand} />
+          {isFullscreen ? 'Exit Fullscreen' : 'Fullscreen'}
+        </Button>
       </Controls>
-      <CloseButton onClick={closePlayer} aria-label="Close Video Player">
-        Close
-      </CloseButton>
+    </>
+  );
+
+  const tabs = [
+    {
+      label: 'Video',
+      content: videoContent,
+    },
+    {
+      label: 'Metadata',
+      content: (
+        <Metadata
+          metadata={metadata}
+          fileId={fileId}
+          fileName={fileName}
+          fileUrl={fileUrl}
+          fileType={fileType}
+        />
+      ),
+    },
+  ];
+
+  return (
+    <VideoPlayerContainer>
+      <h3>{fileName}</h3>
+      <p>File Type: {fileType}</p>
+      <p>File Size: {(fileSize / (1024 * 1024)).toFixed(2)} MB</p>
+      <TabView tabs={tabs} />
+      {/* <NavigationControls>
+        <Button onClick={onPrevious}>
+          <FontAwesomeIcon icon={faChevronLeft} /> Previous
+        </Button>
+        <Button onClick={onNext}>
+          Next <FontAwesomeIcon icon={faChevronRight} />
+        </Button>
+      </NavigationControls> */}
     </VideoPlayerContainer>
   );
 }
@@ -265,11 +339,20 @@ VideoPlayer.propTypes = {
   fileUrl: PropTypes.string.isRequired,
   fileName: PropTypes.string.isRequired,
   fileType: PropTypes.string.isRequired,
+  fileId: PropTypes.string.isRequired,
   fileSize: PropTypes.number.isRequired,
   duration: PropTypes.string,
-  onClose: PropTypes.func.isRequired,
-  isPlaying: PropTypes.bool.isRequired, 
-  togglePlayPause: PropTypes.func.isRequired, 
+  metadata: PropTypes.object,
+  isPlaying: PropTypes.bool.isRequired,
+  togglePlayPause: PropTypes.func.isRequired,
+  volume: PropTypes.number.isRequired,
+  setVolume: PropTypes.func.isRequired,
+  speed: PropTypes.number.isRequired,
+  setSpeed: PropTypes.func.isRequired,
+  loop: PropTypes.bool.isRequired,
+  setLoop: PropTypes.func.isRequired,
+  onNext: PropTypes.func.isRequired,
+  onPrevious: PropTypes.func.isRequired,
 };
 
 export default VideoPlayer;
