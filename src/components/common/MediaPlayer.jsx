@@ -1,6 +1,65 @@
+
+// import React from 'react';
+// import AudioPlayer from './AudioPlayer';
+// import VideoPlayer from './VideoPlayer';
+// import PropTypes from 'prop-types';
+
+// function MediaPlayer({
+//   fileUrl,
+//   fileName,
+//   fileType,
+//   fileSize,
+//   duration = '',
+//   onClose,
+//   isPlaying,
+//   togglePlayPause
+// }) {
+//   if (fileType.startsWith('audio/')) {
+//     return (
+//       <AudioPlayer
+//         fileUrl={fileUrl}
+//         fileName={fileName}
+//         fileSize={fileSize}
+//         onClose={onClose}
+//         isPlaying={isPlaying}
+//         setIsPlaying={togglePlayPause}
+//       />
+//     );
+//   } else if (fileType.startsWith('video/')) {
+//     return (
+//       <VideoPlayer
+//         fileUrl={fileUrl}
+//         fileName={fileName}
+//         fileType={fileType}
+//         fileSize={fileSize}
+//         duration={duration}
+//         onClose={onClose}
+//         isPlaying={isPlaying}
+//         togglePlayPause={togglePlayPause}
+//       />
+//     );
+//   } else {
+//     return <div role="alert">Unsupported media type selected.</div>;
+//   }
+// }
+
+// MediaPlayer.propTypes = {
+//   fileUrl: PropTypes.string.isRequired,
+//   fileName: PropTypes.string.isRequired,
+//   fileType: PropTypes.string.isRequired,
+//   fileSize: PropTypes.number.isRequired,
+//   duration: PropTypes.string,
+//   onClose: PropTypes.func.isRequired,
+//   isPlaying: PropTypes.bool.isRequired,
+//   togglePlayPause: PropTypes.func.isRequired,
+// };
+
+// export default MediaPlayer;
+
 import React, { useState } from 'react';
 import AudioPlayer from './AudioPlayer';
 import VideoPlayer from './VideoPlayer';
+import AdvancedWaveformVisualizer from './AdvancedWaveformVisualizer';
 import PropTypes from 'prop-types';
 import TabView from './TabView';
 
@@ -21,33 +80,55 @@ function MediaPlayer({
   const [loop, setLoop] = useState(false);
 
   if (fileType.startsWith('audio/')) {
-    return (
-      <AudioPlayer
-        fileUrl={fileUrl}
-        fileName={fileName}
-        fileType={fileType}
-        fileId={fileId}
-        fileSize={fileSize}
-        duration={duration}
-        metadata={metadata}
-        onClose={onClose}
-        isPlaying={isPlaying}
-        setIsPlaying={togglePlayPause}
-        volume={volume}
-        setVolume={setVolume}
-        speed={speed}
-        setSpeed={setSpeed}
-        loop={loop}
-        setLoop={setLoop}
-      />
-    );
+    const tabs = [
+      {
+        label: 'Basic Player',
+        content: (
+          <AudioPlayer
+            fileUrl={fileUrl}
+            fileName={fileName}
+            fileId={fileId}
+            fileSize={fileSize}
+            duration={duration}
+            metadata={metadata}
+            onClose={onClose}
+            isPlaying={isPlaying}
+            setIsPlaying={togglePlayPause}
+            volume={volume}
+            setVolume={setVolume}
+            speed={speed}
+            setSpeed={setSpeed}
+            loop={loop}
+            setLoop={setLoop}
+          />
+        ),
+      },
+      {
+        label: 'Advanced Waveform',
+        content: (
+          <AdvancedWaveformVisualizer
+            audioUrl={fileUrl}
+            isPlaying={isPlaying}
+            setIsPlaying={togglePlayPause}
+            volume={volume}
+            setVolume={setVolume}
+            speed={speed}
+            setSpeed={setSpeed}
+            loop={loop}
+            setLoop={setLoop}
+          />
+        ),
+      },
+    ];
+
+    return <TabView tabs={tabs} />;
   } else if (fileType.startsWith('video/')) {
     return (
       <VideoPlayer
         fileUrl={fileUrl}
         fileName={fileName}
-        fileType={fileType}
         fileId={fileId}
+        fileType={fileType}
         fileSize={fileSize}
         duration={duration}
         metadata={metadata}

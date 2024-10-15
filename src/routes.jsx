@@ -4,6 +4,7 @@ import React, { lazy } from 'react';
 import { Navigate } from 'react-router-dom';
 import ProtectedRoute from './components/common/ProtectedRoute';
 import Layout from './components/common/Layout';
+import MediaDetails from './components/pages/MediaDetails'; // Import MediaDetails component
 
 const Dashboard = lazy(() => import('./components/pages/Dashboard'));
 const Upload = lazy(() => import('./components/pages/Upload'));
@@ -62,6 +63,8 @@ const routes = [
       { path: 'analysis', element: <Analysis />, breadcrumb: 'Analysis' },
       { path: 'settings', element: <Settings />, breadcrumb: 'Settings' },
       { path: 'help', element: <Help />, breadcrumb: 'Help' },
+      // **New Media Details Route**
+      { path: 'media/:fileId', element: <MediaDetails />, breadcrumb: 'Media Details' },
     ],
   },
   {
