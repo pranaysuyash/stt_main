@@ -26,18 +26,20 @@ import {
   FaPlay,
   FaCheckCircle,
   FaTimesCircle,
-  FaDownload,
-  FaTrash,
-  FaShareAlt,
 } from 'react-icons/fa';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import PropTypes from 'prop-types';
 import { isAudioFile, isVideoFile, isImageFile } from '../../utils/fileUtils';
 
-function FileDashboard({ uploadedFiles, onTagFile, onRemoveTag }) {
+/**
+ * FileDashboard Component
+ * Displays a grid of uploaded files with tagging and action capabilities.
+ */
+function FileDashboard({ uploadedFiles, onTagFile, onRemoveTag, onPlayAudio }) {
   const [tagInput, setTagInput] = useState('');
   const [fileToTag, setFileToTag] = useState(null);
   const toast = useToast();
+  const navigate = useNavigate(); // For navigation after deletion
 
   /**
    * Handle clicking the "Add Tag" button.
@@ -53,13 +55,14 @@ function FileDashboard({ uploadedFiles, onTagFile, onRemoveTag }) {
   const handleTagSubmit = (event) => {
     event.preventDefault();
     if (fileToTag && tagInput.trim()) {
-      onTagFile(fileToTag.id, [tagInput.trim()]);
+      onTagFile(fileToTag.id, tagInput.trim());
       toast({
         title: 'Tag Added',
         description: `Tag "${tagInput.trim()}" added to "${fileToTag.filename}".`,
         status: 'success',
         duration: 3000,
         isClosable: true,
+        position: 'top-right',
       });
       setTagInput('');
       setFileToTag(null);
@@ -69,15 +72,16 @@ function FileDashboard({ uploadedFiles, onTagFile, onRemoveTag }) {
   /**
    * Handle removing a tag.
    */
-  const handleRemoveTag = (fileId, tag, event) => {
+  const handleRemoveTagClick = (fileId, tag, event) => {
     event.stopPropagation();
-    onRemoveTag(fileId, [tag]);
+    onRemoveTag(fileId, tag);
     toast({
       title: 'Tag Removed',
       description: `Tag "${tag}" removed from file.`,
       status: 'info',
       duration: 3000,
       isClosable: true,
+      position: 'top-right',
     });
   };
 
@@ -87,20 +91,27 @@ function FileDashboard({ uploadedFiles, onTagFile, onRemoveTag }) {
   const handleMenuAction = (action, file) => {
     switch (action) {
       case 'process':
-        // Implement process action
-        onTagFile(file.id, ['processing']); // Example: Adding 'processing' tag
+        onTagFile(file.id, 'processing'); // Example: Adding 'processing' tag
         break;
       case 'analyze':
-        // Implement analyze action
-        onTagFile(file.id, ['analyzed']); // Example: Adding 'analyzed' tag
+        onTagFile(file.id, 'analyzed'); // Example: Adding 'analyzed' tag
         break;
       case 'download':
-        // Implement download functionality
-        window.open(file.path, '_blank');
+        onPlayAudio(file.id); // Assuming onPlayAudio handles download if not audio
         break;
       case 'delete':
-        // Implement delete functionality
-        onRemoveTag(file.id, []); // Placeholder for deletion
+        // Implement actual delete functionality here
+        // For example, call a prop function passed down to handle deletion
+        // onDeleteFile(file.id);
+        navigate('/app/library'); // Redirect to library after deletion
+        toast({
+          title: 'File Deleted',
+          description: `"${file.filename}" has been deleted.`,
+          status: 'success',
+          duration: 3000,
+          isClosable: true,
+          position: 'top-right',
+        });
         break;
       default:
         break;
@@ -108,12 +119,16 @@ function FileDashboard({ uploadedFiles, onTagFile, onRemoveTag }) {
   };
 
   if (!uploadedFiles || uploadedFiles.length === 0) {
-    return <Text>Loading files... or No files to display.</Text>;
+    return (
+      <Text fontSize="lg" color="gray.600">
+        Loading files... or No files to display.
+      </Text>
+    );
   }
 
   return (
     <Box mt={8}>
-      <Text fontSize="2xl" mb={4}>
+      <Text fontSize="2xl" mb={4} fontWeight="bold">
         Uploaded Files
       </Text>
       <Grid
@@ -148,6 +163,7 @@ function FileDashboard({ uploadedFiles, onTagFile, onRemoveTag }) {
                 objectFit="cover"
                 height="150px"
                 width="100%"
+                fallback={<Spinner />}
               />
             </Link>
 
@@ -187,7 +203,7 @@ function FileDashboard({ uploadedFiles, onTagFile, onRemoveTag }) {
                         variant="ghost"
                         colorScheme="red"
                         aria-label={`Remove tag ${tag}`}
-                        onClick={(e) => handleRemoveTag(file.id, tag, e)}
+                        onClick={(e) => handleRemoveTagClick(file.id, tag, e)}
                       />
                     </Badge>
                   ))}
@@ -208,6 +224,7 @@ function FileDashboard({ uploadedFiles, onTagFile, onRemoveTag }) {
                     value={tagInput}
                     onChange={(e) => setTagInput(e.target.value)}
                     onClick={(e) => e.stopPropagation()}
+                    aria-label="Enter new tag"
                   />
                 </form>
               ) : (
@@ -218,6 +235,7 @@ function FileDashboard({ uploadedFiles, onTagFile, onRemoveTag }) {
                   variant="outline"
                   colorScheme="teal"
                   onClick={(e) => handleTagClick(file, e)}
+                  aria-label={`Add tag to ${file.filename}`}
                 >
                   Add Tag
                 </Button>
@@ -240,10 +258,7 @@ function FileDashboard({ uploadedFiles, onTagFile, onRemoveTag }) {
                     icon={<FaPlay />}
                     colorScheme="teal"
                     aria-label={`Play ${file.filename}`}
-                    onClick={() => {
-                      // Navigate to details page or handle play action
-                      window.location.href = `/app/media/${file.id}`;
-                    }}
+                    onClick={() => onPlayAudio(file.id)}
                   />
                 </Tooltip>
               )}
@@ -256,6 +271,7 @@ function FileDashboard({ uploadedFiles, onTagFile, onRemoveTag }) {
                   icon={<FaEllipsisV />}
                   variant="ghost"
                   size="sm"
+                  _focus={{ boxShadow: 'none' }}
                 />
                 <MenuList>
                   <MenuItem as={Link} to={`/app/media/${file.id}`}>
@@ -315,6 +331,7 @@ FileDashboard.propTypes = {
   ).isRequired,
   onTagFile: PropTypes.func.isRequired,
   onRemoveTag: PropTypes.func.isRequired,
+  onPlayAudio: PropTypes.func.isRequired,
 };
 
 export default FileDashboard;
