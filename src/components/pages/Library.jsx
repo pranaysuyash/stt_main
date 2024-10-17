@@ -3060,8 +3060,11 @@ function Library({ onPlayAudio }) {
   const [tagInput, setTagInput] = useState('');
   const [fileToTag, setFileToTag] = useState(null);
 
-  const bgColor = useColorModeValue('gray.50', 'gray.800');
+  // const bgColor = useColorModeValue('gray.50', 'gray.800');
+  // const borderColor = useColorModeValue('gray.200', 'gray.600');
+  const bgColor = useColorModeValue('white', 'gray.800');
   const borderColor = useColorModeValue('gray.200', 'gray.600');
+
 
   const fetchFiles = useCallback(
     async (pageNum = 1) => {
@@ -3305,7 +3308,7 @@ function Library({ onPlayAudio }) {
     }
 
     return (
-      <Box bg={bgColor} borderRadius="lg" p={6} boxShadow="sm" borderWidth="1px" borderColor={borderColor}>
+      <Box bg={bgColor} borderRadius="xl" p={6} boxShadow="lg" borderWidth="1px" borderColor={borderColor}>
         <Grid
           templateColumns={{
             base: 'repeat(auto-fill, minmax(250px, 1fr))',
@@ -3337,23 +3340,25 @@ function Library({ onPlayAudio }) {
     console.log('Filtered files:', filteredFiles); // Debug log
   }, [filteredFiles]);
   if (loading && page === 1) {
-    return <Spinner size="xl" />;
+    return (<Flex justify="center" align="center" height="100vh">
+    <Spinner size="xl" color="primary.500" />
+  </Flex>);
   }
 
   return (
     <Box p={5}>
       <Flex justify="space-between" align="center" mb={6}>
-        <Text fontSize="3xl" fontWeight="bold" color="blue.600">
+        <Text fontSize="3xl" fontWeight="bold" color="primary.600">
           Library
         </Text>
-        <Button leftIcon={<FaUpload />} colorScheme="blue">
+        <Button leftIcon={<FaUpload />} colorScheme="primary" variant={"solid"}>
           Upload
         </Button>
       </Flex>
 
       <Tabs
         variant="soft-rounded"
-        colorScheme="blue"
+        colorScheme="primary"
         mb={6}
         onChange={handleTabChange}
         index={activeTab}
@@ -3371,7 +3376,8 @@ function Library({ onPlayAudio }) {
           <Button
             key={tag}
             size="sm"
-            colorScheme={activeTag === tag ? 'blue' : 'gray'}
+            colorScheme={activeTag === tag ? 'primary' : 'gray'}
+            variant={activeTag === tag ? 'solid' : 'outline'}
             onClick={() => setActiveTag(tag)}
             aria-pressed={activeTag === tag}
             aria-label={`Filter by ${tag}`}
@@ -3385,7 +3391,7 @@ function Library({ onPlayAudio }) {
 
       {!loading && files.length >= 20 && (
         <Flex justify="center" mt={6}>
-          <Button onClick={loadMore} colorScheme="blue" aria-label="Load More Files">
+          <Button onClick={loadMore} colorScheme="primary" variant={"outline"} aria-label="Load More Files">
             Load More
           </Button>
         </Flex>
@@ -3393,7 +3399,7 @@ function Library({ onPlayAudio }) {
 
       {loading && page > 1 && (
         <Flex justify="center" mt={6}>
-          <Spinner size="lg" color="blue.500" />
+          <Spinner size="lg" color="primary.500" />
         </Flex>
       )}
 
